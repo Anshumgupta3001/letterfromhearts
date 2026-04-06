@@ -1,0 +1,220 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cream: #F7F2EA;
+  --warm: #F2EBE0;
+  --paper: #FDF9F3;
+  --ink: #1C1A17;
+  --ink-soft: #4A4640;
+  --ink-muted: #8C8478;
+  --tc: #C4633A;
+  --tc-s: rgba(196, 99, 58, 0.08);
+  --sage: #7A9E8E;
+  --sage-s: rgba(122, 158, 142, 0.09);
+  --gold: #C9A84C;
+  --gold-s: rgba(201, 168, 76, 0.1);
+  --purple: #8B7EC8;
+  --purple-s: rgba(139, 126, 200, 0.09);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Paper grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-blink { animation: blink 2s ease-in-out infinite; }
+.animate-blink-fast { animation: blink 1.5s ease-in-out infinite; }
+.animate-fade-up { animation: fadeUp 0.4s ease; }
+.animate-float-up { animation: floatUp 3s ease-in-out infinite; }
+
+/* ── CARD LEFT BORDER ACCENTS ── */
+.card-accent {
+  position: relative;
+  overflow: hidden;
+}
+.card-accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+.card-accent.mood-vent::before { background: var(--ink-soft); }
+.card-accent.mood-joy::before { background: var(--gold); }
+.card-accent.mood-love::before { background: var(--tc); }
+.card-accent.mood-grief::before { background: var(--sage); }
+.card-accent.mood-gratitude::before { background: #7A6E5C; }
+.card-accent.mood-longing::before { background: var(--purple); }
+.card-accent.mood-anger::before { background: #B85450; }
+
+/* New reply indicator (top-right dot) */
+.card-new-reply {
+  position: relative;
+}
+.card-new-reply::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tc);
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+/* ── MODE CARD BOTTOM ACCENT ── */
+.mode-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s;
+}
+.mode-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+.mode-card:hover::before,
+.mode-card.selected::before { transform: scaleX(1); }
+.mode-card.mode-stranger::before { background: var(--sage); }
+.mode-card.mode-known::before { background: var(--tc); }
+.mode-card.mode-self::before { background: var(--purple); }
+
+/* ── PAPER LINES ── */
+.paper-lines {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    rgba(28, 26, 23, 0.028) 31px,
+    rgba(28, 26, 23, 0.028) 32px
+  );
+  background-position: 0 76px;
+  pointer-events: none;
+}
+
+.paper-margin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 68px;
+  width: 1px;
+  background: rgba(196, 99, 58, 0.1);
+  pointer-events: none;
+}
+
+/* ── DRAWER SLIDE ── */
+.drawer-panel {
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.drawer-panel.open {
+  transform: translateX(0);
+}
+
+/* ── TOGGLE ── */
+.toggle-track {
+  width: 32px;
+  height: 17px;
+  background: rgba(28, 26, 23, 0.1);
+  border-radius: 100px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.toggle-track.on { background: var(--sage); }
+.toggle-thumb {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  top: 2.5px;
+  left: 2.5px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+.toggle-track.on .toggle-thumb { transform: translateX(14px); }
+
+/* ── SCROLL CUSTOMIZATION ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(28, 26, 23, 0.15); border-radius: 2px; }
+
+/* ── GLOBAL SOFT TRANSITIONS ── */
+button, a, input, textarea, select {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── SECTION DIVIDER ── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(28,26,23,0.07) 20%, rgba(28,26,23,0.07) 80%, transparent);
+}
+
+/* ── LETTER CARD PAPER FEEL ── */
+.letter-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.letter-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(28,26,23,0.1);
+}
+
+/* ── SOFT FOCUS RING ── */
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 3px rgba(196,99,58,0.07);
+}
+
+/* ── PAGE FADE IN ── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageFadeIn 0.45s ease both;
+}
