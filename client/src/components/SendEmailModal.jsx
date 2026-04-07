@@ -4,17 +4,17 @@ import { apiFetch } from '../utils/api'
 
 const PROVIDER_ICON = { gmail: '📧', zoho: '📮', outlook: '📨', smtp: '📬', sendgrid: '📤', ses: '📡', godaddy: '🌐' }
 
-export default function SendEmailModal({ sal, body, recipientEmail, emailAccounts, onClose }) {
+export default function SendEmailModal({ sal, body, recipientEmail, emailAccounts, onClose, initialSendFrom = 'system', systemEmail = '' }) {
   const { navigate, refreshLetters } = useApp()
 
+  const [sendFrom, setSendFrom]       = useState(initialSendFrom)
   const [selectedEmail, setSelectedEmail] = useState(emailAccounts[0]?.emailAddress || '')
-  const [to, setTo] = useState(recipientEmail || '')
-  const [subject, setSubject] = useState(sal ? `Dear ${sal}` : 'A letter from my heart')
-  const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState('')
+  const [to, setTo]                   = useState(recipientEmail || '')
+  const [subject, setSubject]         = useState(sal ? `Dear ${sal}` : 'A letter from my heart')
+  const [sending, setSending]         = useState(false)
+  const [sent, setSent]               = useState(false)
+  const [error, setError]             = useState('')
 
-  // Auto-select first account if none selected yet (handles async context load)
   useEffect(() => {
     if (emailAccounts.length > 0 && !selectedEmail) {
       setSelectedEmail(emailAccounts[0].emailAddress)
@@ -22,15 +22,13 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
   }, [emailAccounts])
 
   const selectedAccount = emailAccounts.find(a => a.emailAddress === selectedEmail)
-
-  console.log('Selected Email:', selectedEmail)
-  console.log('Accounts:', emailAccounts)
+  const usingSystem     = sendFrom === 'system'
 
   async function handleSend() {
     setError('')
-    if (!selectedEmail) { setError('Select an email account to send from.'); return }
     if (!to.trim() || !to.includes('@')) { setError('Enter a valid recipient email address.'); return }
     if (!body.trim()) { setError('Your letter body is empty — write something first.'); return }
+    if (!usingSystem && !selectedEmail) { setError('Select a connected email account.'); return }
 
     const message = sal ? `Dear ${sal},\n\n${body}` : body
 
@@ -39,7 +37,8 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
       const res = await apiFetch('/api/send-email', {
         method: 'POST',
         body: JSON.stringify({
-          from: selectedEmail,
+          useSystem: usingSystem,
+          from: usingSystem ? undefined : selectedEmail,
           to: to.trim(),
           subject: subject.trim() || 'A letter from my heart',
           message,
@@ -97,7 +96,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
               <div className="text-[40px] mb-3 animate-float-up">💌</div>
               <div className="font-lora text-[22px] font-medium text-ink mb-2">Letter sent!</div>
               <div className="text-[13px] text-ink-muted font-light mb-1">Delivered to <strong>{to}</strong></div>
-              <div className="text-[12px] text-ink-muted font-light mb-5">via {selectedEmail}</div>
+              <div className="text-[12px] text-ink-muted font-light mb-5">via {usingSystem ? (systemEmail || 'system email') : selectedEmail}</div>
               <button
                 onClick={onClose}
                 className="px-6 py-[10px] rounded-pill bg-ink text-cream text-[13px] font-medium font-sans border-none cursor-pointer transition-all duration-200 hover:bg-tc"
@@ -108,33 +107,63 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
           ) : (
             /* Form */
             <div className="flex flex-col gap-3">
-              {/* From — account selector */}
-              <label className="flex flex-col gap-1">
+              {/* Send From toggle */}
+              <div className="flex flex-col gap-1">
                 <span className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted">Send From</span>
-                <div className="relative">
-                  <select
-                    value={selectedEmail}
-                    onChange={e => setSelectedEmail(e.target.value)}
-                    className="w-full px-3 py-[10px] pl-8 rounded-[8px] font-sans text-[13px] text-ink outline-none cursor-pointer appearance-none"
-                    style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.15)' }}
-                  >
-                    {emailAccounts.map(acc => (
-                      <option key={acc._id || acc.emailAddress} value={acc.emailAddress}>
-                        {acc.emailAddress} ({acc.provider})
-                      </option>
-                    ))}
-                  </select>
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[14px] pointer-events-none">
-                    {PROVIDER_ICON[selectedAccount?.provider] || '📬'}
-                  </span>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'system', icon: '📮', label: 'System Email' },
+                    { id: 'custom', icon: '✉️', label: 'My Email' },
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => { if (opt.id === 'custom' && emailAccounts.length === 0) return; setSendFrom(opt.id) }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-[9px] rounded-[8px] font-sans text-[12px] font-medium border-none cursor-pointer transition-all duration-150"
+                      style={sendFrom === opt.id
+                        ? { background: 'var(--ink)', color: 'var(--cream)' }
+                        : { background: 'var(--paper)', color: opt.id === 'custom' && emailAccounts.length === 0 ? 'var(--ink-muted)' : 'var(--ink-soft)', border: '0.5px solid rgba(28,26,23,0.12)', opacity: opt.id === 'custom' && emailAccounts.length === 0 ? 0.5 : 1 }
+                      }
+                    >
+                      <span>{opt.icon}</span> {opt.label}
+                    </button>
+                  ))}
                 </div>
-                {selectedAccount && (
-                  <div className="flex items-center gap-1.5 ml-1">
-                    <span className="w-[5px] h-[5px] rounded-full bg-sage" />
-                    <span className="text-[10px] text-ink-muted">Connected · {selectedAccount.smtp?.host || selectedAccount.provider}</span>
+                <div className="text-[10px] text-ink-muted ml-0.5">
+                  {usingSystem
+                    ? `Sending via platform: ${systemEmail || 'system@letterfromheart.com'}`
+                    : emailAccounts.length === 0 ? 'No account connected — go to Connections' : null}
+                </div>
+              </div>
+
+              {/* Custom account selector — only when "My Email" selected */}
+              {!usingSystem && emailAccounts.length > 0 && (
+                <label className="flex flex-col gap-1">
+                  <span className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted">Account</span>
+                  <div className="relative">
+                    <select
+                      value={selectedEmail}
+                      onChange={e => setSelectedEmail(e.target.value)}
+                      className="w-full px-3 py-[10px] pl-8 rounded-[8px] font-sans text-[13px] text-ink outline-none cursor-pointer appearance-none"
+                      style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.15)' }}
+                    >
+                      {emailAccounts.map(acc => (
+                        <option key={acc._id || acc.emailAddress} value={acc.emailAddress}>
+                          {acc.emailAddress} ({acc.provider})
+                        </option>
+                      ))}
+                    </select>
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[14px] pointer-events-none">
+                      {PROVIDER_ICON[selectedAccount?.provider] || '📬'}
+                    </span>
                   </div>
-                )}
-              </label>
+                  {selectedAccount && (
+                    <div className="flex items-center gap-1.5 ml-1">
+                      <span className="w-[5px] h-[5px] rounded-full bg-sage" />
+                      <span className="text-[10px] text-ink-muted">Connected · {selectedAccount.smtp?.host || selectedAccount.provider}</span>
+                    </div>
+                  )}
+                </label>
+              )}
 
               {/* To */}
               <label className="flex flex-col gap-1">

@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 
 const ROLE_META = {
-  seeker:   { label: 'Seeker',   color: 'var(--tc)',     bg: 'rgba(196,99,58,0.1)',     border: 'rgba(196,99,58,0.25)' },
-  listener: { label: 'Listener', color: 'var(--sage)',   bg: 'rgba(122,158,142,0.1)',   border: 'rgba(122,158,142,0.25)' },
-  both:     { label: 'Both',     color: 'var(--purple)', bg: 'rgba(139,126,200,0.1)',   border: 'rgba(139,126,200,0.25)' },
+  seeker:   { label: 'Seeker',            color: 'var(--tc)',     bg: 'rgba(196,99,58,0.1)',   border: 'rgba(196,99,58,0.25)'   },
+  listener: { label: 'Listener',          color: 'var(--sage)',   bg: 'rgba(122,158,142,0.1)', border: 'rgba(122,158,142,0.25)' },
+  both:     { label: 'Seeker + Listener', color: 'var(--purple)', bg: 'rgba(139,126,200,0.1)', border: 'rgba(139,126,200,0.25)' },
 }
 
 export default function Navbar() {
