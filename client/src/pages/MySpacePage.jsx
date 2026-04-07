@@ -168,15 +168,18 @@ function Tab({ label, count, active, onClick }) {
       onClick={onClick}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 8,
-        padding: '9px 18px', borderRadius: 10, border: `1px solid ${active ? 'var(--tc)' : BD}`,
-        background: active ? '#fdf0ee' : '#fff', color: active ? 'var(--tc)' : 'var(--ink-muted)',
+        padding: '10px 20px', borderRadius: 10,
+        border: `1px solid ${active ? 'rgba(196,99,58,0.35)' : 'rgba(28,26,23,0.1)'}`,
+        background: active ? 'rgba(196,99,58,0.06)' : 'var(--paper)',
+        color: active ? 'var(--tc)' : 'var(--ink-soft)',
         fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: active ? 600 : 400,
-        cursor: 'pointer', transition: 'all 0.15s',
+        cursor: 'pointer', transition: 'all 0.18s',
+        boxShadow: active ? '0 2px 10px rgba(196,99,58,0.1)' : 'none',
       }}
     >
       {label}
       {count != null && (
-        <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, fontWeight: 600, background: active ? 'rgba(196,99,58,0.12)' : 'rgba(26,18,8,0.06)', color: active ? 'var(--tc)' : 'var(--ink-muted)' }}>
+        <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 20, fontWeight: 600, background: active ? 'rgba(196,99,58,0.12)' : 'rgba(26,18,8,0.05)', color: active ? 'var(--tc)' : 'var(--ink-muted)' }}>
           {count}
         </span>
       )}
@@ -264,39 +267,40 @@ export default function MySpacePage() {
   const ROLE_COLOR = { seeker: 'var(--tc)', listener: 'var(--sage)', both: 'var(--purple)' }
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
 
       {/* ── Header ──────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 44, flexWrap: 'wrap' }}>
         <div>
           <div style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
-            Central hub
+            Your space
           </div>
           <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
-            <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #fdf0e4, #fdf6f0)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>✦</span>
             My Space
           </h1>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
-            Everything you've written, read, and held. Your complete letter history in one place.
+          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 400 }}>
+            Everything you've written, read, and held — all in one quiet place.
           </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: 12 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, padding: '6px 14px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: `${ROLE_COLOR[userRole]}15`, color: ROLE_COLOR[userRole], border: `1px solid ${ROLE_COLOR[userRole]}40` }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: ROLE_COLOR[userRole] }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, marginTop: 8 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10.5, padding: '6px 14px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: `${ROLE_COLOR[userRole]}15`, color: ROLE_COLOR[userRole], border: `1px solid ${ROLE_COLOR[userRole]}40` }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: ROLE_COLOR[userRole] }} />
             {ROLE_LABEL[userRole]}
           </span>
           <button
             onClick={() => navigate('write')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 20px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(139,58,42,0.25)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 22px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,99,58,0.22)', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 22px rgba(196,99,58,0.28)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.22)' }}
           >
-            ✦ Write a letter
+            Write a letter
           </button>
         </div>
       </div>
 
       {/* ── Tabs ────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 32 }}>
         {TABS.map(t => (
           <Tab key={t.id} label={t.label} count={t.count} active={activeTab === t.id} onClick={() => setActiveTab(t.id)} />
         ))}
@@ -304,26 +308,27 @@ export default function MySpacePage() {
 
       {/* ── Count row ───────────────────────────────────────────────── */}
       {visibleLetters.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <span style={{ background: '#EDE5D4', color: 'var(--ink-soft)', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 500 }}>
-            {visibleLetters.length} letter{visibleLetters.length !== 1 ? 's' : ''}
+        <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ background: 'rgba(28,26,23,0.06)', color: 'var(--ink-soft)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>
+            {visibleLetters.length} {visibleLetters.length === 1 ? 'letter' : 'letters'}
           </span>
+          <span style={{ fontSize: 12.5, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>sorted by newest</span>
         </div>
       )}
 
       {/* ── Content ─────────────────────────────────────────────────── */}
       {visibleLetters.length === 0 ? (
         activeTab === 'personal' ? (
-          <EmptyState icon="🪞" title="No personal letters yet" subtitle="Write to yourself — your past self, your future self, or simply release what you carry." cta="✦ Write your first letter" onCta={() => navigate('write')} />
+          <EmptyState icon="🪞" title="Nothing written yet" subtitle="Write to yourself — your past self, your future self. Even one sentence matters." cta="Write your first letter" onCta={() => navigate('write')} />
         ) : activeTab === 'stranger' ? (
-          <EmptyState icon="🌍" title="No caring stranger letters yet" subtitle="Share something with the world. Your words might be exactly what a stranger needs." cta="✦ Share with a stranger" onCta={() => navigate('write')} />
+          <EmptyState icon="🌍" title="No stranger letters yet" subtitle="Share something with the world. Your words might be exactly what someone needs today." cta="Write to a stranger" onCta={() => navigate('write')} />
         ) : activeTab === 'read' ? (
-          <EmptyState icon="🎧" title="No letters read yet" subtitle="Head to the listener feed to read letters from strangers with care." cta="Go to Listener Read →" onCta={() => navigate('listenerread')} />
+          <EmptyState icon="🎧" title="No letters read yet" subtitle="Someone out there is waiting to be heard. Go to the listener feed and be present." cta="Go to Listener Read" onCta={() => navigate('listenerread')} />
         ) : (
-          <EmptyState icon="✦" title="Your space is empty" subtitle="Start by writing a letter — to yourself, to a stranger, or to someone you know." cta="✦ Write a letter" onCta={() => navigate('write')} />
+          <EmptyState icon="✦" title="Your space is empty" subtitle="Start by writing a letter — to yourself, to a stranger, or to someone you love." cta="Write your first letter" onCta={() => navigate('write')} />
         )
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {visibleLetters.map(letter => {
             const cfg = CARD_CONFIG[letter._cardType] || CARD_CONFIG.personal
             return (

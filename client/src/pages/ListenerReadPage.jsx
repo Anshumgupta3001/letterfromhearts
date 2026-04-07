@@ -132,7 +132,7 @@ export default function ListenerReadPage() {
 
   if (!canReadFeed) {
     return (
-      <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+      <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>🔒</div>
           <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>This space is for listeners</div>
@@ -151,7 +151,7 @@ export default function ListenerReadPage() {
   const read   = letters.filter(l => l.hasRead)
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
@@ -196,10 +196,10 @@ export default function ListenerReadPage() {
       {/* ── Content ─────────────────────────────────────────────────── */}
       {letters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
-          <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>📭</div>
+          <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.35 }}>📭</div>
           <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>The feed is quiet for now</div>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7 }}>
-            Check back soon. Someone is writing right now.
+          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 280, margin: '0 auto' }}>
+            Someone out there is writing right now. Check back soon.
           </p>
         </div>
       ) : (

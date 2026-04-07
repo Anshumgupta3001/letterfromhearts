@@ -212,9 +212,80 @@ input:focus, textarea:focus, select:focus {
 
 /* ── PAGE FADE IN ── */
 @keyframes pageFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .page-enter {
-  animation: pageFadeIn 0.45s ease both;
+  animation: pageFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── SECTION FADE IN (staggered children) ── */
+@keyframes sectionFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section-enter {
+  animation: sectionFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── STAT CARD HOVER ── */
+.stat-card {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.18s ease;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 42px rgba(28,26,23,0.1);
+}
+
+/* ── NAV GROUP LABEL ── */
+.nav-group-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.25);
+  padding: 0 10px 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+/* ── INTENTION BANNER ── */
+.intention-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: rgba(139,126,200,0.06);
+  border: 1px solid rgba(139,126,200,0.18);
+  margin-bottom: 32px;
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  padding-bottom: 36px;
+}
+.page-header-eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-header-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+.page-header-sub {
+  font-family: Lora, serif;
+  font-style: italic;
+  color: var(--ink-soft);
+  line-height: 1.65;
+  max-width: 440px;
 }

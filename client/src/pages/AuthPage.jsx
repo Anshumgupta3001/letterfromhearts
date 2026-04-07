@@ -6,19 +6,19 @@ const ROLES = [
     id:    'seeker',
     icon:  '✍️',
     label: 'Seeker',
-    desc:  'I want to write letters and share what I carry.',
+    desc:  'I want to write letters — to myself, a stranger, or someone I know.',
   },
   {
     id:    'listener',
     icon:  '👂',
     label: 'Listener',
-    desc:  'I want to read letters and be present for others.',
+    desc:  'I want to read letters and show up for people who need to be heard.',
   },
   {
     id:    'both',
-    icon:  '🔄',
-    label: 'Both',
-    desc:  'I want to write and read — give and receive.',
+    icon:  '🌿',
+    label: 'Seeker + Listener',
+    desc:  'I want to write and listen — give words and receive them.',
   },
 ]
 

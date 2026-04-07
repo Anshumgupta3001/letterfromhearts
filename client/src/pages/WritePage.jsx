@@ -217,7 +217,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
 
   return (
     <div className="animate-fade-up">
-      <StepLabel n={3} title="Write your letter." subtitle="Take your time. There's no rush here." />
+      <StepLabel n={3} title="Write your letter." subtitle="Take your time. There's no right way to begin — just start." />
 
       {/* ── Mood indicator ─────────────────────────────────────────────── */}
       {mood && (
@@ -269,8 +269,8 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
           <textarea
             style={{
               width: '100%',
-              minHeight: 'clamp(280px, 40vh, 520px)',
-              fontFamily: 'Lora, serif', fontSize: 16, lineHeight: 2.1,
+              minHeight: 'clamp(320px, 45vh, 560px)',
+              fontFamily: 'Lora, serif', fontSize: 16, lineHeight: 2.15,
               color: 'var(--ink-soft)', background: 'transparent',
               border: 'none', outline: 'none', resize: 'none',
               display: 'block',
@@ -587,18 +587,23 @@ export default function WritePage() {
 
   if (step === 4) {
     return (
-      <div className="w-full px-6 md:px-10 lg:px-16 py-8">
+      <div className="w-full px-6 md:px-10 lg:px-16 py-10">
         <Step4 mode={mode} mood={mood} deliveryType={deliveryType} navigate={navigate} />
       </div>
     )
   }
 
+  // Writing step (step 3) uses a more comfortable, focused layout
+  const isWritingStep = step === 3
+
   return (
     <>
-      <div className="w-full px-6 md:px-10 lg:px-16 py-8">
+      <div className={`w-full px-6 md:px-10 lg:px-16 py-10 ${isWritingStep ? '' : ''}`}
+        style={isWritingStep ? { maxWidth: 800, margin: '0 auto' } : {}}
+      >
         <ProgressDots total={3} current={step} />
 
-        <div style={{ marginTop: 32 }}>
+        <div style={{ marginTop: 36 }}>
           {step === 1 && (
             <Step1
               mode={mode} setMode={setMode}

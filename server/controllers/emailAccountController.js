@@ -32,46 +32,93 @@ function safeAccount(doc) {
   return obj
 }
 
+// ── SMTP fallback retry logic ──────────────────────────────────────────────────
+// Build a list of configs to try in order, including alternative ports and
+// provider-specific alternative hosts (e.g. Zoho .in fallback).
+function buildSmtpConfigs(host, port, secure, username, password) {
+  const portNum    = Number(port)
+  const secureFlag = portNum === 465 ? true : !!secure
+  const altPort    = portNum === 587 ? 465 : 587
+  const altSecure  = altPort === 465
+
+  const auth = { user: username.trim(), pass: password }
+
+  const configs = [
+    // Primary: exactly what the user specified
+    { host: host.trim(), port: portNum, secure: secureFlag, auth },
+    // Alt port on the same host
+    { host: host.trim(), port: altPort, secure: altSecure, auth },
+  ]
+
+  // Zoho-specific: also try smtp.zoho.in (common in India)
+  if (host.trim().toLowerCase().includes('zoho.com')) {
+    configs.push({ host: 'smtp.zoho.in', port: portNum, secure: secureFlag, auth })
+    configs.push({ host: 'smtp.zoho.in', port: altPort, secure: altSecure, auth })
+  }
+
+  // Gmail-specific: also try port 465/SSL explicitly
+  if (host.trim().toLowerCase().includes('gmail.com') || host.trim().toLowerCase().includes('google.com')) {
+    configs.push({ host: 'smtp.gmail.com', port: 465, secure: true, auth })
+  }
+
+  return configs
+}
+
+// Try each config in order; return the first that verifies successfully.
+// Returns { transporter, cfg } on success, throws on all failures.
+async function verifyWithFallback(host, port, secure, username, password) {
+  const configs = buildSmtpConfigs(host, port, secure, username, password)
+  let lastErr
+
+  for (const cfg of configs) {
+    try {
+      const transporter = nodemailer.createTransport(cfg)
+      await transporter.verify()
+      return { transporter, cfg } // ✅ found working config
+    } catch (err) {
+      lastErr = err
+    }
+  }
+
+  // All attempts failed
+  throw new Error(
+    'Unable to connect. Please check your SMTP details or App Password.'
+  )
+}
+
 // POST /api/email-accounts/smtp
 export async function upsertSmtpAccount(req, res) {
   const { provider, emailAddress, host, port, secure, username, password, defaultFrom } = req.body
 
-  if (!host?.trim()) return res.status(400).json({ error: 'SMTP host is required.' })
-  if (!port || isNaN(Number(port))) return res.status(400).json({ error: 'SMTP port must be a number.' })
-  if (!username?.trim()) return res.status(400).json({ error: 'SMTP username is required.' })
-  if (!password) return res.status(400).json({ error: 'SMTP password is required.' })
-  if (!username.includes('@')) return res.status(400).json({ error: 'Username must be a valid email.' })
+  if (!host?.trim())                  return res.status(400).json({ error: 'SMTP host is required.' })
+  if (!port || isNaN(Number(port)))   return res.status(400).json({ error: 'SMTP port must be a number.' })
+  if (!username?.trim())              return res.status(400).json({ error: 'SMTP username is required.' })
+  if (!password)                      return res.status(400).json({ error: 'SMTP password is required.' })
+  if (!username.includes('@'))        return res.status(400).json({ error: 'Username must be a valid email.' })
 
-  const portNum = Number(port)
-  const secureFlag = portNum === 465 ? true : !!secure
-
-  // Verify SMTP before saving
-  const transporter = nodemailer.createTransport({
-    host: host.trim(),
-    port: portNum,
-    secure: secureFlag,
-    auth: { user: username.trim(), pass: password },
-  })
+  // Verify SMTP with fallback retry logic
+  let workingCfg
   try {
-    await transporter.verify()
+    const result = await verifyWithFallback(host, port, secure, username, password)
+    workingCfg = result.cfg
   } catch (err) {
-    return res.status(400).json({ error: `SMTP verification failed: ${err.message}` })
+    return res.status(400).json({ error: err.message })
   }
 
   const encPass = encrypt(password)
-  const userId = req.user._id
+  const userId  = req.user._id
 
   const account = await EmailAccount.findOneAndUpdate(
     { userId, emailAddress: (emailAddress || username).toLowerCase().trim() },
     {
       userId,
       emailAddress: (emailAddress || username).toLowerCase().trim(),
-      provider: provider || 'smtp',
-      status: 'connected',
+      provider:     provider || 'smtp',
+      status:       'connected',
       smtp: {
-        host: host.trim(),
-        port: portNum,
-        secure: secureFlag,
+        host:     workingCfg.host,          // save the WORKING host
+        port:     workingCfg.port,          // save the WORKING port
+        secure:   workingCfg.secure,        // save the WORKING secure flag
         username: username.trim(),
         password: encPass,
       },

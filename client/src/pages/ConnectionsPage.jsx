@@ -46,6 +46,7 @@ export default function ConnectionsPage() {
   const { emailAccounts, setEmailAccounts, refreshEmailAccounts, userEmailMode, updateAuthUser } = useApp()
 
   const [activeTab, setActiveTab]      = useState('accounts')
+  const [guideTab, setGuideTab]        = useState('gmail')
   const [preset, setPreset]            = useState('')
   const [host, setHost]                = useState('')
   const [port, setPort]                = useState('587')
@@ -127,16 +128,19 @@ export default function ConnectionsPage() {
   }
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 820, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter w-full px-6 md:px-10 lg:px-16" style={{ paddingTop: 52, paddingBottom: 72 }}>
       {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
 
       {/* ── Page header ──────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 36 }}>
-        <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, background: 'linear-gradient(135deg, #eef2ee, #f2f5ee)', borderRadius: 10, fontSize: 20, border: `1px solid ${BD}`, flexShrink: 0 }}>🔗</span>
+      <div style={{ marginBottom: 40 }}>
+        <div style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
+          Email settings
+        </div>
+        <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 12 }}>
           Connections
         </h1>
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 460, marginLeft: 0 }}>
+        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 440 }}>
           Choose how your letters travel — from your inbox, or ours. Either way, they arrive with care.
         </p>
       </div>
@@ -144,8 +148,8 @@ export default function ConnectionsPage() {
       {/* ── Tabs ─────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 0, borderBottom: `1.5px solid ${BD}`, marginBottom: 36 }}>
         {[
-          { id: 'accounts', label: 'Connected Accounts' },
-          { id: 'setup',    label: 'Email Setup'        },
+          { id: 'accounts', label: 'Connected' },
+          { id: 'setup',    label: 'Add Email' },
         ].map(t => (
           <button
             key={t.id}
@@ -476,33 +480,113 @@ export default function ConnectionsPage() {
               </ol>
             </div>
 
-            {/* Provider examples */}
-            <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <span style={{ fontSize: 16 }}>📌</span>
-                <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Provider Examples</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Provider setup guide — tabbed */}
+            <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden' }}>
+              {/* Tab bar */}
+              <div style={{ display: 'flex', borderBottom: `1px solid ${FT}` }}>
                 {[
-                  { name: 'Gmail', icon: '📧', host: 'smtp.gmail.com', port: '587', note: 'Use an App Password — not your account password' },
-                  { name: 'Outlook', icon: '📨', host: 'smtp.office365.com', port: '587', note: 'Works with Microsoft 365 accounts' },
-                  { name: 'Zoho Mail', icon: '📮', host: 'smtp.zoho.com', port: '587', note: 'Enable SMTP from Zoho account settings' },
-                ].map(p => (
-                  <div key={p.name} style={{ paddingBottom: 14, borderBottom: `1px solid ${FT}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                      <span style={{ fontSize: 14 }}>{p.icon}</span>
-                      <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>{p.name}</span>
-                    </div>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.7 }}>
-                      <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{p.host}</span></div>
-                      <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{p.port}</span></div>
-                    </div>
-                    <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-muted)', marginTop: 4, lineHeight: 1.5 }}>{p.note}</div>
-                  </div>
+                  { id: 'gmail',   label: '📧 Gmail' },
+                  { id: 'outlook', label: '📨 Outlook' },
+                  { id: 'zoho',    label: '📮 Zoho' },
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setGuideTab(t.id)}
+                    style={{
+                      flex: 1, padding: '9px 4px', border: 'none', background: 'transparent', cursor: 'pointer',
+                      fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, fontWeight: guideTab === t.id ? 600 : 400,
+                      color: guideTab === t.id ? 'var(--tc)' : 'var(--ink-muted)',
+                      borderBottom: guideTab === t.id ? '2px solid var(--tc)' : '2px solid transparent',
+                      marginBottom: '-1px', transition: 'color 0.15s, border-color 0.15s',
+                    }}
+                  >
+                    {t.label}
+                  </button>
                 ))}
-                <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
-                  Any SMTP provider works — GoDaddy, SendGrid, Amazon SES, and more.
-                </div>
+              </div>
+
+              {/* Tab content */}
+              <div style={{ padding: '18px 20px' }}>
+                {guideTab === 'gmail' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Gmail Setup</div>
+                    {[
+                      { n: 1, text: 'Go to your Google Account → Security' },
+                      { n: 2, text: 'Enable 2-Step Verification (if not already on)' },
+                      { n: 3, text: 'Search "App Passwords" in the search bar' },
+                      { n: 4, text: 'Create an app password → select "Mail"' },
+                      { n: 5, text: 'Copy the 16-char password and paste it above' },
+                    ].map(s => (
+                      <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
+                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
+                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
+                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
+                        <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.gmail.com</span></div>
+                        <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
+                        <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your App Password</span></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {guideTab === 'outlook' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Outlook / Microsoft 365</div>
+                    {[
+                      { n: 1, text: 'Go to account.microsoft.com → Security' },
+                      { n: 2, text: 'Enable two-step verification' },
+                      { n: 3, text: 'Go to "App passwords" and create one' },
+                      { n: 4, text: 'Use your full email as the username' },
+                      { n: 5, text: 'Paste the app password into the form above' },
+                    ].map(s => (
+                      <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
+                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
+                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
+                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
+                        <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.office365.com</span></div>
+                        <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
+                        <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your App Password</span></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {guideTab === 'zoho' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Zoho Mail</div>
+                    {[
+                      { n: 1, text: 'Log in to mail.zoho.com → Settings' },
+                      { n: 2, text: 'Go to Mail Accounts → SMTP' },
+                      { n: 3, text: 'Enable SMTP access for your account' },
+                      { n: 4, text: 'Use your Zoho email as username' },
+                      { n: 5, text: 'Use your Zoho password (or app-specific password)' },
+                    ].map(s => (
+                      <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
+                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
+                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
+                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
+                        <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.zoho.com</span></div>
+                        <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
+                        <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your Zoho password</span></div>
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-muted)', lineHeight: 1.5, marginTop: 2 }}>
+                      Indian accounts may use smtp.zoho.in — we try both automatically.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
