@@ -4,6 +4,7 @@ import EmailAccount from '../models/EmailAccount.js'
 import Letter from '../models/Letter.js'
 import config from '../config/index.js'
 import { decrypt } from './emailAccountController.js'
+import { checkContentSafety } from '../utils/moderation.js'
 
 // ── Tracking helpers ──────────────────────────────────────────────────────────
 
@@ -65,6 +66,12 @@ export async function sendEmail(req, res) {
 
   if (!to?.trim() || !to.includes('@')) return res.status(400).json({ error: 'Valid recipient email is required.' })
   if (!message?.trim())                 return res.status(400).json({ error: 'Message body is required.' })
+
+  try {
+    await checkContentSafety(message.trim())
+  } catch {
+    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+  }
 
   const trackingId = generateTrackingId(userId.toString())
   const html       = buildEmailHtml(message.trim(), trackingId)

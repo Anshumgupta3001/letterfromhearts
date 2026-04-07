@@ -196,7 +196,7 @@ function Step2({ mood, setMood, onBack, onNext }) {
 
 // ── Step 3 ────────────────────────────────────────────────────────────────────
 function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliveryType, setDeliveryType, saving, saveError, onSendEmail, hasEmailAccounts, emailMode, systemEmail }) {
-  const [signoff, setSignoff] = useState('With love,')
+  const [signoff, setSignoff] = useState('With')
   const [sig, setSig] = useState('')
   const [showCrisis, setShowCrisis] = useState(false)
   const [sendFrom, setSendFrom] = useState('system')
@@ -269,7 +269,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
           <textarea
             style={{
               width: '100%',
-              minHeight: 'clamp(320px, 45vh, 560px)',
+              minHeight: 'clamp(350px, 50vh, 600px)',
               fontFamily: 'Lora, serif', fontSize: 16, lineHeight: 2.15,
               color: 'var(--ink-soft)', background: 'transparent',
               border: 'none', outline: 'none', resize: 'none',
@@ -289,6 +289,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
                 border: 'none', borderBottom: '1px solid rgba(28,26,23,0.1)',
                 outline: 'none', width: 200, display: 'block', paddingBottom: 3,
               }}
+              placeholder="With, Regards, Yours…"
               value={signoff}
               onChange={e => setSignoff(e.target.value)}
             />
@@ -598,9 +599,7 @@ export default function WritePage() {
 
   return (
     <>
-      <div className={`w-full px-6 md:px-10 lg:px-16 py-10 ${isWritingStep ? '' : ''}`}
-        style={isWritingStep ? { maxWidth: 800, margin: '0 auto' } : {}}
-      >
+      <div className="w-full px-6 md:px-10 lg:px-16 py-10">
         <ProgressDots total={3} current={step} />
 
         <div style={{ marginTop: 36 }}>
