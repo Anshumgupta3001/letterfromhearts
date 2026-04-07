@@ -243,27 +243,94 @@ export default function ConnectionsPage() {
 
       {/* ── Add Account Modal ────────────────────────────────────────── */}
       {modalOpen && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center" style={{ background: 'rgba(26,18,8,0.45)', backdropFilter: 'blur(4px)' }} onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
-          <div className="w-full max-w-[500px] mx-4 overflow-hidden animate-fade-up" style={{ background: 'var(--cream)', border: `1px solid ${BD}`, borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,8,0.18)' }}>
-            <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: `1px solid ${FT}` }}>
-              <span className="font-playfair text-[18px] font-semibold" style={{ color: 'var(--ink)' }}>Add Email Account</span>
-              <button onClick={closeModal} className="w-7 h-7 flex items-center justify-center cursor-pointer bg-transparent border-none text-[20px]" style={{ color: 'var(--ink-muted)' }}>×</button>
+        <div
+          className="fixed inset-0 z-[500] flex items-center justify-center px-4"
+          style={{ background: 'rgba(12,8,4,0.15)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' }}
+          onClick={e => { if (e.target === e.currentTarget) closeModal() }}
+        >
+          <div
+            className="w-full max-w-[500px] animate-fade-up"
+            style={{
+              background: 'linear-gradient(150deg, #ffffff 0%, #faf7f2 100%)',
+              borderRadius: 22,
+              border: '1px solid rgba(255,255,255,0.95)',
+              boxShadow: '0 4px 24px rgba(28,18,8,0.06), 0 24px 64px rgba(28,18,8,0.13), inset 0 1px 0 rgba(255,255,255,1)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* ── Modal header */}
+            <div style={{
+              padding: '20px 24px 16px',
+              borderBottom: '1px solid rgba(224,212,188,0.45)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 100%)',
+            }}>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 5, fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>
+                  ✦ Email setup
+                </div>
+                <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, fontWeight: 700, color: 'var(--ink)', margin: 0, lineHeight: 1.2, letterSpacing: '-0.3px' }}>
+                  Add Email Account
+                </h2>
+              </div>
+              <button
+                onClick={closeModal}
+                style={{
+                  width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(28,26,23,0.06)', border: '1px solid rgba(28,26,23,0.07)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, color: 'var(--ink-muted)', transition: 'all 0.18s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.12)'; e.currentTarget.style.color = 'var(--ink)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.06)'; e.currentTarget.style.color = 'var(--ink-muted)' }}
+              >
+                ✕
+              </button>
             </div>
 
-            <div className="flex px-6 pt-4 gap-2">
+            {/* ── Tabs */}
+            <div style={{ padding: '14px 24px 0', display: 'flex', gap: 8 }}>
               {[{ id: 'smtp', label: '⚙️ SMTP' }, { id: 'gmail', label: '📧 Gmail OAuth' }].map(t => (
-                <button key={t.id} onClick={() => setTab(t.id)} className="px-4 py-[7px] rounded-pill text-[12px] font-medium font-sans cursor-pointer transition-all duration-200 border-none" style={tab === t.id ? { background: 'var(--ink)', color: 'var(--cream)' } : { background: 'var(--paper)', color: 'var(--ink-muted)', border: `1px solid ${BD}` }}>
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  style={{
+                    padding: '7px 16px', borderRadius: 100, fontSize: 12, fontWeight: 500,
+                    fontFamily: '"DM Sans", sans-serif', cursor: 'pointer', transition: 'all 0.18s',
+                    ...(tab === t.id
+                      ? { background: 'var(--ink)', color: '#fff', border: 'none', boxShadow: '0 2px 8px rgba(28,18,8,0.2)' }
+                      : { background: 'rgba(28,26,23,0.05)', color: 'var(--ink-muted)', border: `1px solid rgba(224,212,188,0.7)` }
+                    ),
+                  }}
+                >
                   {t.label}
                 </button>
               ))}
             </div>
 
-            <div className="px-6 py-5">
+            {/* ── Body */}
+            <div style={{ padding: '18px 24px 24px' }}>
               {tab === 'gmail' ? (
-                <div className="text-center py-4">
-                  <p className="font-lora italic text-[13px] mb-5 leading-[1.7]" style={{ color: 'var(--ink-soft)' }}>Connect your Gmail account securely via Google OAuth.<br/>You'll be redirected to Google to authorize access.</p>
-                  <button onClick={handleGmailConnect} className="inline-flex items-center gap-2 px-6 py-3 rounded-pill font-sans text-[13px] font-medium cursor-pointer border-none" style={{ background: 'var(--ink)', color: 'var(--cream)' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <div style={{ textAlign: 'center', padding: '24px 0 8px' }}>
+                  <div style={{ fontSize: 38, marginBottom: 14 }}>📧</div>
+                  <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.75, marginBottom: 24 }}>
+                    Connect your Gmail account securely via Google OAuth.<br />
+                    You'll be redirected to Google to authorize access.
+                  </p>
+                  <button
+                    onClick={handleGmailConnect}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 10,
+                      padding: '11px 24px', borderRadius: 100,
+                      background: '#fff', color: '#3c4043',
+                      border: '1.5px solid #dadce0',
+                      fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500,
+                      cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -273,46 +340,95 @@ export default function ConnectionsPage() {
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
-                  <label className="flex flex-col gap-1">
-                    <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Provider Preset</span>
-                    <select value={preset} onChange={e => applyPreset(e.target.value)} className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] outline-none cursor-pointer" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+
+                  {/* Provider Preset */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>Provider</span>
+                    <select
+                      value={preset}
+                      onChange={e => applyPreset(e.target.value)}
+                      style={{ width: '100%', padding: '10px 13px', borderRadius: 10, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)', outline: 'none', cursor: 'pointer', background: 'rgba(248,244,239,0.9)', border: '1.5px solid rgba(224,212,188,0.8)', transition: 'border-color 0.18s', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.5)'}
+                      onBlur={e => e.target.style.borderColor = 'rgba(224,212,188,0.8)'}
+                    >
                       {Object.entries(SMTP_PRESETS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                     </select>
                   </label>
-                  <div className="flex gap-2">
-                    <label className="flex flex-col gap-1 flex-1">
-                      <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>SMTP Host</span>
-                      <input value={host} onChange={e => setHost(e.target.value)} placeholder="smtp.example.com" className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] outline-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }} />
+
+                  {/* Host + Port row */}
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
+                      <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>SMTP Host</span>
+                      <input
+                        value={host} onChange={e => setHost(e.target.value)} placeholder="smtp.example.com"
+                        style={{ width: '100%', padding: '10px 13px', borderRadius: 10, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)', outline: 'none', background: 'rgba(248,244,239,0.9)', border: '1.5px solid rgba(224,212,188,0.8)', transition: 'border-color 0.18s', boxSizing: 'border-box' }}
+                        onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.5)'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(224,212,188,0.8)'}
+                      />
                     </label>
-                    <label className="flex flex-col gap-1 w-[90px]">
-                      <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Port</span>
-                      <input value={port} onChange={e => setPort(e.target.value)} placeholder="587" className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] outline-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }} />
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 5, width: 88 }}>
+                      <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>Port</span>
+                      <input
+                        value={port} onChange={e => setPort(e.target.value)} placeholder="587"
+                        style={{ width: '100%', padding: '10px 13px', borderRadius: 10, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)', outline: 'none', background: 'rgba(248,244,239,0.9)', border: '1.5px solid rgba(224,212,188,0.8)', transition: 'border-color 0.18s', boxSizing: 'border-box' }}
+                        onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.5)'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(224,212,188,0.8)'}
+                      />
                     </label>
                   </div>
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <div onClick={() => setSecure(s => !s)} className="toggle-track" style={{ background: secure ? 'var(--sage)' : 'rgba(28,26,23,0.15)' }}>
+
+                  {/* SSL toggle */}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
+                    <div onClick={() => setSecure(s => !s)} className="toggle-track" style={{ background: secure ? 'var(--sage)' : 'rgba(28,26,23,0.14)' }}>
                       <div className="toggle-thumb" style={{ transform: secure ? 'translateX(18px)' : 'translateX(2px)' }} />
                     </div>
-                    <span className="text-[12px] font-sans" style={{ color: 'var(--ink-soft)' }}>Use SSL/TLS (port 465)</span>
+                    <span style={{ fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)' }}>Use SSL/TLS (port 465)</span>
                   </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Username / Email</span>
-                    <input type="email" value={username} onChange={e => setUsername(e.target.value)} placeholder="you@example.com" className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] outline-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }} />
+
+                  {/* Username */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>Username / Email</span>
+                    <input
+                      type="email" value={username} onChange={e => setUsername(e.target.value)} placeholder="you@example.com"
+                      style={{ width: '100%', padding: '10px 13px', borderRadius: 10, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)', outline: 'none', background: 'rgba(248,244,239,0.9)', border: '1.5px solid rgba(224,212,188,0.8)', transition: 'border-color 0.18s', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.5)'}
+                      onBlur={e => e.target.style.borderColor = 'rgba(224,212,188,0.8)'}
+                    />
                   </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Password / App Password</span>
-                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••••••" className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] outline-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }} />
+
+                  {/* Password */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>Password / App Password</span>
+                    <input
+                      type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••••••"
+                      style={{ width: '100%', padding: '10px 13px', borderRadius: 10, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)', outline: 'none', background: 'rgba(248,244,239,0.9)', border: '1.5px solid rgba(224,212,188,0.8)', transition: 'border-color 0.18s', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.5)'}
+                      onBlur={e => e.target.style.borderColor = 'rgba(224,212,188,0.8)'}
+                    />
                   </label>
+
+                  {/* CTA */}
                   <button
                     onClick={handleConnectSmtp}
                     disabled={connecting}
-                    className="mt-1 w-full py-[11px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                    style={{ background: connecting ? 'rgba(28,26,23,0.5)' : 'var(--ink)', color: 'var(--cream)' }}
+                    style={{
+                      marginTop: 4, width: '100%', padding: '13px 0', borderRadius: 100, border: 'none',
+                      cursor: connecting ? 'not-allowed' : 'pointer',
+                      fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 600, color: '#fff',
+                      background: connecting ? 'rgba(28,26,23,0.35)' : 'linear-gradient(135deg, #1c1a17 0%, #3d3020 100%)',
+                      boxShadow: connecting ? 'none' : '0 4px 18px rgba(28,18,8,0.22)',
+                      opacity: connecting ? 0.75 : 1,
+                      transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    }}
+                    onMouseEnter={e => { if (!connecting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(28,18,8,0.28)' }}}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = connecting ? 'none' : '0 4px 18px rgba(28,18,8,0.22)' }}
                   >
                     {connecting && <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>}
-                    {connecting ? 'Verifying & Connecting…' : 'Connect SMTP'}
+                    {connecting ? 'Verifying & Connecting…' : '✦ Connect SMTP Account'}
                   </button>
+
                 </div>
               )}
             </div>
@@ -322,15 +438,45 @@ export default function ConnectionsPage() {
 
       {/* ── Delete confirm ───────────────────────────────────────────── */}
       {deleteId && (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center" style={{ background: 'rgba(26,18,8,0.5)', backdropFilter: 'blur(4px)' }}>
-          <div className="w-full max-w-[380px] mx-4 overflow-hidden animate-fade-up" style={{ background: 'var(--cream)', border: `1px solid ${BD}`, borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,8,0.18)' }}>
-            <div className="px-6 py-6 text-center">
-              <div className="text-[32px] mb-3">🗑️</div>
-              <div className="font-playfair text-[18px] font-semibold mb-2" style={{ color: 'var(--ink)' }}>Remove account?</div>
-              <div className="text-[13px] font-light mb-6 leading-[1.6]" style={{ color: 'var(--ink-muted)' }}>This email account will be disconnected. You can reconnect any time.</div>
-              <div className="flex gap-2 justify-center">
-                <button onClick={() => setDeleteId(null)} className="px-5 py-[9px] rounded-pill font-sans text-[13px] cursor-pointer bg-transparent" style={{ color: 'var(--ink-muted)', border: `1px solid ${BD}` }}>Cancel</button>
-                <button onClick={() => handleDelete(deleteId)} disabled={deleting} className="px-5 py-[9px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50" style={{ background: 'var(--tc)', color: '#fff' }}>
+        <div
+          className="fixed inset-0 z-[600] flex items-center justify-center px-4"
+          style={{ background: 'rgba(12,8,4,0.15)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' }}
+          onClick={e => { if (e.target === e.currentTarget) setDeleteId(null) }}
+        >
+          <div
+            className="w-full max-w-[360px] animate-fade-up"
+            style={{
+              background: 'linear-gradient(150deg, #ffffff 0%, #faf7f2 100%)',
+              borderRadius: 22,
+              border: '1px solid rgba(255,255,255,0.95)',
+              boxShadow: '0 4px 24px rgba(28,18,8,0.06), 0 24px 64px rgba(28,18,8,0.13), inset 0 1px 0 rgba(255,255,255,1)',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ padding: '32px 28px 28px', textAlign: 'center' }}>
+              <div style={{ fontSize: 36, marginBottom: 14 }}>🗑️</div>
+              <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, fontWeight: 700, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.3px' }}>
+                Remove account?
+              </h3>
+              <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 24 }}>
+                This email account will be disconnected.<br />You can reconnect any time.
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                <button
+                  onClick={() => setDeleteId(null)}
+                  style={{ padding: '10px 22px', borderRadius: 100, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: 'var(--ink-muted)', border: `1.5px solid rgba(224,212,188,0.9)`, transition: 'all 0.18s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.05)'; e.currentTarget.style.color = 'var(--ink)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-muted)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteId)}
+                  disabled={deleting}
+                  style={{ padding: '10px 22px', borderRadius: 100, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, cursor: deleting ? 'not-allowed' : 'pointer', border: 'none', background: 'linear-gradient(135deg, #c4633a, #a84d28)', color: '#fff', boxShadow: '0 4px 14px rgba(196,99,58,0.3)', opacity: deleting ? 0.6 : 1, transition: 'all 0.18s' }}
+                  onMouseEnter={e => { if (!deleting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(196,99,58,0.38)' }}}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.3)' }}
+                >
                   {deleting ? 'Removing…' : 'Yes, Remove'}
                 </button>
               </div>

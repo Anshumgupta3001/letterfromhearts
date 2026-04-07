@@ -32,9 +32,9 @@ export default function LetterDrawer() {
         onClick={closeLetterPanel}
         style={{
           position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(22,16,8,0.32)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
+          background: 'rgba(0,0,0,0.2)',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)',
           opacity: open ? 1 : 0,
           pointerEvents: open ? 'auto' : 'none',
           transition: 'opacity 0.3s ease',
@@ -45,9 +45,9 @@ export default function LetterDrawer() {
       <div
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 401,
-          width: 'min(580px, 100vw)',
+          width: 'min(600px, 100vw)',
           background: '#FDFAF5',
-          boxShadow: '-24px 0 80px rgba(22,16,8,0.16)',
+          boxShadow: '-24px 0 80px rgba(22,16,8,0.12)',
           display: 'flex', flexDirection: 'column',
           overflowX: 'hidden',
           transform: open ? 'translateX(0)' : 'translateX(100%)',
@@ -57,9 +57,9 @@ export default function LetterDrawer() {
         {/* ── Panel header ──────────────────────────────────────────────── */}
         <div style={{
           padding: '16px 24px',
-          borderBottom: '1px solid rgba(28,26,23,0.08)',
+          borderBottom: '1px solid rgba(28,26,23,0.07)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-          flexShrink: 0, background: '#FDFAF5',
+          flexShrink: 0, background: '#fffaf5',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
             {letter && (
@@ -93,30 +93,32 @@ export default function LetterDrawer() {
             onClick={closeLetterPanel}
             style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: 'rgba(28,26,23,0.07)', border: 'none',
+              background: 'rgba(28,26,23,0.06)', border: 'none',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 18, color: 'var(--ink-soft)', flexShrink: 0,
-              transition: 'background 0.15s',
+              fontSize: 16, color: 'var(--ink-muted)', flexShrink: 0,
+              transition: 'background 0.2s, color 0.2s',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.13)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(28,26,23,0.07)'}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.12)'; e.currentTarget.style.color = 'var(--ink)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.06)'; e.currentTarget.style.color = 'var(--ink-muted)' }}
           >
-            ×
+            ✕
           </button>
         </div>
 
         {/* ── Letter body ───────────────────────────────────────────────── */}
         {letter && (
-          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '0 24px 48px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '0 20px 56px' }}>
+            {/* Centered content wrapper */}
+            <div style={{ maxWidth: 520, margin: '0 auto' }}>
 
             {/* Paper card */}
             <div style={{
-              background: '#fff',
-              borderRadius: '0 0 16px 16px',
-              boxShadow: '0 4px 24px rgba(28,26,23,0.06)',
-              border: '1px solid rgba(28,26,23,0.07)',
+              background: '#fffaf5',
+              borderRadius: '0 0 20px 20px',
+              boxShadow: '0 8px 32px rgba(28,26,23,0.08), 0 2px 8px rgba(28,26,23,0.04)',
+              border: '1px solid rgba(28,26,23,0.08)',
               borderTop: 'none',
-              padding: 'clamp(28px, 5vw, 48px) clamp(24px, 5vw, 48px)',
+              padding: 'clamp(28px, 5vw, 48px) clamp(24px, 5vw, 44px)',
               position: 'relative',
               overflow: 'hidden',
             }}>
@@ -181,6 +183,7 @@ export default function LetterDrawer() {
                 </div>
               </div>
             </div>
+            </div>{/* end centering wrapper */}
           </div>
         )}
 
