@@ -322,7 +322,7 @@ export default function ConnectionsPage() {
       {/* TAB 2 — EMAIL SETUP                                           */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activeTab === 'setup' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,340px)', gap: 28, alignItems: 'start' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-7 items-start">
 
           {/* ── Form column ────────────────────────────────────────── */}
           <section>

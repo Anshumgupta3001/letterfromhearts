@@ -85,14 +85,14 @@ function SentCard({ letter }) {
       </div>
 
       {/* Card footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 28px 14px 32px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, padding: '14px 28px 14px 32px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: 'var(--ink-muted)' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
             <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
           {date}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+        <div style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
           From: {letter.fromEmail}
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function SentLettersPage() {
   useEffect(() => { refreshLetters() }, [refreshLetters])
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
+    <main className="page-enter w-full px-5 sm:px-10 md:px-16" style={{ paddingTop: 56, paddingBottom: 80 }}>
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>

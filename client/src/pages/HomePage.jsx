@@ -207,8 +207,9 @@ export default function HomePage() {
             onClick={() => navigate('write')}
             style={{
               marginBottom: 48, animationDelay: '0.28s',
-              background: 'var(--ink)', borderRadius: 14, padding: '32px 36px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
+              background: 'var(--ink)', borderRadius: 14, padding: '28px 32px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
+              flexWrap: 'wrap',
               cursor: 'pointer', overflow: 'hidden', position: 'relative',
               transform: ctaHov ? 'scale(1.005)' : 'scale(1)', transition: 'transform 0.2s',
             }}
