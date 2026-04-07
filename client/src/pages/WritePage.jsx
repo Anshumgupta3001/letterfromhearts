@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 import ProgressDots from '../components/ProgressDots'
@@ -33,7 +33,7 @@ function StepLabel({ n, title, subtitle }) {
 }
 
 // ── Step 1 ────────────────────────────────────────────────────────────────────
-function Step1({ mode, setMode, email, setEmail, onNext, canWriteStranger }) {
+function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStranger }) {
   const canProceed = mode && (mode !== 'known' || email.includes('@'))
 
   const MODES = [
@@ -113,7 +113,15 @@ function Step1({ mode, setMode, email, setEmail, onNext, canWriteStranger }) {
         />
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <button
+          onClick={onBack}
+          style={{ padding: '12px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)', fontWeight: 500, background: 'transparent', border: '1px solid rgba(28,26,23,0.15)', cursor: 'pointer', transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-soft)'}
+        >
+          ← Back
+        </button>
         <button
           disabled={!canProceed}
           onClick={onNext}
@@ -187,10 +195,11 @@ function Step2({ mood, setMood, onBack, onNext }) {
 }
 
 // ── Step 3 ────────────────────────────────────────────────────────────────────
-function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliveryType, setDeliveryType, saving, saveError, onSendEmail, hasEmailAccounts, emailMode }) {
+function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliveryType, setDeliveryType, saving, saveError, onSendEmail, hasEmailAccounts, emailMode, systemEmail }) {
   const [signoff, setSignoff] = useState('With love,')
   const [sig, setSig] = useState('')
   const [showCrisis, setShowCrisis] = useState(false)
+  const [sendFrom, setSendFrom] = useState('system')
 
   const isSelf        = mode === 'self'
   const isStranger    = mode === 'stranger'
@@ -357,13 +366,51 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
         </div>
       )}
 
+      {/* ── Send From selector (only for "known" / direct send) ──────── */}
+      {isKnown && (
+        <div className="mt-5 rounded-xl p-5" style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)' }}>
+          <div style={{ fontSize: 10.5, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontWeight: 600, marginBottom: 12 }}>Send From</div>
+          <div className="flex flex-col gap-2">
+            {[
+              { id: 'system', icon: '📮', label: 'System Email', sub: systemEmail || 'Platform default — always available' },
+              { id: 'custom', icon: '✉️', label: 'My Email',     sub: hasEmailAccounts ? 'Use your connected account' : 'No account connected — go to Connections' },
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => { if (opt.id === 'custom' && !hasEmailAccounts) return; setSendFrom(opt.id) }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '11px 14px', borderRadius: 10, textAlign: 'left',
+                  border: sendFrom === opt.id ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.1)',
+                  background: sendFrom === opt.id ? 'rgba(196,99,58,0.05)' : 'var(--cream)',
+                  cursor: opt.id === 'custom' && !hasEmailAccounts ? 'default' : 'pointer',
+                  opacity: opt.id === 'custom' && !hasEmailAccounts ? 0.5 : 1,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: 18, flexShrink: 0 }}>{opt.icon}</span>
+                <div>
+                  <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: sendFrom === opt.id ? 600 : 400, color: sendFrom === opt.id ? 'var(--tc)' : 'var(--ink)' }}>{opt.label}</div>
+                  <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-muted)', marginTop: 2 }}>{opt.sub}</div>
+                </div>
+                {sendFrom === opt.id && (
+                  <span style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: 'var(--tc)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Action bar ──────────────────────────────────────────────────── */}
       <div className="mt-7 flex items-center gap-3 flex-wrap">
         <button
           onClick={onBack}
-          style={{ padding: '12px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-muted)', background: 'transparent', border: '1px solid rgba(28,26,23,0.12)', cursor: 'pointer', transition: 'color 0.15s', flexShrink: 0 }}
+          style={{ padding: '12px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)', fontWeight: 500, background: 'transparent', border: '1px solid rgba(28,26,23,0.15)', cursor: 'pointer', transition: 'color 0.15s', flexShrink: 0 }}
           onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-soft)'}
         >
           ← Back
         </button>
@@ -397,38 +444,14 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
             {saving ? 'Sharing…' : 'Share Letter'}
           </button>
         ) : (
-          <div className="flex items-center gap-2">
-            {isSystemEmail ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderRadius: 999, background: 'rgba(139,126,200,0.07)', border: '1px solid rgba(139,126,200,0.2)' }}>
-                <span style={{ fontSize: 13, color: 'var(--purple, #8B7EC8)' }}>📮 System Email</span>
-                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 20, background: 'rgba(139,126,200,0.15)', color: 'var(--purple, #8B7EC8)' }}>Soon</span>
-              </div>
-            ) : (
-              <button
-                onClick={onSendEmail}
-                style={{
-                  padding: '13px 22px', borderRadius: 999, fontSize: 13,
-                  fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
-                  background: hasEmailAccounts ? 'rgba(122,158,142,0.1)' : 'rgba(28,26,23,0.04)',
-                  color: hasEmailAccounts ? 'var(--sage)' : 'var(--ink-muted)',
-                  border: hasEmailAccounts ? '1px solid rgba(122,158,142,0.3)' : '1px solid rgba(28,26,23,0.1)',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = '' }}
-              >
-                Send via Email
-              </button>
-            )}
-            <button
-              onClick={onSend}
-              style={{ padding: '13px 28px', borderRadius: 999, fontSize: 14, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(196,99,58,0.25)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-            >
-              Send Letter →
-            </button>
-          </div>
+          <button
+            onClick={() => onSendEmail(sendFrom)}
+            style={{ padding: '13px 28px', borderRadius: 999, fontSize: 14, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(196,99,58,0.25)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            Send Letter →
+          </button>
         )}
       </div>
     </div>
@@ -520,10 +543,19 @@ export default function WritePage() {
   const [sal, setSal]                 = useState('')
   const [body, setBody]               = useState('')
   const [sendEmailOpen, setSendEmailOpen] = useState(false)
+  const [sendFrom, setSendFrom]       = useState('system')
   const [saving, setSaving]           = useState(false)
   const [saveError, setSaveError]     = useState('')
+  const [systemEmail, setSystemEmail] = useState('')
 
   const bodyRef = useRef('')
+
+  useEffect(() => {
+    apiFetch('/api/send-email/system-info')
+      .then(r => r.json())
+      .then(j => { if (j.success && j.email) setSystemEmail(j.email) })
+      .catch(() => {})
+  }, []) // eslint-disable-line
 
   async function handleSend() {
     if (mode === 'self' || mode === 'stranger') {
@@ -572,6 +604,7 @@ export default function WritePage() {
               mode={mode} setMode={setMode}
               email={email} setEmail={setEmail}
               onNext={() => setStep(2)}
+              onBack={() => navigate('home')}
               canWriteStranger={canWriteStranger}
             />
           )}
@@ -588,9 +621,10 @@ export default function WritePage() {
               mode={mode}
               deliveryType={deliveryType} setDeliveryType={setDeliveryType}
               saving={saving} saveError={saveError}
-              onSendEmail={() => setSendEmailOpen(true)}
+              onSendEmail={(from) => { setSendFrom(from); setSendEmailOpen(true) }}
               hasEmailAccounts={emailAccounts.length > 0}
               emailMode={userEmailMode}
+              systemEmail={systemEmail}
             />
           )}
         </div>
@@ -603,6 +637,8 @@ export default function WritePage() {
           recipientEmail={email}
           emailAccounts={emailAccounts}
           onClose={() => setSendEmailOpen(false)}
+          initialSendFrom={sendFrom}
+          systemEmail={systemEmail}
         />
       )}
     </>

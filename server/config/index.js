@@ -10,4 +10,8 @@ export default {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '30d',
   encryptionKey:   process.env.ENCRYPTION_KEY || 'letterfromheart_secret_key_32chr',
   trackingBaseUrl: process.env.TRACKING_BASE_URL || 'http://localhost:5000',
+  systemEmail:     process.env.SYSTEM_EMAIL || '',
+  systemEmailPass: process.env.SYSTEM_EMAIL_PASS || '',
+  systemEmailHost: process.env.SYSTEM_EMAIL_HOST || 'smtp.gmail.com',
+  systemEmailPort: Number(process.env.SYSTEM_EMAIL_PORT) || 587,
 }

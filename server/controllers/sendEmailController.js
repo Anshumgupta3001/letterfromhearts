@@ -46,46 +46,62 @@ function buildEmailHtml(message, trackingId) {
 
 // POST /api/send-email
 export async function sendEmail(req, res) {
-  const { from, to, subject, message } = req.body
+  const { from, to, subject, message, useSystem } = req.body
   const userId = req.user._id
 
-  if (!from?.trim())                   return res.status(400).json({ error: '"from" email is required.' })
   if (!to?.trim() || !to.includes('@')) return res.status(400).json({ error: 'Valid recipient email is required.' })
   if (!message?.trim())                return res.status(400).json({ error: 'Message body is required.' })
 
-  // Find the account that belongs to this user
-  const account = await EmailAccount.findOne({ userId, emailAddress: from.toLowerCase().trim() })
-  if (!account) {
-    return res.status(404).json({
-      error: `No connected account found for "${from}". Please connect it in Connections.`,
+  const trackingId = generateTrackingId(userId.toString())
+  const html       = buildEmailHtml(message.trim(), trackingId)
+
+  let transporter, fromEmail
+
+  if (useSystem) {
+    // ── Use platform system SMTP ─────────────────────────────────────────────
+    if (!config.systemEmail || !config.systemEmailPass) {
+      return res.status(500).json({ error: 'System email is not configured. Contact support.' })
+    }
+    fromEmail   = config.systemEmail
+    transporter = nodemailer.createTransport({
+      host:   config.systemEmailHost,
+      port:   config.systemEmailPort,
+      secure: false,
+      auth:   { user: config.systemEmail, pass: config.systemEmailPass },
+    })
+  } else {
+    // ── Use user's connected account ─────────────────────────────────────────
+    if (!from?.trim()) return res.status(400).json({ error: '"from" email is required when not using system email.' })
+
+    const account = await EmailAccount.findOne({ userId, emailAddress: from.toLowerCase().trim() })
+    if (!account) {
+      return res.status(404).json({
+        error: `No connected account found for "${from}". Please connect it in Connections.`,
+      })
+    }
+    if (!account.smtp?.password) {
+      return res.status(400).json({ error: 'Account has no SMTP credentials. Please reconnect.' })
+    }
+
+    let password
+    try {
+      password = decrypt(account.smtp.password)
+    } catch {
+      return res.status(500).json({ error: 'Failed to read credentials. Please reconnect this account.' })
+    }
+
+    fromEmail   = account.emailAddress
+    transporter = nodemailer.createTransport({
+      host:   account.smtp.host,
+      port:   account.smtp.port,
+      secure: account.smtp.secure,
+      auth:   { user: account.smtp.username, pass: password },
     })
   }
-  if (!account.smtp?.password) {
-    return res.status(400).json({ error: 'Account has no SMTP credentials. Please reconnect.' })
-  }
-
-  let password
-  try {
-    password = decrypt(account.smtp.password)
-  } catch {
-    return res.status(500).json({ error: 'Failed to read credentials. Please reconnect this account.' })
-  }
-
-  // Generate a unique tracking ID for this send
-  const trackingId = generateTrackingId(userId.toString())
-
-  const transporter = nodemailer.createTransport({
-    host:   account.smtp.host,
-    port:   account.smtp.port,
-    secure: account.smtp.secure,
-    auth:   { user: account.smtp.username, pass: password },
-  })
-
-  const html = buildEmailHtml(message.trim(), trackingId)
 
   try {
     await transporter.sendMail({
-      from:    account.defaultFrom,
+      from:    fromEmail,
       to:      to.trim(),
       subject: subject?.trim() || 'A letter from my heart',
       html,
@@ -94,11 +110,10 @@ export async function sendEmail(req, res) {
     return res.status(500).json({ error: `Failed to send: ${err.message}` })
   }
 
-  // Persist letter with tracking metadata
   const letter = await Letter.create({
     userId,
     type:      'sent',
-    fromEmail: account.emailAddress,
+    fromEmail,
     toEmail:   to.trim(),
     subject:   subject?.trim() || 'A letter from my heart',
     message:   message.trim(),
