@@ -108,7 +108,7 @@ export default function SentLettersPage() {
   useEffect(() => { refreshLetters() }, [refreshLetters])
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
@@ -148,13 +148,13 @@ export default function SentLettersPage() {
       {/* ── Content ─────────────────────────────────────────────────── */}
       {sentLetters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
-          <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>📭</div>
+          <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.35 }}>📭</div>
           <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>No letters sent yet</div>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 320, margin: '0 auto 28px' }}>
-            Write a letter and send it via your connected email. You'll see open and click tracking here.
+          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 300, margin: '0 auto 28px' }}>
+            Write a letter and send it to someone you care about. You'll know when they open it.
           </p>
-          <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--gold)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(200,148,58,0.25)' }}>
-            ✦ Write your first letter
+          <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--gold)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(200,148,58,0.25)', transition: 'all 0.2s' }}>
+            Write your first letter
           </button>
         </div>
       ) : (

@@ -217,7 +217,7 @@ export default function CaringStrangerPage() {
   // ── Seeker gate ──────────────────────────────────────────────────
   if (!canReadFeed) {
     return (
-      <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+      <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 48, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -250,7 +250,7 @@ export default function CaringStrangerPage() {
   }
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
@@ -303,14 +303,14 @@ export default function CaringStrangerPage() {
       {/* ── Content ─────────────────────────────────────────────────── */}
       {letters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
-          <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>🌿</div>
-          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>The feed is quiet right now</div>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 320, margin: '0 auto 28px' }}>
-            Be the first to share. Your words might be exactly what a stranger needs to read today.
+          <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.35 }}>🌿</div>
+          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Nothing here yet</div>
+          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 300, margin: '0 auto 28px' }}>
+            Be the first to share. Someone out there needs to read exactly what you've been carrying.
           </p>
           {canWrite && (
-            <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(90,112,96,0.25)' }}>
-              ✦ Write the first letter
+            <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(90,112,96,0.25)', transition: 'all 0.2s' }}>
+              Write the first letter
             </button>
           )}
         </div>

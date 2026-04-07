@@ -8,7 +8,6 @@ import { decrypt } from './emailAccountController.js'
 // ── Tracking helpers ──────────────────────────────────────────────────────────
 
 function generateTrackingId(userId) {
-  // userId + timestamp + random bytes → compact hex
   const rand = crypto.randomBytes(6).toString('hex')
   return `${userId}_${Date.now()}_${rand}`
 }
@@ -20,7 +19,6 @@ function generateTrackingPixel(trackingId) {
 
 function wrapLinksForClickTracking(html, trackingId) {
   const base = config.trackingBaseUrl
-  // Replace bare URLs not already inside an href/src attribute
   return html.replace(/(https?:\/\/[^\s<"']+)/g, (url) => {
     const redirectUrl = `${base}/api/tracking/click?tid=${encodeURIComponent(trackingId)}&url=${encodeURIComponent(url)}`
     return `<a href="${redirectUrl}" style="color:inherit;">${url}</a>`
@@ -28,10 +26,9 @@ function wrapLinksForClickTracking(html, trackingId) {
 }
 
 function buildEmailHtml(message, trackingId) {
-  // Convert plain newlines → <br> and wrap links, then append pixel
-  const withBreaks   = message.replace(/\n/g, '<br/>')
-  const withLinks    = wrapLinksForClickTracking(withBreaks, trackingId)
-  const pixel        = generateTrackingPixel(trackingId)
+  const withBreaks = message.replace(/\n/g, '<br/>')
+  const withLinks  = wrapLinksForClickTracking(withBreaks, trackingId)
+  const pixel      = generateTrackingPixel(trackingId)
 
   return `<div style="font-family:Georgia,serif;max-width:600px;line-height:1.9;color:#1c1a17;padding:48px 40px;">
   ${withLinks}
@@ -42,63 +39,79 @@ function buildEmailHtml(message, trackingId) {
 </div>`
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────────
+// ── System SMTP transporter factory ───────────────────────────────────────────
+function createSystemTransporter() {
+  return nodemailer.createTransport({
+    host:   config.systemEmailHost,
+    port:   config.systemEmailPort,
+    secure: config.systemEmailPort === 465,
+    auth:   { user: config.systemEmail, pass: config.systemEmailPass },
+  })
+}
 
+// ── Main handler ──────────────────────────────────────────────────────────────
 // POST /api/send-email
+//
+// Logic:
+//   1. If useSystem=true  → always use system SMTP (no account needed)
+//   2. If useSystem=false AND user has a valid connected account for `from` → use it
+//   3. If useSystem=false AND no valid account found → silently fall back to system SMTP
+//   4. If system SMTP is also not configured → return 500
+//
+// The user is NEVER blocked from sending.
 export async function sendEmail(req, res) {
   const { from, to, subject, message, useSystem } = req.body
   const userId = req.user._id
 
   if (!to?.trim() || !to.includes('@')) return res.status(400).json({ error: 'Valid recipient email is required.' })
-  if (!message?.trim())                return res.status(400).json({ error: 'Message body is required.' })
+  if (!message?.trim())                 return res.status(400).json({ error: 'Message body is required.' })
 
   const trackingId = generateTrackingId(userId.toString())
   const html       = buildEmailHtml(message.trim(), trackingId)
 
   let transporter, fromEmail
 
-  if (useSystem) {
-    // ── Use platform system SMTP ─────────────────────────────────────────────
-    if (!config.systemEmail || !config.systemEmailPass) {
-      return res.status(500).json({ error: 'System email is not configured. Contact support.' })
-    }
-    fromEmail   = config.systemEmail
-    transporter = nodemailer.createTransport({
-      host:   config.systemEmailHost,
-      port:   config.systemEmailPort,
-      secure: false,
-      auth:   { user: config.systemEmail, pass: config.systemEmailPass },
-    })
-  } else {
-    // ── Use user's connected account ─────────────────────────────────────────
-    if (!from?.trim()) return res.status(400).json({ error: '"from" email is required when not using system email.' })
+  // ── Decide which transport to use ────────────────────────────────────────
+  let useSystemFinal = Boolean(useSystem)
 
-    const account = await EmailAccount.findOne({ userId, emailAddress: from.toLowerCase().trim() })
-    if (!account) {
-      return res.status(404).json({
-        error: `No connected account found for "${from}". Please connect it in Connections.`,
-      })
-    }
-    if (!account.smtp?.password) {
-      return res.status(400).json({ error: 'Account has no SMTP credentials. Please reconnect.' })
-    }
-
-    let password
+  if (!useSystemFinal && from?.trim()) {
+    // Try to use the user's custom SMTP account
     try {
-      password = decrypt(account.smtp.password)
-    } catch {
-      return res.status(500).json({ error: 'Failed to read credentials. Please reconnect this account.' })
-    }
+      const account = await EmailAccount.findOne({ userId, emailAddress: from.toLowerCase().trim() })
 
-    fromEmail   = account.emailAddress
-    transporter = nodemailer.createTransport({
-      host:   account.smtp.host,
-      port:   account.smtp.port,
-      secure: account.smtp.secure,
-      auth:   { user: account.smtp.username, pass: password },
-    })
+      if (account && account.smtp?.password) {
+        const password = decrypt(account.smtp.password)
+        fromEmail   = account.emailAddress
+        transporter = nodemailer.createTransport({
+          host:   account.smtp.host,
+          port:   account.smtp.port,
+          secure: account.smtp.secure,
+          auth:   { user: account.smtp.username, pass: password },
+        })
+      } else {
+        // Account not found or credentials missing → fall back to system
+        useSystemFinal = true
+      }
+    } catch {
+      // Decryption or DB error → fall back to system
+      useSystemFinal = true
+    }
+  } else {
+    useSystemFinal = true
   }
 
+  // ── System SMTP (fallback or explicit) ───────────────────────────────────
+  if (useSystemFinal) {
+    if (!config.systemEmail || !config.systemEmailPass) {
+      return res.status(500).json({
+        error: 'System email is not configured on this server. Please connect your own email account in Connections.',
+      })
+    }
+    fromEmail   = config.systemEmail
+    transporter = createSystemTransporter()
+  }
+
+  // ── Send ──────────────────────────────────────────────────────────────────
   try {
     await transporter.sendMail({
       from:    fromEmail,
@@ -107,9 +120,26 @@ export async function sendEmail(req, res) {
       html,
     })
   } catch (err) {
-    return res.status(500).json({ error: `Failed to send: ${err.message}` })
+    // If custom SMTP failed at send-time, retry with system as last resort
+    if (!useSystemFinal && config.systemEmail && config.systemEmailPass) {
+      try {
+        const systemTransporter = createSystemTransporter()
+        await systemTransporter.sendMail({
+          from:    config.systemEmail,
+          to:      to.trim(),
+          subject: subject?.trim() || 'A letter from my heart',
+          html,
+        })
+        fromEmail = config.systemEmail // record actual sender
+      } catch (sysErr) {
+        return res.status(500).json({ error: `Failed to send: ${sysErr.message}` })
+      }
+    } else {
+      return res.status(500).json({ error: `Failed to send: ${err.message}` })
+    }
   }
 
+  // ── Record sent letter ────────────────────────────────────────────────────
   const letter = await Letter.create({
     userId,
     type:      'sent',

@@ -86,26 +86,23 @@ function WorldLetter({ letter, onClick, isNew }) {
 }
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({ stat, index, total, navigate }) {
-  const [hov, setHov] = useState(false)
+function StatCard({ stat, navigate }) {
   return (
     <div
       onClick={() => navigate(stat.page)}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
+      className="stat-card"
       style={{
-        flex: 1, padding: '20px 24px', cursor: 'pointer',
+        flex: 1, padding: '22px 26px', cursor: 'pointer',
         border: `1px solid ${BD}`,
-        borderRight: index < total - 1 ? 'none' : `1px solid ${BD}`,
-        background: hov ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.45)',
-        borderRadius: index === 0 ? '12px 0 0 12px' : index === total - 1 ? '0 12px 12px 0' : 0,
-        transition: 'background 0.2s',
+        background: 'rgba(255,255,255,0.55)',
+        borderRadius: 14,
+        minWidth: 0,
       }}
     >
-      <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 34, fontWeight: 700, lineHeight: 1, marginBottom: 5, color: stat.color }}>
+      <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 36, fontWeight: 700, lineHeight: 1, marginBottom: 7, color: stat.color }}>
         {stat.n}
       </div>
-      <div style={{ fontSize: 11, color: 'var(--ink-muted)', letterSpacing: '0.5px' }}>{stat.label}</div>
+      <div style={{ fontSize: 12, color: 'var(--ink-muted)', letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif' }}>{stat.label}</div>
     </div>
   )
 }
@@ -113,14 +110,14 @@ function StatCard({ stat, index, total, navigate }) {
 // ── Section header ────────────────────────────────────────────────────────────
 function SectionHeader({ title, subtitle, seeAll, onSeeAll }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
       <div>
-        <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>{title}</h2>
-        {subtitle && <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>{subtitle}</p>}
+        <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 23, fontWeight: 700, color: 'var(--ink)', marginBottom: 4, lineHeight: 1.2 }}>{title}</h2>
+        {subtitle && <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>{subtitle}</p>}
       </div>
       {seeAll && (
-        <button onClick={onSeeAll} style={{ fontSize: 13, color: 'var(--tc)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, letterSpacing: '0.3px' }}>
-          see all →
+        <button onClick={onSeeAll} style={{ fontSize: 12, color: 'var(--tc)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, letterSpacing: '0.3px', whiteSpace: 'nowrap', marginTop: 4, flexShrink: 0, padding: '4px 0', borderBottom: '1px solid rgba(196,99,58,0.25)', transition: 'opacity 0.15s' }}>
+          See all →
         </button>
       )}
     </div>
@@ -130,11 +127,11 @@ function SectionHeader({ title, subtitle, seeAll, onSeeAll }) {
 // ── Empty section ─────────────────────────────────────────────────────────────
 function EmptySection({ icon, text, cta, onCta }) {
   return (
-    <div style={{ background: 'rgba(255,255,255,0.5)', borderRadius: 12, padding: '36px 28px', textAlign: 'center', border: `1.5px dashed ${BD}` }}>
-      <div style={{ fontSize: 32, marginBottom: 10, opacity: 0.4 }}>{icon}</div>
-      <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: cta ? 16 : 0 }}>{text}</p>
+    <div style={{ background: 'rgba(255,255,255,0.45)', borderRadius: 14, padding: '44px 32px', textAlign: 'center', border: `1.5px dashed ${BD}` }}>
+      <div style={{ fontSize: 34, marginBottom: 14, opacity: 0.35 }}>{icon}</div>
+      <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, marginBottom: cta ? 20 : 0, maxWidth: 320, margin: cta ? '0 auto 20px' : '0 auto' }}>{text}</p>
       {cta && (
-        <button onClick={onCta} style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: 'var(--tc)', background: 'none', border: 'none', cursor: 'pointer', borderBottom: '1px solid rgba(196,99,58,0.3)', paddingBottom: 2 }}>{cta}</button>
+        <button onClick={onCta} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: '#fff', background: 'var(--tc)', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', fontWeight: 500, boxShadow: '0 4px 14px rgba(196,99,58,0.2)', transition: 'all 0.2s' }}>{cta}</button>
       )}
     </div>
   )
@@ -195,9 +192,9 @@ export default function HomePage() {
         </p>
 
         {/* ── Stats ─────────────────────────────────────────────────── */}
-        <div className="animate-fade-up" style={{ display: 'flex', marginBottom: 48, animationDelay: '0.22s' }}>
-          {stats.map((s, i) => (
-            <StatCard key={s.label} stat={s} index={i} total={stats.length} navigate={navigate} />
+        <div className="animate-fade-up" style={{ display: 'flex', gap: 12, marginBottom: 52, animationDelay: '0.22s', flexWrap: 'wrap' }}>
+          {stats.map((s) => (
+            <StatCard key={s.label} stat={s} navigate={navigate} />
           ))}
         </div>
 
@@ -228,27 +225,27 @@ export default function HomePage() {
               onClick={e => { e.stopPropagation(); navigate('write') }}
               onMouseEnter={() => setCtaBtnHov(true)}
               onMouseLeave={() => setCtaBtnHov(false)}
-              style={{ background: ctaBtnHov ? '#D97040' : 'var(--tc)', color: '#fff', border: 'none', borderRadius: 8, padding: '13px 24px', fontSize: 13, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0, transform: ctaBtnHov ? 'scale(1.03)' : 'scale(1)', transition: 'background 0.2s, transform 0.15s' }}
+              style={{ background: ctaBtnHov ? '#D97040' : 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 26px', fontSize: 13, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0, transform: ctaBtnHov ? 'translateY(-2px)' : 'translateY(0)', boxShadow: ctaBtnHov ? '0 8px 24px rgba(196,99,58,0.3)' : '0 4px 14px rgba(196,99,58,0.2)', transition: 'all 0.2s' }}
             >
-              ✦ Compose Letter
+              Begin writing →
             </button>
           </div>
         )}
 
         {/* ── Personal letters section ───────────────────────────────── */}
-        <section className="animate-fade-up" style={{ marginBottom: 48, animationDelay: '0.34s' }}>
+        <section className="animate-fade-up" style={{ marginBottom: 56, animationDelay: '0.34s' }}>
           <SectionHeader
             title="Your thoughts"
             subtitle="Letters written for yourself, and no one else."
             seeAll={personalLetters.length > 0}
             onSeeAll={() => navigate('myspace')}
           />
-          <div style={{ marginTop: 20 }}>
+          <div style={{ marginTop: 22 }}>
             {recentPersonal.length === 0 ? (
               <EmptySection
                 icon="🪞"
-                text="You haven't written anything yet. Start your first personal letter."
-                cta="Write your first letter →"
+                text="You haven't written anything yet. Your words matter — even the ones just for you."
+                cta="Start your first letter"
                 onCta={() => navigate('write')}
               />
             ) : (
@@ -263,7 +260,7 @@ export default function HomePage() {
 
         {/* ── Listener: From the world ───────────────────────────────── */}
         {canReadFeed && (
-          <section className="animate-fade-up" style={{ marginBottom: 48, animationDelay: '0.40s' }}>
+          <section className="animate-fade-up" style={{ marginBottom: 56, animationDelay: '0.40s' }}>
             <SectionHeader
               title="From the world"
               subtitle="A stranger wrote this. Maybe it's for you."
@@ -274,7 +271,7 @@ export default function HomePage() {
               {recentStranger.length === 0 ? (
                 <EmptySection
                   icon="📭"
-                  text="The feed is quiet — no new letters waiting. Check back soon."
+                  text="The feed is quiet right now. Someone out there is writing. Check back soon."
                 />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -292,18 +289,20 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* ── Seeker: Connections nudge (no email accounts) ──────────── */}
+        {/* ── Seeker: Connections nudge ──────────────────────────────── */}
         {userRole === 'seeker' && (
           <section className="animate-fade-up" style={{ animationDelay: '0.40s' }}>
             <div
               onClick={() => navigate('connections')}
-              style={{ background: 'rgba(255,255,255,0.5)', borderRadius: 14, padding: '24px 28px', border: `1px solid ${BD}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}
+              style={{ background: 'rgba(255,255,255,0.5)', borderRadius: 14, padding: '28px 32px', border: `1px solid ${BD}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, transition: 'box-shadow 0.2s, transform 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(28,26,23,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
               <div>
-                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Connect an email</div>
-                <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>Send letters straight to someone's inbox.</p>
+                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Connect an email to send letters</div>
+                <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>Your letters can arrive straight in someone's inbox — personal and beautiful.</p>
               </div>
-              <span style={{ fontSize: 22 }}>🔗</span>
+              <span style={{ fontSize: 26, flexShrink: 0 }}>🔗</span>
             </div>
           </section>
         )}

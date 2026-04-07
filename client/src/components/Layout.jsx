@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext'
 
 const ROLE_COLOR = { seeker: 'var(--tc)', listener: 'var(--sage)', both: 'var(--purple)' }
 const ROLE_BG    = { seeker: 'rgba(196,99,58,0.12)', listener: 'rgba(122,158,142,0.12)', both: 'rgba(139,126,200,0.12)' }
-const ROLE_LABEL = { seeker: 'Seeker', listener: 'Listener', both: 'Both' }
+const ROLE_LABEL = { seeker: 'Seeker', listener: 'Listener', both: 'Seeker + Listener' }
 
 // ── Single nav item ───────────────────────────────────────────────────────────
 function NavItem({ item, active, onClick }) {
@@ -77,14 +77,20 @@ function SidebarContent({ onNavigate }) {
   const rLabel = ROLE_LABEL[userRole] || 'Both'
 
   const NAV_MAIN = [
-    { id: 'home',    icon: '🏠', label: 'Home'       },
+    { id: 'home',    icon: '🏠', label: 'Home'     },
     { id: 'myspace', icon: '✦',  label: 'My Space', badge: personalLetters.length || null },
-    { id: 'write',   icon: '✍️', label: 'Write'      },
+  ]
+
+  const NAV_WRITE = [
+    { id: 'write', icon: '✍️', label: 'Write a Letter' },
+  ]
+
+  const NAV_EXPLORE = [
+    ...(canReadFeed      ? [{ id: 'listenerread',   icon: '🎧', label: 'Listener Read'   }] : []),
+    ...(canWriteStranger ? [{ id: 'caringstranger', icon: '🌍', label: 'Caring Stranger' }] : []),
   ]
 
   const NAV_MORE = [
-    ...(canReadFeed      ? [{ id: 'listenerread',   icon: '🎧', label: 'Listener Read'   }] : []),
-    ...(canWriteStranger ? [{ id: 'caringstranger', icon: '🌍', label: 'Caring Stranger' }] : []),
     { id: 'sentletters', icon: '📬', label: 'Sent Letters', badge: sentLetters.length || null },
     { id: 'connections', icon: '🔗', label: 'Connections'  },
   ]
@@ -93,48 +99,61 @@ function SidebarContent({ onNavigate }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
       {/* ── Brand ─────────────────────────────────────────────────────────── */}
-      <div style={{ padding: '26px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+      <div style={{ padding: '28px 20px 22px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
         <div style={{
-          width: 36, height: 36, background: 'var(--tc)', borderRadius: '50%',
+          width: 38, height: 38, background: 'var(--tc)', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, marginBottom: 12,
+          fontSize: 17, marginBottom: 14,
         }}>
           ✉
         </div>
         <div style={{
           fontFamily: '"Playfair Display", serif', fontStyle: 'italic',
-          fontSize: 18, color: 'var(--cream)', letterSpacing: '0.3px', lineHeight: 1.2,
+          fontSize: 18.5, color: 'var(--cream)', letterSpacing: '0.3px', lineHeight: 1.2,
         }}>
           Letter from <span style={{ color: 'var(--gold)' }}>Heart</span>
         </div>
         <div style={{
-          fontSize: 10, color: 'rgba(245,240,232,0.3)', marginTop: 4,
-          letterSpacing: '1.5px', textTransform: 'uppercase',
+          fontSize: 10, color: 'rgba(245,240,232,0.28)', marginTop: 5,
+          letterSpacing: '1.8px', textTransform: 'uppercase',
         }}>
           Your quiet space
         </div>
       </div>
 
       {/* ── Navigation ────────────────────────────────────────────────────── */}
-      <nav style={{ flex: 1, padding: '16px 8px', overflowY: 'auto' }}>
-        <div style={{ fontSize: 9.5, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(245,240,232,0.28)', padding: '0 10px 8px' }}>
-          Navigate
-        </div>
+      <nav style={{ flex: 1, padding: '18px 8px 12px', overflowY: 'auto' }}>
+
+        {/* Main group */}
+        <div className="nav-group-label">Main</div>
         {NAV_MAIN.map(item => (
           <NavItem key={item.id} item={item} active={currentPage === item.id} onClick={() => go(item.id)} />
         ))}
 
-        {NAV_MORE.length > 0 && (
+        {/* Write group */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '12px 8px' }} />
+        <div className="nav-group-label">Create</div>
+        {NAV_WRITE.map(item => (
+          <NavItem key={item.id} item={item} active={currentPage === item.id} onClick={() => go(item.id)} />
+        ))}
+
+        {/* Explore group */}
+        {NAV_EXPLORE.length > 0 && (
           <>
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', margin: '12px 8px' }} />
-            <div style={{ fontSize: 9.5, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(245,240,232,0.28)', padding: '0 10px 8px' }}>
-              More
-            </div>
-            {NAV_MORE.map(item => (
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '12px 8px' }} />
+            <div className="nav-group-label">Explore</div>
+            {NAV_EXPLORE.map(item => (
               <NavItem key={item.id} item={item} active={currentPage === item.id} onClick={() => go(item.id)} />
             ))}
           </>
         )}
+
+        {/* More group */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '12px 8px' }} />
+        <div className="nav-group-label">More</div>
+        {NAV_MORE.map(item => (
+          <NavItem key={item.id} item={item} active={currentPage === item.id} onClick={() => go(item.id)} />
+        ))}
       </nav>
 
       {/* ── User section ──────────────────────────────────────────────────── */}
