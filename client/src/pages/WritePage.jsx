@@ -99,7 +99,7 @@ function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStrange
         <input
           type="email"
           style={{
-            width: '100%', maxWidth: 420,
+            width: '100%',
             padding: '13px 18px',
             fontFamily: 'Lora, serif', fontSize: 15, fontStyle: 'italic', color: 'var(--ink)',
             background: 'var(--paper)', borderRadius: 10, outline: 'none',
@@ -244,7 +244,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
       >
         <div className="paper-lines" />
         <div className="paper-margin" />
-        <div className="relative z-[2]" style={{ padding: 'clamp(36px, 5vw, 56px) clamp(24px, 5vw, 56px) clamp(36px, 5vw, 56px) clamp(60px, 7vw, 96px)' }}>
+        <div className="relative z-[2]" style={{ padding: 'clamp(28px, 5vw, 56px) clamp(20px, 4vw, 56px) clamp(28px, 5vw, 56px) clamp(28px, 5vw, 80px)' }}>
           {/* Salutation */}
           <div className="flex items-baseline mb-7" style={{ gap: 6 }}>
             <span style={{ fontFamily: 'Lora, serif', fontSize: 22, fontWeight: 500, color: 'var(--ink)', flexShrink: 0 }}>Dear </span>

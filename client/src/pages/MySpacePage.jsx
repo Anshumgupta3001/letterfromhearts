@@ -267,7 +267,7 @@ export default function MySpacePage() {
   const ROLE_COLOR = { seeker: 'var(--tc)', listener: 'var(--sage)', both: 'var(--purple)' }
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
+    <main className="page-enter w-full px-5 sm:px-10 md:px-16" style={{ paddingTop: 56, paddingBottom: 80 }}>
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 44, flexWrap: 'wrap' }}>
@@ -283,7 +283,7 @@ export default function MySpacePage() {
             Everything you've written, read, and held — all in one quiet place.
           </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, marginTop: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10, marginTop: 8 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10.5, padding: '6px 14px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: `${ROLE_COLOR[userRole]}15`, color: ROLE_COLOR[userRole], border: `1px solid ${ROLE_COLOR[userRole]}40` }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: ROLE_COLOR[userRole] }} />
             {ROLE_LABEL[userRole]}

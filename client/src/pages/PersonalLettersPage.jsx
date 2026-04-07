@@ -231,7 +231,7 @@ export default function PersonalLettersPage() {
   }
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter w-full px-5 sm:px-10 md:px-16" style={{ paddingTop: 52, paddingBottom: 72 }}>
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
