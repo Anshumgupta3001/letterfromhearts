@@ -1,4 +1,5 @@
 import Letter from '../models/Letter.js'
+import { checkContentSafety } from '../utils/moderation.js'
 
 // GET /api/letters?type=personal|sent|stranger  — current user's letters, filtered by type
 export async function getLetters(req, res) {
@@ -72,6 +73,12 @@ export async function createLetter(req, res) {
 
   if (!message?.trim()) return res.status(400).json({ error: 'Message cannot be empty.' })
 
+  try {
+    await checkContentSafety(message.trim())
+  } catch {
+    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+  }
+
   const defaults = {
     personal: { subject: 'A personal letter',      status: 'saved' },
     stranger: { subject: 'A letter from my heart', status: 'saved' },
@@ -124,6 +131,12 @@ export async function updateLetter(req, res) {
   const { subject, message } = req.body
 
   if (!message?.trim()) return res.status(400).json({ error: 'Message cannot be empty.' })
+
+  try {
+    await checkContentSafety(message.trim())
+  } catch {
+    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+  }
 
   // Only allow editing personal letters
   const letter = await Letter.findOne({ _id: req.params.id, userId: req.user._id })
