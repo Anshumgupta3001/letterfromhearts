@@ -190,16 +190,13 @@ function Step2({ mood, setMood, onBack, onNext }) {
 }
 
 // ── Step 3 ────────────────────────────────────────────────────────────────────
-function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliveryType, setDeliveryType, saving, saveError, onSendEmail, hasEmailAccounts, emailMode, systemEmail }) {
+function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, saving, saveError, onSendEmail }) {
   const [signoff, setSignoff] = useState('With')
   const [sig, setSig] = useState('')
   const [showCrisis, setShowCrisis] = useState(false)
-  const [sendFrom, setSendFrom] = useState('system')
 
-  const isSelf        = mode === 'self'
-  const isStranger    = mode === 'stranger'
-  const isKnown       = mode === 'known'
-  const isSystemEmail = emailMode === 'system'
+  const isSelf     = mode === 'self'
+  const isStranger = mode === 'stranger'
 
   function wordCount() {
     return (sal + ' ' + body).trim().split(/\s+/).filter(Boolean).length
@@ -318,88 +315,6 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
         </div>
       )}
 
-      {/* Delivery options — only for "Someone I Know" */}
-      {isKnown && (
-        <div className="mt-5 rounded-xl p-5" style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)' }}>
-          <div style={{ fontSize: 10.5, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontWeight: 600, marginBottom: 12 }}>Delivery</div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { id: 'now',     name: 'Send now',           comingSoon: false },
-              { id: 'capsule', name: 'Time capsule ✨',     comingSoon: true  },
-              { id: 'burn',    name: 'Burn after writing',  comingSoon: true  },
-            ].map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => !opt.comingSoon && setDeliveryType(opt.id)}
-                disabled={opt.comingSoon}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 7,
-                  padding: '9px 18px', borderRadius: 999,
-                  fontSize: 13, fontFamily: '"DM Sans", sans-serif',
-                  border: deliveryType === opt.id ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.12)',
-                  background: deliveryType === opt.id ? 'rgba(196,99,58,0.07)' : 'var(--cream)',
-                  color: deliveryType === opt.id ? 'var(--tc)' : 'var(--ink-soft)',
-                  cursor: opt.comingSoon ? 'default' : 'pointer',
-                  opacity: opt.comingSoon ? 0.5 : 1,
-                  fontWeight: deliveryType === opt.id ? 500 : 400,
-                  transition: 'all 0.15s',
-                }}
-              >
-                {opt.name}
-                {opt.comingSoon && (
-                  <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 20, background: 'rgba(28,26,23,0.06)', color: 'var(--ink-muted)' }}>Soon</span>
-                )}
-              </button>
-            ))}
-          </div>
-          {deliveryType === 'capsule' && (
-            <input
-              type="date"
-              style={{ display: 'block', marginTop: 12, padding: '10px 14px', fontSize: 13, color: 'var(--ink)', borderRadius: 8, border: '1px solid rgba(28,26,23,0.12)', background: 'var(--cream)', outline: 'none' }}
-              min={new Date().toISOString().split('T')[0]}
-            />
-          )}
-        </div>
-      )}
-
-      {/* ── Send From selector (only for "known" / direct send) ──────── */}
-      {isKnown && (
-        <div className="mt-5 rounded-xl p-5" style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)' }}>
-          <div style={{ fontSize: 10.5, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontWeight: 600, marginBottom: 12 }}>Send From</div>
-          <div className="flex flex-col gap-2">
-            {[
-              { id: 'system', icon: '📮', label: 'System Email', sub: systemEmail || 'Platform default — always available' },
-              { id: 'custom', icon: '✉️', label: 'My Email',     sub: hasEmailAccounts ? 'Use your connected account' : 'No account connected — go to Connections' },
-            ].map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => { if (opt.id === 'custom' && !hasEmailAccounts) return; setSendFrom(opt.id) }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '11px 14px', borderRadius: 10, textAlign: 'left',
-                  border: sendFrom === opt.id ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.1)',
-                  background: sendFrom === opt.id ? 'rgba(196,99,58,0.05)' : 'var(--cream)',
-                  cursor: opt.id === 'custom' && !hasEmailAccounts ? 'default' : 'pointer',
-                  opacity: opt.id === 'custom' && !hasEmailAccounts ? 0.5 : 1,
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ fontSize: 18, flexShrink: 0 }}>{opt.icon}</span>
-                <div>
-                  <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: sendFrom === opt.id ? 600 : 400, color: sendFrom === opt.id ? 'var(--tc)' : 'var(--ink)' }}>{opt.label}</div>
-                  <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-muted)', marginTop: 2 }}>{opt.sub}</div>
-                </div>
-                {sendFrom === opt.id && (
-                  <span style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: 'var(--tc)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* ── Action bar ──────────────────────────────────────────────────── */}
       <div className="mt-7 flex items-center gap-3 flex-wrap justify-end">
 
@@ -431,7 +346,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
           </button>
         ) : (
           <button
-            onClick={() => onSendEmail(sendFrom)}
+            onClick={onSendEmail}
             style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.25)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
@@ -614,12 +529,8 @@ export default function WritePage() {
                 sal={sal} setSal={setSal}
                 body={body} setBody={setBody}
                 mode={mode}
-                deliveryType={deliveryType} setDeliveryType={setDeliveryType}
                 saving={saving} saveError={saveError}
-                onSendEmail={(from) => { setSendFrom(from); setSendEmailOpen(true) }}
-                hasEmailAccounts={emailAccounts.length > 0}
-                emailMode={userEmailMode}
-                systemEmail={systemEmail}
+                onSendEmail={() => setSendEmailOpen(true)}
               />
             )}
           </div>

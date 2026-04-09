@@ -5,10 +5,11 @@ const BD = '#E0D4BC'
 const FT = '#F2EBE0'
 
 const STATUS_META = {
-  sent:    { label: 'Sent',         color: 'var(--ink-muted)',  bg: '#EDE5D4',                        border: BD,                            accent: 'linear-gradient(180deg, var(--gold), var(--ink-muted))' },
-  opened:  { label: 'Opened',       color: 'var(--sage)',       bg: 'rgba(122,158,142,0.1)',           border: 'rgba(122,158,142,0.3)',        accent: 'linear-gradient(180deg, var(--sage), var(--gold))' },
-  clicked: { label: 'Link clicked', color: 'var(--purple)',     bg: 'rgba(139,126,200,0.1)',           border: 'rgba(139,126,200,0.3)',        accent: 'linear-gradient(180deg, var(--purple), var(--gold))' },
-  failed:  { label: 'Failed',       color: 'var(--tc)',         bg: 'rgba(196,99,58,0.1)',             border: 'rgba(196,99,58,0.3)',          accent: 'linear-gradient(180deg, var(--tc), var(--gold))' },
+  sent:    { label: 'Sent',   color: 'var(--ink-muted)', bg: '#EDE5D4',                      border: BD,                           accent: 'linear-gradient(180deg, var(--gold), var(--ink-muted))' },
+  opened:  { label: 'Opened', color: 'var(--sage)',      bg: 'rgba(122,158,142,0.1)',         border: 'rgba(122,158,142,0.3)',       accent: 'linear-gradient(180deg, var(--sage), var(--gold))' },
+  // clicked = also opened; show identical "Opened" UI
+  clicked: { label: 'Opened', color: 'var(--sage)',      bg: 'rgba(122,158,142,0.1)',         border: 'rgba(122,158,142,0.3)',       accent: 'linear-gradient(180deg, var(--sage), var(--gold))' },
+  failed:  { label: 'Failed', color: 'var(--tc)',        bg: 'rgba(196,99,58,0.1)',           border: 'rgba(196,99,58,0.3)',         accent: 'linear-gradient(180deg, var(--tc), var(--gold))' },
 }
 
 function SentCard({ letter }) {
@@ -42,7 +43,7 @@ function SentCard({ letter }) {
             {letter.subject}
           </h3>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: meta.bg, color: meta.color, flexShrink: 0, border: `1px solid ${meta.border}` }}>
-            {letter.status === 'sent' ? '📤' : letter.status === 'opened' ? '👁' : letter.status === 'clicked' ? '🖱' : '⚠️'} {meta.label}
+            {letter.status === 'sent' ? '📤' : (letter.status === 'opened' || letter.status === 'clicked') ? '👁' : '⚠️'} {meta.label}
           </span>
         </div>
 
@@ -67,19 +68,12 @@ function SentCard({ letter }) {
           </button>
         )}
 
-        {/* Tracking info */}
-        {(letter.openedAt || letter.clickedAt) && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-            {letter.openedAt && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(122,158,142,0.08)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.2)' }}>
-                👁 Opened · {fmtDate(letter.openedAt)}
-              </span>
-            )}
-            {letter.clickedAt && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(139,126,200,0.08)', color: 'var(--purple)', border: '1px solid rgba(139,126,200,0.2)' }}>
-                🖱 Link clicked · {fmtDate(letter.clickedAt)}
-              </span>
-            )}
+        {/* Tracking info — single "Opened" tag; click also counts as open */}
+        {letter.openedAt && (
+          <div style={{ marginTop: 4 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(122,158,142,0.08)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.2)' }}>
+              👁 Opened · {fmtDate(letter.openedAt)}
+            </span>
           </div>
         )}
       </div>
@@ -122,7 +116,7 @@ export default function SentLettersPage() {
             Sent Letters
           </h1>
           <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
-            Letters you've sent via email — with open & click tracking so you know they arrived.
+            Letters you've sent via email — with open tracking so you know they arrived.
           </p>
         </div>
         <button

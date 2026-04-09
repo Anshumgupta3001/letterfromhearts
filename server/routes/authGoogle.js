@@ -85,7 +85,11 @@ router.get(
         await googleUser.save()
 
         const token = signGoogleJwt(googleUser._id.toString())
-        return res.redirect(`${config.clientOrigin}/?google_token=${token}`)
+        // If this user never set a role, treat them the same as a new signup
+        const needsRole = !googleUser.role
+        return res.redirect(
+          `${config.clientOrigin}/?google_token=${token}${needsRole ? '&google_new=true' : ''}`
+        )
       }
 
       // ── Signup mode ───────────────────────────────────────────────────────
@@ -94,13 +98,13 @@ router.get(
         return res.redirect(`${config.clientOrigin}/?google_error=already_exists`)
       }
 
-      // Create new user with default role='both'; frontend will prompt role selection
+      // Create new user WITHOUT a role — the frontend modal will collect it
       googleUser = await GoogleUser.create({
         uid:    googleId,
         name:   name   || 'Google User',
         email,
         avatar: avatar || '',
-        role:   'both',
+        // role intentionally omitted — null until user selects one
       })
 
       const token = signGoogleJwt(googleUser._id.toString())

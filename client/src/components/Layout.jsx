@@ -119,175 +119,171 @@ function NavTab({ item, active, onClick }) {
 // ── Home-only sidebar ─────────────────────────────────────────────────────────
 function HomeSidebar() {
   const {
-    navigate, userRole, canReadFeed,
+    navigate, canReadFeed,
     personalLetters, ownStrangerLetters, sentLetters, strangerLetters,
     analytics, analyticsDays, setAnalyticsDays,
   } = useApp()
 
-  const [role, setRole] = useState(userRole === 'listener' ? 'listener' : 'seeker')
   const totalWritten = (personalLetters?.length || 0) + (ownStrangerLetters?.length || 0) + (sentLetters?.length || 0)
+  const written  = analytics?.totalWritten  ?? totalWritten
+  const sent     = analytics?.totalSent     ?? 0
+  const opened   = analytics?.totalOpened   ?? 0
+  const personal = analytics?.totalPersonal ?? 0
+  const stranger = analytics?.totalStranger ?? 0
+  const heard    = analytics?.claimedLetters ?? 0
+  const openRate = analytics?.openRate ?? 0
+  const hasSent  = sent > 0
 
-  const SibLabel = ({ text }) => (
-    <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', marginBottom: 8, fontFamily: '"DM Sans", sans-serif' }}>
-      {text}
-    </div>
-  )
+  // Gentle emotional line based on data
+  const heartline = (() => {
+    if (opened > 0)  return 'Your words reached someone 💌'
+    if (sent > 0)    return 'Your letters are on their way ✉️'
+    if (written > 0) return 'Keep writing — every word matters 🌿'
+    return 'Start writing. Someone is waiting 💛'
+  })()
 
-  const SibItem = ({ icon, label, count, hot, onClick }) => (
-    <div
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '9px 11px', borderRadius: 8,
-        cursor: onClick ? 'pointer' : 'default',
-        background: 'transparent',
-        border: '0.5px solid transparent',
-        marginBottom: 2, transition: 'all 0.15s',
-      }}
-      onMouseEnter={e => { if (onClick) { e.currentTarget.style.background = 'var(--warm)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.06)' } }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--ink-soft)', fontFamily: '"DM Sans", sans-serif' }}>
-        <span style={{ fontSize: 14, lineHeight: 1 }}>{icon}</span>
+  const MetricCard = ({ value, label, accent }) => (
+    <div style={{
+      background: 'var(--paper)',
+      border: '0.5px solid rgba(28,26,23,0.08)',
+      borderRadius: 12,
+      padding: '13px 14px',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {accent && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+          background: accent, borderRadius: '12px 12px 0 0',
+        }} />
+      )}
+      <div style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 400, marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>
         {label}
       </div>
-      {count != null && (
-        <span style={{
-          fontSize: 11, padding: '2px 8px', borderRadius: 100,
-          background: hot ? 'rgba(196,99,58,0.08)' : 'rgba(28,26,23,0.05)',
-          color: hot ? 'var(--tc)' : 'var(--ink-muted)',
-          fontWeight: hot ? 500 : 400, fontFamily: '"DM Sans", sans-serif',
-        }}>
-          {count}
-        </span>
-      )}
-    </div>
-  )
-
-  const StatBox = ({ n, label }) => (
-    <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.07)', borderRadius: 10, padding: '12px 13px' }}>
-      <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>{n}</div>
-      <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 300, marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>{label}</div>
     </div>
   )
 
   return (
     <aside style={{
       borderRight: '0.5px solid rgba(28,26,23,0.07)',
-      padding: '24px 16px',
+      padding: '22px 16px 32px',
       background: 'rgba(247,242,234,0.4)',
       position: 'sticky', top: 56,
       height: 'calc(100vh - 56px)',
       overflowY: 'auto',
-      display: 'flex', flexDirection: 'column', gap: 20,
+      display: 'flex', flexDirection: 'column', gap: 18,
     }}>
 
-      {/* Role toggle */}
-      <div>
-        <SibLabel text="Your mode" />
-        <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)', borderRadius: 10, padding: 5, display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-          {[
-            { id: 'seeker',   label: 'Seeker',   sub: `${(personalLetters?.length || 0) + (ownStrangerLetters?.length || 0)} letters`, color: 'var(--tc)',   shadow: 'rgba(196,99,58,0.25)' },
-            { id: 'listener', label: 'Listener', sub: '0 replies',                                                                      color: 'var(--sage)', shadow: 'rgba(122,158,142,0.25)' },
-          ].map(r => (
-            <div
-              key={r.id}
-              onClick={() => setRole(r.id)}
-              style={{
-                padding: '9px 6px', borderRadius: 7, cursor: 'pointer', textAlign: 'center',
-                transition: 'all 0.2s',
-                background: role === r.id ? r.color : 'transparent',
-                boxShadow: role === r.id ? `0 2px 8px ${r.shadow}` : 'none',
-              }}
-            >
-              <div style={{ fontSize: 11, fontWeight: 500, fontFamily: '"DM Sans", sans-serif', color: role === r.id ? '#fff' : 'var(--ink-muted)' }}>{r.label}</div>
-              <div style={{ fontSize: 10, fontFamily: '"DM Sans", sans-serif', color: role === r.id ? 'rgba(255,255,255,0.8)' : 'var(--ink-muted)', marginTop: 1 }}>{r.sub}</div>
-            </div>
-          ))}
+      {/* ── Emotional heartline ── */}
+      <div style={{
+        background: 'linear-gradient(120deg, rgba(196,99,58,0.06), rgba(122,158,142,0.06))',
+        border: '0.5px solid rgba(196,99,58,0.12)',
+        borderRadius: 12, padding: '12px 14px',
+      }}>
+        <div style={{ fontSize: 12.5, fontFamily: '"Lora", serif', fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.55 }}>
+          {heartline}
         </div>
       </div>
 
-      {/* As seeker */}
-      <div>
-        <SibLabel text="As seeker" />
-        <SibItem icon="📝" label="All my letters"   count={(personalLetters?.length || 0) + (ownStrangerLetters?.length || 0)} onClick={() => navigate('myspace')} />
-        <SibItem icon="💬" label="Replies received" count={0}  hot={false} />
-        <SibItem icon="⏳" label="Waiting"          count={ownStrangerLetters?.length || 0} />
-        <SibItem icon="🔒" label="Capsules"         count={0} />
+      {/* ── Date filter ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+          Your story
+        </div>
+        <select
+          value={analyticsDays}
+          onChange={e => setAnalyticsDays(Number(e.target.value))}
+          style={{
+            fontSize: 10, padding: '3px 8px', borderRadius: 6, cursor: 'pointer',
+            background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)',
+            color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+            outline: 'none', appearance: 'none', WebkitAppearance: 'none',
+          }}
+        >
+          <option value={7}>Last 7 days</option>
+          <option value={15}>Last 15 days</option>
+          <option value={30}>Last 30 days</option>
+        </select>
       </div>
 
-      {/* As listener */}
-      {canReadFeed && (
-        <div>
-          <SibLabel text="As listener" />
-          <SibItem icon="📬" label="Open letters"   count={strangerLetters?.length || 0} onClick={() => navigate('listenerread')} />
-          <SibItem icon="✍️" label="My replies"     count={0} onClick={() => navigate('myreplies')} />
-          <SibItem icon="↩️" label="They wrote back" count={0} hot={false} />
-        </div>
-      )}
+      {/* ── Overview cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
+        <MetricCard value={written}  label="Letters written"  accent="linear-gradient(90deg, var(--tc), var(--gold))" />
+        <MetricCard value={sent}     label="Letters sent"     accent="linear-gradient(90deg, var(--gold), var(--tc))" />
+        <MetricCard value={personal} label="To myself"        />
+        <MetricCard value={stranger} label="To a stranger"    />
+      </div>
 
-      {/* Analytics */}
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <SibLabel text="Analytics" />
-          <select
-            value={analyticsDays}
-            onChange={e => setAnalyticsDays(Number(e.target.value))}
-            style={{
-              fontSize: 10, padding: '3px 6px', borderRadius: 6, cursor: 'pointer',
-              background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)',
-              color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
-              outline: 'none', appearance: 'none', WebkitAppearance: 'none',
-            }}
-          >
-            <option value={7}>7 days</option>
-            <option value={15}>15 days</option>
-            <option value={30}>30 days</option>
-          </select>
-        </div>
-
-        {/* Open rate highlight bar (only if there are sent letters) */}
-        {analytics && analytics.totalSent > 0 && (
-          <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.07)', borderRadius: 10, padding: '11px 13px', marginBottom: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', fontWeight: 400 }}>Open rate</div>
-              <div style={{ fontSize: 14, fontFamily: '"Lora", serif', fontWeight: 500, color: analytics.openRate >= 50 ? 'var(--sage)' : 'var(--tc)' }}>
-                {analytics.openRate}%
+      {/* ── Open rate — shown only when letters have been sent ── */}
+      {hasSent && (
+        <div style={{
+          background: 'var(--paper)',
+          border: `0.5px solid ${openRate >= 50 ? 'rgba(122,158,142,0.25)' : 'rgba(196,99,58,0.18)'}`,
+          borderRadius: 12, padding: '14px 15px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 4 }}>
+                Open rate
+              </div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 500, letterSpacing: '-1px', color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>
+                {openRate}%
               </div>
             </div>
-            <div style={{ height: 4, background: 'rgba(28,26,23,0.07)', borderRadius: 2, overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: 2, width: `${analytics.openRate}%`, background: analytics.openRate >= 50 ? 'var(--sage)' : 'var(--tc)', transition: 'width 0.5s ease' }} />
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--ink-muted)', marginTop: 5, fontFamily: '"DM Sans", sans-serif' }}>
-              {analytics.totalOpened} opened of {analytics.totalSent} sent
+            <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', textAlign: 'right', lineHeight: 1.5, paddingBottom: 2 }}>
+              {opened} of {sent}<br />letters seen
             </div>
           </div>
-        )}
-
-        {/* Stats grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          <StatBox n={analytics?.totalWritten    ?? totalWritten} label="Written" />
-          <StatBox n={analytics?.totalSent       ?? 0}           label="Sent" />
-          <StatBox n={analytics?.totalOpened     ?? 0}           label="Email opens" />
-          <StatBox n={analytics?.totalPersonal   ?? 0}           label="Personal" />
-          <StatBox n={analytics?.totalStranger   ?? 0}           label="Stranger" />
-          <StatBox n={analytics?.claimedLetters  ?? 0}           label="Heard" />
-          <StatBox n={analytics?.totalSent > 0 ? `${analytics.openRate}%` : '—'} label="Open rate" />
+          {/* Progress bar */}
+          <div style={{ height: 5, background: 'rgba(28,26,23,0.07)', borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 100,
+              width: `${Math.min(openRate, 100)}%`,
+              background: openRate >= 50
+                ? 'linear-gradient(90deg, var(--sage), #7ec8a4)'
+                : 'linear-gradient(90deg, var(--tc), var(--gold))',
+              transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)',
+            }} />
+          </div>
+          {openRate >= 50 && (
+            <div style={{ fontSize: 11, color: 'var(--sage)', marginTop: 8, fontFamily: '"DM Sans", sans-serif' }}>
+              People are reading what you write 🌿
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* Wellbeing */}
-      {canReadFeed && (
-        <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)', borderRadius: 10, padding: '13px 15px' }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink)', marginBottom: 7, fontFamily: '"DM Sans", sans-serif' }}>🤝 Listener cap</div>
-          <div style={{ height: 4, background: 'rgba(28,26,23,0.07)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
-            <div style={{ height: '100%', background: 'var(--sage)', borderRadius: 2, width: '0%' }} />
+      {/* ── Connection card ── */}
+      {(heard > 0 || canReadFeed) && (
+        <div style={{
+          background: 'var(--paper)',
+          border: '0.5px solid rgba(122,158,142,0.2)',
+          borderRadius: 12, padding: '13px 14px',
+        }}>
+          <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
+            Connection
           </div>
-          <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 300, lineHeight: 1.5, fontFamily: '"DM Sans", sans-serif' }}>
-            0 of 5 replies this week. Rest when you need to.
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}>{heard}</div>
+              <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>Strangers heard you</div>
+            </div>
+            {canReadFeed && (
+              <div
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate('listenerread')}
+              >
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
+                <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>Waiting to be read</div>
+              </div>
+            )}
           </div>
         </div>
       )}
+
     </aside>
   )
 }

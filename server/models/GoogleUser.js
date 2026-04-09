@@ -40,11 +40,11 @@ const googleUserSchema = new mongoose.Schema(
       default: 'google',
     },
 
-    // Role system — same values as the existing User model
+    // Role system — same values as the existing User model.
+    // No default: null means the user hasn't chosen yet → triggers role setup modal.
     role: {
-      type:    String,
-      enum:    ['seeker', 'listener', 'both'],
-      default: 'both',
+      type: String,
+      enum: ['seeker', 'listener', 'both'],
     },
 
     // Email mode — matching the existing User model's field

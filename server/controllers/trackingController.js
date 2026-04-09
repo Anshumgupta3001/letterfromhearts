@@ -36,15 +36,26 @@ export async function trackOpen(req, res) {
 
 // GET /api/tracking/click?tid=<trackingId>&url=<encodedUrl>
 // Called when the recipient clicks a tracked link.
-// No auth required.
+// No auth required — increments clickCount on every click.
 export async function trackClick(req, res) {
   const { tid, url } = req.query
 
   if (tid) {
-    Letter.findOneAndUpdate(
-      { trackingId: tid, status: { $in: ['sent', 'opened'] } }, // upgrade from sent or opened
-      { status: 'clicked', clickedAt: new Date() },
-      { new: false }
+    // Aggregation pipeline update: preserves existing openedAt if already set,
+    // otherwise sets it to now — so a click always implies the email was opened.
+    Letter.updateOne(
+      { trackingId: tid },
+      [
+        {
+          $set: {
+            status:     'clicked',
+            clickedAt:  '$$NOW',
+            // Keep the earliest openedAt; set it now only if never opened before
+            openedAt:   { $ifNull: ['$openedAt', '$$NOW'] },
+            clickCount: { $add: [{ $ifNull: ['$clickCount', 0] }, 1] },
+          },
+        },
+      ]
     ).catch(() => {})
   }
 

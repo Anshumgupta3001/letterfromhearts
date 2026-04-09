@@ -13,6 +13,7 @@ const letterSchema = new mongoose.Schema(
     status:     { type: String, default: 'sent' }, // sent | opened | clicked | failed | saved
     openedAt:   { type: Date },
     clickedAt:  { type: Date },
+    clickCount: { type: Number, default: 0 },
     // One-time read tracking — for type:'stranger' letters
     readBy:     [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     // Global one-time read flag — once true, letter hidden from ALL other listeners

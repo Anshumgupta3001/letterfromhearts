@@ -307,7 +307,8 @@ export default function MySpacePage() {
   const ROLE_COLOR = { seeker: 'var(--tc)', listener: 'var(--sage)', both: 'var(--purple)' }
 
   return (
-    <main className="page-enter w-full px-5 sm:px-10 md:px-16" style={{ paddingTop: 56, paddingBottom: 80 }}>
+    <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
+      <div className="w-full max-w-3xl lg:max-w-4xl">
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 44, flexWrap: 'wrap' }}>
@@ -399,6 +400,7 @@ export default function MySpacePage() {
       {/* ── Modals ──────────────────────────────────────────────────── */}
       {editingLetter  && <EditModal   letter={editingLetter}  onSave={handleSaved}        onClose={() => setEditingLetter(null)} />}
       {deletingLetter && <DeleteModal letter={deletingLetter} onConfirm={handleDeleteConfirm} onClose={() => setDeletingLetter(null)} deleting={deleting} />}
+      </div>
     </main>
   )
 }
