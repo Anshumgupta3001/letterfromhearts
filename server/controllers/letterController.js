@@ -201,7 +201,8 @@ export async function getAnalytics(req, res) {
   ] = await Promise.all([
     Letter.countDocuments(base),
     Letter.countDocuments({ ...base, type: 'sent' }),
-    Letter.countDocuments({ ...base, type: 'sent', status: { $in: ['opened', 'clicked'] } }),
+    // "Opened" = opened OR clicked (click implies open; no double-counting since it's per-letter)
+    Letter.countDocuments({ ...base, type: 'sent', $or: [{ status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
     Letter.countDocuments({ ...base, type: 'personal' }),
     Letter.countDocuments({ ...base, type: 'stranger' }),
     // Stranger letters this user WROTE that were claimed by a listener
@@ -219,7 +220,7 @@ export async function getAnalytics(req, res) {
       totalOpened,
       totalPersonal,
       totalStranger,
-      claimedLetters,  // stranger letters the seeker wrote that got claimed
+      claimedLetters,
       openRate,
     },
   })

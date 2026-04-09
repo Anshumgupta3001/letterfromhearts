@@ -2,6 +2,122 @@ import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import GoogleLoginBtn from '../components/auth/GoogleLoginBtn'
 
+// ── Terms & Conditions Modal ───────────────────────────────────────────────────
+const TERMS_SECTIONS = [
+  {
+    title: '1. Introduction',
+    body: 'This platform allows users to write and share personal letters. By using the service, you agree to use it respectfully and responsibly. Letter from Heart is a quiet space designed to support emotional expression and connection.',
+  },
+  {
+    title: '2. User Responsibility',
+    body: 'You are solely responsible for the content you write and share. You must not use the platform to send harmful, abusive, threatening, or illegal content. Content that violates these terms may be removed without notice.',
+  },
+  {
+    title: '3. Privacy',
+    body: "We respect your privacy. Letters are handled securely and shared only as intended within the platform's features. Personal information is not sold or shared with third parties for advertising purposes.",
+  },
+  {
+    title: '4. Content Usage',
+    body: 'By using the platform, you grant permission for the system to process your content solely for delivery and functionality purposes. We do not claim ownership of the content you write.',
+  },
+  {
+    title: '5. Communication',
+    body: 'Emails sent through the platform are delivered using third-party SMTP services. Delivery, open tracking, and click tracking may vary based on recipient email client settings and spam filters.',
+  },
+  {
+    title: '6. Limitation of Liability',
+    body: 'We are not responsible for how recipients interpret, respond to, or act upon letters sent through the platform. The platform is provided as-is without warranties of any kind.',
+  },
+  {
+    title: '7. Changes to Terms',
+    body: 'We may update these terms from time to time to reflect changes to the platform or applicable laws. Continued use of the service after changes constitutes acceptance of the updated terms.',
+  },
+]
+
+function TermsModal({ onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ background: 'rgba(28,26,23,0.45)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div
+        className="relative w-full max-w-[560px] rounded-[20px] overflow-hidden"
+        style={{
+          background: 'var(--paper)',
+          border: '0.5px solid rgba(28,26,23,0.1)',
+          boxShadow: '0 24px 64px rgba(28,26,23,0.18)',
+          maxHeight: '82vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-7 py-5 flex-shrink-0"
+          style={{ borderBottom: '0.5px solid rgba(28,26,23,0.08)' }}
+        >
+          <div>
+            <div className="font-lora text-[18px] font-medium" style={{ color: 'var(--ink)' }}>Terms &amp; Conditions</div>
+            <div className="text-[11px] mt-0.5 font-light" style={{ color: 'var(--ink-muted)' }}>Last updated April 2025</div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-150"
+            style={{ background: 'rgba(28,26,23,0.06)', color: 'var(--ink-soft)', border: 'none', cursor: 'pointer', fontSize: 16 }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.11)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(28,26,23,0.06)'}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="overflow-y-auto px-7 py-5 flex flex-col gap-5" style={{ flex: 1 }}>
+          <p className="text-[13px] font-light leading-[1.75]" style={{ color: 'var(--ink-muted)' }}>
+            Please read these terms carefully. By creating an account, you acknowledge that you have read and understood the following.
+          </p>
+
+          {TERMS_SECTIONS.map(s => (
+            <div key={s.title}>
+              <div className="text-[12px] uppercase tracking-[1px] font-semibold mb-1.5" style={{ color: 'var(--tc)' }}>
+                {s.title}
+              </div>
+              <p className="text-[13px] font-light leading-[1.75]" style={{ color: 'var(--ink-soft)' }}>
+                {s.body}
+              </p>
+            </div>
+          ))}
+
+          <div
+            className="rounded-[12px] px-4 py-3.5 mt-1"
+            style={{ background: 'rgba(196,99,58,0.05)', border: '0.5px solid rgba(196,99,58,0.15)' }}
+          >
+            <p className="text-[12px] font-light leading-[1.7] italic" style={{ color: 'var(--ink-muted)' }}>
+              For questions or concerns, please contact us at{' '}
+              <span className="font-medium not-italic" style={{ color: 'var(--tc)' }}>support@letterfromheart.com</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          className="px-7 py-4 flex-shrink-0 flex justify-end"
+          style={{ borderTop: '0.5px solid rgba(28,26,23,0.08)' }}
+        >
+          <button
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer transition-all duration-200 hover:-translate-y-px"
+            style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 12px rgba(28,26,23,0.15)' }}
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const ROLES = [
   {
     id:    'seeker',
@@ -205,8 +321,9 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role,            setRole]            = useState('both')
 
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
+  const [loading,    setLoading]    = useState(false)
+  const [error,      setError]      = useState('')
+  const [termsOpen,  setTermsOpen]  = useState(false)
 
   function reset() {
     setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both')
@@ -471,8 +588,25 @@ export default function AuthPage() {
           <p className="text-center text-[11px] font-light mt-5 leading-[1.6]" style={{ color: 'var(--ink-muted)' }}>
             Your letters stay private. No ads. No judgment.
           </p>
+
+          {/* Terms link */}
+          <div className="text-center mt-3">
+            <button
+              type="button"
+              onClick={() => setTermsOpen(true)}
+              className="text-[11px] font-light border-none bg-transparent cursor-pointer transition-colors duration-150 underline underline-offset-2"
+              style={{ color: 'var(--ink-muted)', textDecorationColor: 'rgba(28,26,23,0.25)' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--tc)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
+            >
+              View Terms &amp; Conditions
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Terms modal */}
+      {termsOpen && <TermsModal onClose={() => setTermsOpen(false)} />}
     </div>
   )
 }

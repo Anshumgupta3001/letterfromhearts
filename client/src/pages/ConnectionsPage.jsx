@@ -128,8 +128,9 @@ export default function ConnectionsPage() {
   }
 
   return (
-    <main className="page-enter w-full px-6 md:px-10 lg:px-16" style={{ paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 52, paddingBottom: 72 }}>
       {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <div className="w-full max-w-3xl lg:max-w-4xl">
 
       {/* ── Page header ──────────────────────────────────────────────── */}
       <div style={{ marginBottom: 40 }}>
@@ -634,6 +635,7 @@ export default function ConnectionsPage() {
           </div>
         </div>
       )}
+      </div>
     </main>
   )
 }
