@@ -92,14 +92,14 @@ function StatCard({ stat, navigate }) {
       onClick={() => navigate(stat.page)}
       className="stat-card"
       style={{
-        flex: 1, padding: '22px 26px', cursor: 'pointer',
+        flex: 1, padding: '16px 20px', cursor: 'pointer',
         border: `1px solid ${BD}`,
         background: 'rgba(255,255,255,0.55)',
         borderRadius: 14,
         minWidth: 0,
       }}
     >
-      <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 36, fontWeight: 700, lineHeight: 1, marginBottom: 7, color: stat.color }}>
+      <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 700, lineHeight: 1, marginBottom: 4, color: stat.color }}>
         {stat.n}
       </div>
       <div style={{ fontSize: 12, color: 'var(--ink-muted)', letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif' }}>{stat.label}</div>
@@ -112,7 +112,7 @@ function SectionHeader({ title, subtitle, seeAll, onSeeAll }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
       <div>
-        <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 23, fontWeight: 700, color: 'var(--ink)', marginBottom: 4, lineHeight: 1.2 }}>{title}</h2>
+        <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginBottom: 3, lineHeight: 1.2 }}>{title}</h2>
         {subtitle && <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>{subtitle}</p>}
       </div>
       {seeAll && (
@@ -171,7 +171,7 @@ export default function HomePage() {
       {/* Subtle grain */}
       <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E\")", pointerEvents: 'none', zIndex: 0, opacity: 0.6 }} />
 
-      <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(32px, 5vw, 52px) clamp(24px, 5vw, 60px)' }}>
+      <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(24px, 4vw, 40px) clamp(20px, 4vw, 48px)' }}>
 
         {/* ── Greeting ──────────────────────────────────────────────── */}
         <div className="animate-fade-up" style={{ fontSize: 11, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -181,18 +181,18 @@ export default function HomePage() {
 
         <h1
           className="animate-fade-up"
-          style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(32px, 5vw, 46px)', fontWeight: 700, lineHeight: 1.15, color: 'var(--ink)', marginBottom: 16, letterSpacing: '-0.5px', animationDelay: '0.08s' }}
+          style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(24px, 3.5vw, 34px)', fontWeight: 700, lineHeight: 1.2, color: 'var(--ink)', marginBottom: 12, letterSpacing: '-0.3px', animationDelay: '0.08s' }}
         >
           <em style={{ color: 'var(--tc)', fontStyle: 'italic' }}>{firstName},</em> what would<br />
           you like to <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>express</em> today?
         </h1>
 
-        <p className="animate-fade-up font-lora" style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.7, maxWidth: 440, marginBottom: 40, animationDelay: '0.15s' }}>
+        <p className="animate-fade-up font-lora" style={{ fontSize: 13.5, fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 400, marginBottom: 28, animationDelay: '0.15s' }}>
           This is your quiet space. No pressure. No audience.<br />Just words, when you're ready.
         </p>
 
         {/* ── Stats ─────────────────────────────────────────────────── */}
-        <div className="animate-fade-up" style={{ display: 'flex', gap: 12, marginBottom: 52, animationDelay: '0.22s', flexWrap: 'wrap' }}>
+        <div className="animate-fade-up" style={{ display: 'flex', gap: 10, marginBottom: 32, animationDelay: '0.22s', flexWrap: 'wrap' }}>
           {stats.map((s) => (
             <StatCard key={s.label} stat={s} navigate={navigate} />
           ))}
@@ -206,8 +206,8 @@ export default function HomePage() {
             onMouseLeave={() => setCtaHov(false)}
             onClick={() => navigate('write')}
             style={{
-              marginBottom: 48, animationDelay: '0.28s',
-              background: 'var(--ink)', borderRadius: 14, padding: '28px 32px',
+              marginBottom: 32, animationDelay: '0.28s',
+              background: 'var(--ink)', borderRadius: 12, padding: '20px 24px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
               flexWrap: 'wrap',
               cursor: 'pointer', overflow: 'hidden', position: 'relative',
@@ -217,7 +217,7 @@ export default function HomePage() {
             <span style={{ position: 'absolute', right: 100, top: 16, fontSize: 10, color: 'rgba(255,255,255,0.1)', pointerEvents: 'none' }}>✦</span>
             <div>
               <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Begin Writing</div>
-              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, color: 'var(--cream)', fontWeight: 700, lineHeight: 1.25 }}>
+              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, color: 'var(--cream)', fontWeight: 700, lineHeight: 1.25 }}>
                 Pour your heart<br />into a <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>new letter</em>
               </div>
               <div style={{ fontSize: 12, color: 'rgba(245,240,232,0.5)', marginTop: 6, lineHeight: 1.6 }}>Unsent letters heal too. Start whenever you feel it.</div>
@@ -226,7 +226,7 @@ export default function HomePage() {
               onClick={e => { e.stopPropagation(); navigate('write') }}
               onMouseEnter={() => setCtaBtnHov(true)}
               onMouseLeave={() => setCtaBtnHov(false)}
-              style={{ background: ctaBtnHov ? '#D97040' : 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 26px', fontSize: 13, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0, transform: ctaBtnHov ? 'translateY(-2px)' : 'translateY(0)', boxShadow: ctaBtnHov ? '0 8px 24px rgba(196,99,58,0.3)' : '0 4px 14px rgba(196,99,58,0.2)', transition: 'all 0.2s' }}
+              style={{ background: ctaBtnHov ? '#D97040' : 'var(--tc)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 12.5, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0, transform: ctaBtnHov ? 'translateY(-2px)' : 'translateY(0)', boxShadow: ctaBtnHov ? '0 6px 18px rgba(196,99,58,0.3)' : '0 3px 10px rgba(196,99,58,0.2)', transition: 'all 0.2s' }}
             >
               Begin writing →
             </button>
@@ -234,14 +234,14 @@ export default function HomePage() {
         )}
 
         {/* ── Personal letters section ───────────────────────────────── */}
-        <section className="animate-fade-up" style={{ marginBottom: 56, animationDelay: '0.34s' }}>
+        <section className="animate-fade-up" style={{ marginBottom: 36, animationDelay: '0.34s' }}>
           <SectionHeader
             title="Your thoughts"
             subtitle="Letters written for yourself, and no one else."
             seeAll={personalLetters.length > 0}
             onSeeAll={() => navigate('myspace')}
           />
-          <div style={{ marginTop: 22 }}>
+          <div style={{ marginTop: 14 }}>
             {recentPersonal.length === 0 ? (
               <EmptySection
                 icon="🪞"

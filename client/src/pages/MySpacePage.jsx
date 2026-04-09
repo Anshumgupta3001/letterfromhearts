@@ -201,6 +201,10 @@ const CARD_CONFIG = {
     accentGrad: 'linear-gradient(180deg, var(--purple), var(--gold))',
     tagLabel: 'Listener Read', tagBg: 'rgba(139,126,200,0.1)', tagColor: 'var(--purple)', tagBorder: 'rgba(139,126,200,0.25)',
   },
+  sent: {
+    accentGrad: 'linear-gradient(180deg, var(--gold), var(--ink-muted))',
+    tagLabel: 'Sent', tagBg: '#EDE5D4', tagColor: 'var(--ink-muted)', tagBorder: '#E0D4BC',
+  },
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -210,6 +214,7 @@ export default function MySpacePage() {
     personalLetters, refreshPersonalLetters,
     ownStrangerLetters, refreshOwnStrangerLetters,
     strangerLetters, refreshStrangerLetters,
+    sentLetters, refreshLetters,
     openLetterPanel,
   } = useApp()
 
@@ -220,7 +225,7 @@ export default function MySpacePage() {
   const [deletingLetter, setDeletingLetter] = useState(null)
   const [deleting, setDeleting]           = useState(false)
 
-  useEffect(() => { refreshPersonalLetters(); refreshOwnStrangerLetters(); if (canReadFeed) refreshStrangerLetters() }, [])
+  useEffect(() => { refreshPersonalLetters(); refreshOwnStrangerLetters(); refreshLetters(); if (canReadFeed) refreshStrangerLetters() }, []) // eslint-disable-line
   useEffect(() => { setPersonal(personalLetters) }, [personalLetters])
   useEffect(() => { setStranger(ownStrangerLetters) }, [ownStrangerLetters])
 
@@ -228,8 +233,9 @@ export default function MySpacePage() {
 
   // Tabs config
   const TABS = [
-    { id: 'all',      label: 'All',             count: personal.length + stranger.length },
+    { id: 'all',      label: 'All',             count: personal.length + stranger.length + sentLetters.length },
     { id: 'personal', label: 'Personal',         count: personal.length },
+    { id: 'sent',     label: 'Sent',             count: sentLetters.length },
     ...(canWriteStranger ? [{ id: 'stranger', label: 'Caring Stranger', count: stranger.length }] : []),
     ...(canReadFeed    ? [{ id: 'read',     label: 'Listener Read',   count: readLetters.length }] : []),
   ]
@@ -237,12 +243,14 @@ export default function MySpacePage() {
   // Letters visible per tab
   const visibleLetters = (() => {
     if (activeTab === 'personal') return personal.map(l => ({ ...l, _cardType: 'personal' }))
+    if (activeTab === 'sent')     return sentLetters.map(l => ({ ...l, _cardType: 'sent' }))
     if (activeTab === 'stranger') return stranger.map(l => ({ ...l, _cardType: 'stranger' }))
     if (activeTab === 'read')     return readLetters.map(l => ({ ...l, _cardType: 'read' }))
     // all tab
     return [
       ...personal.map(l => ({ ...l, _cardType: 'personal' })),
       ...stranger.map(l => ({ ...l, _cardType: 'stranger' })),
+      ...sentLetters.map(l => ({ ...l, _cardType: 'sent' })),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   })()
 
@@ -320,6 +328,8 @@ export default function MySpacePage() {
       {visibleLetters.length === 0 ? (
         activeTab === 'personal' ? (
           <EmptyState icon="🪞" title="Nothing written yet" subtitle="Write to yourself — your past self, your future self. Even one sentence matters." cta="Write your first letter" onCta={() => navigate('write')} />
+        ) : activeTab === 'sent' ? (
+          <EmptyState icon="📬" title="No letters sent yet" subtitle="Write a letter to someone you know and send it directly to their inbox." cta="Write a letter" onCta={() => navigate('write')} />
         ) : activeTab === 'stranger' ? (
           <EmptyState icon="🌍" title="No stranger letters yet" subtitle="Share something with the world. Your words might be exactly what someone needs today." cta="Write to a stranger" onCta={() => navigate('write')} />
         ) : activeTab === 'read' ? (

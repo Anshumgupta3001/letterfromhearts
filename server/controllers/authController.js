@@ -6,19 +6,31 @@ function signToken(id) {
   return jwt.sign({ id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn })
 }
 
+function validatePassword(password) {
+  if (!password || password.length < 8) return 'Password must be at least 8 characters.'
+  if (!/[A-Z]/.test(password))          return 'Password must contain at least one uppercase letter.'
+  if (!/[a-z]/.test(password))          return 'Password must contain at least one lowercase letter.'
+  if (!/[0-9]/.test(password))          return 'Password must contain at least one number.'
+  if (!/[^A-Za-z0-9]/.test(password))   return 'Password must contain at least one special character.'
+  return null
+}
+
 // POST /api/auth/signup
 export async function signup(req, res) {
-  const { name, email, password, otp, role } = req.body
+  const { name, email, password, role } = req.body
 
   if (!name?.trim())  return res.status(400).json({ error: 'Name is required.' })
   if (!email?.trim()) return res.status(400).json({ error: 'Email is required.' })
   if (!password)      return res.status(400).json({ error: 'Password is required.' })
-  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' })
-  if (!otp)           return res.status(400).json({ error: 'OTP is required.' })
-  if (String(otp).trim() !== '1111') return res.status(403).json({ error: 'Invalid OTP. Please use the correct access code.' })
+
+  const pwErr = validatePassword(password)
+  if (pwErr) return res.status(400).json({ error: pwErr })
 
   const validRoles = ['seeker', 'listener', 'both']
-  const userRole = validRoles.includes(role) ? role : 'both'
+  if (!role || !validRoles.includes(role)) {
+    return res.status(400).json({ error: 'Account type is required.' })
+  }
+  const userRole = role
 
   const exists = await User.findOne({ email: email.toLowerCase().trim() })
   if (exists) return res.status(409).json({ error: 'An account with this email already exists.' })

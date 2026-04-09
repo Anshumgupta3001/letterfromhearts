@@ -16,16 +16,28 @@ const MOODS = [
 const CRISIS_WORDS = ["end my life", "kill myself", "want to die", "can't go on", "suicidal", "hurt myself"]
 
 // ── Step header ───────────────────────────────────────────────────────────────
-function StepLabel({ n, title, subtitle }) {
+function StepLabel({ n, title, subtitle, onBack }) {
   return (
-    <div className="mb-10">
-      <div className="text-[11px] tracking-[2.5px] uppercase font-medium mb-3" style={{ color: 'var(--tc)' }}>
-        Step {n} of 3
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] tracking-[2px] uppercase font-medium" style={{ color: 'var(--tc)' }}>
+          Step {n} of 3
+        </div>
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{ fontSize: 12.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0', transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-soft)'}
+          >
+            ← Back
+          </button>
+        )}
       </div>
-      <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.5px', marginBottom: 10 }}>
+      <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(20px, 2.5vw, 26px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.3px', marginBottom: 6 }}>
         {title}
       </h2>
-      <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.65 }}>
+      <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
         {subtitle}
       </p>
     </div>
@@ -44,9 +56,9 @@ function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStrange
 
   return (
     <div className="animate-fade-up">
-      <StepLabel n={1} title="Who is this letter for?" subtitle="Choose how this letter will travel." />
+      <StepLabel n={1} title="Who is this letter for?" subtitle="Choose how this letter will travel." onBack={onBack} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
         {MODES.map(m => {
           const disabled = m.id === 'stranger' && !canWriteStranger
           const active   = mode === m.id
@@ -61,25 +73,25 @@ function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStrange
                   ? m.id === 'stranger' ? 'rgba(122,158,142,0.06)' : m.id === 'known' ? 'rgba(196,99,58,0.06)' : 'rgba(139,126,200,0.07)'
                   : 'var(--paper)',
                 border: active
-                  ? m.id === 'stranger' ? '1px solid var(--sage)' : m.id === 'known' ? '1px solid var(--tc)' : '1px solid var(--purple)'
+                  ? m.id === 'stranger' ? '1.5px solid var(--sage)' : m.id === 'known' ? '1.5px solid var(--tc)' : '1.5px solid var(--purple)'
                   : '1px solid rgba(28,26,23,0.09)',
-                borderRadius: 14,
-                padding: '28px 26px',
+                borderRadius: 12,
+                padding: '18px 18px',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.42 : 1,
-                transform: active ? 'translateY(-3px)' : '',
-                boxShadow: active ? '0 10px 30px rgba(28,26,23,0.1)' : 'none',
+                transform: active ? 'translateY(-2px)' : '',
+                boxShadow: active ? '0 6px 20px rgba(28,26,23,0.08)' : 'none',
                 transition: 'all 0.2s',
               }}
             >
-              <span style={{ fontSize: 30, display: 'block', marginBottom: 16 }}>{m.icon}</span>
-              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, fontWeight: 700, color: 'var(--ink)', marginBottom: 8, lineHeight: 1.2 }}>{m.name}</div>
-              <div style={{ fontFamily: 'Lora, serif', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.7, marginBottom: 14 }}>{m.desc}</div>
+              <span style={{ fontSize: 24, display: 'block', marginBottom: 10 }}>{m.icon}</span>
+              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 15, fontWeight: 700, color: 'var(--ink)', marginBottom: 5, lineHeight: 1.2 }}>{m.name}</div>
+              <div style={{ fontFamily: 'Lora, serif', fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.65, marginBottom: 10 }}>{m.desc}</div>
               <div
                 style={{
-                  fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12,
+                  fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 11,
                   color: disabled ? 'var(--sage)' : 'var(--ink-muted)',
-                  paddingTop: 14, borderTop: '1px solid rgba(28,26,23,0.07)',
+                  paddingTop: 10, borderTop: '1px solid rgba(28,26,23,0.07)',
                   lineHeight: 1.5,
                 }}
               >
@@ -95,14 +107,14 @@ function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStrange
         className="overflow-hidden transition-all duration-[400ms] mb-8"
         style={{ opacity: mode === 'known' ? 1 : 0, maxHeight: mode === 'known' ? 120 : 0 }}
       >
-        <label style={{ fontSize: 12, color: 'var(--ink-muted)', display: 'block', marginBottom: 8 }}>Their email address</label>
+        <label style={{ fontSize: 11.5, color: 'var(--ink-muted)', display: 'block', marginBottom: 6 }}>Their email address</label>
         <input
           type="email"
           style={{
             width: '100%',
-            padding: '13px 18px',
-            fontFamily: 'Lora, serif', fontSize: 15, fontStyle: 'italic', color: 'var(--ink)',
-            background: 'var(--paper)', borderRadius: 10, outline: 'none',
+            padding: '10px 14px',
+            fontFamily: 'Lora, serif', fontSize: 13.5, fontStyle: 'italic', color: 'var(--ink)',
+            background: 'var(--paper)', borderRadius: 8, outline: 'none',
             border: '1px solid rgba(28,26,23,0.15)', transition: 'border-color 0.2s',
           }}
           placeholder="their@email.com"
@@ -113,20 +125,12 @@ function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStrange
         />
       </div>
 
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBack}
-          style={{ padding: '12px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)', fontWeight: 500, background: 'transparent', border: '1px solid rgba(28,26,23,0.15)', cursor: 'pointer', transition: 'color 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-soft)'}
-        >
-          ← Back
-        </button>
+      <div className="flex items-center justify-end">
         <button
           disabled={!canProceed}
           onClick={onNext}
           className="flex items-center gap-2 rounded-pill font-sans font-medium disabled:opacity-35 disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-px"
-          style={{ background: 'var(--ink)', color: 'var(--cream)', border: 'none', padding: '13px 28px', fontSize: 14, cursor: 'pointer' }}
+          style={{ background: 'var(--ink)', color: 'var(--cream)', border: 'none', padding: '9px 22px', fontSize: 13, cursor: 'pointer' }}
           onMouseEnter={e => e.currentTarget.style.background = 'var(--tc)'}
           onMouseLeave={e => e.currentTarget.style.background = 'var(--ink)'}
         >
@@ -142,19 +146,19 @@ function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStrange
 function Step2({ mood, setMood, onBack, onNext }) {
   return (
     <div className="animate-fade-up">
-      <StepLabel n={2} title="What does this carry?" subtitle="This helps your listener show up in the right way." />
+      <StepLabel n={2} title="What does this carry?" subtitle="This helps your listener show up in the right way." onBack={onBack} />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 mb-6">
         {MOODS.map(m => (
           <div
             key={m.id}
             onClick={() => setMood(m)}
             style={{
-              padding: '16px 20px',
-              borderRadius: 12,
+              padding: '12px 14px',
+              borderRadius: 10,
               cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 12,
-              fontFamily: '"DM Sans", sans-serif', fontSize: 14,
+              display: 'flex', alignItems: 'center', gap: 9,
+              fontFamily: '"DM Sans", sans-serif', fontSize: 13,
               transition: 'all 0.2s',
               ...(mood?.id === m.id
                 ? { ...m.activeStyle, color: 'white', border: `1px solid ${m.activeStyle.background || 'transparent'}`, transform: 'translateY(-1px)', boxShadow: '0 6px 18px rgba(28,26,23,0.12)' }
@@ -162,27 +166,18 @@ function Step2({ mood, setMood, onBack, onNext }) {
               ),
             }}
           >
-            <span style={{ fontSize: 22, flexShrink: 0 }}>{m.emoji}</span>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{m.emoji}</span>
             <span style={{ fontWeight: mood?.id === m.id ? 500 : 400 }}>{m.label}</span>
           </div>
         ))}
       </div>
 
-      <div className="flex justify-between items-center">
-        <button
-          onClick={onBack}
-          className="rounded-pill font-sans transition-all duration-200"
-          style={{ padding: '12px 24px', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: '1px solid rgba(28,26,23,0.12)', cursor: 'pointer' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
-        >
-          ← Back
-        </button>
+      <div className="flex justify-end items-center">
         <button
           disabled={!mood}
           onClick={onNext}
           className="flex items-center gap-2 rounded-pill font-sans font-medium disabled:opacity-35 disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-px"
-          style={{ background: 'var(--ink)', color: 'var(--cream)', border: 'none', padding: '13px 28px', fontSize: 14, cursor: 'pointer' }}
+          style={{ background: 'var(--ink)', color: 'var(--cream)', border: 'none', padding: '9px 22px', fontSize: 13, cursor: 'pointer' }}
           onMouseEnter={e => { if (mood) e.currentTarget.style.background = 'var(--tc)' }}
           onMouseLeave={e => e.currentTarget.style.background = 'var(--ink)'}
         >
@@ -217,7 +212,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
 
   return (
     <div className="animate-fade-up">
-      <StepLabel n={3} title="Write your letter." subtitle="Take your time. There's no right way to begin — just start." />
+      <StepLabel n={3} title="Write your letter." subtitle="Take your time. There's no right way to begin — just start." onBack={onBack} />
 
       {/* ── Mood indicator ─────────────────────────────────────────────── */}
       {mood && (
@@ -406,17 +401,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
       )}
 
       {/* ── Action bar ──────────────────────────────────────────────────── */}
-      <div className="mt-7 flex items-center gap-3 flex-wrap">
-        <button
-          onClick={onBack}
-          style={{ padding: '12px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)', fontWeight: 500, background: 'transparent', border: '1px solid rgba(28,26,23,0.15)', cursor: 'pointer', transition: 'color 0.15s', flexShrink: 0 }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-soft)'}
-        >
-          ← Back
-        </button>
-
-        <div style={{ flex: 1 }} />
+      <div className="mt-7 flex items-center gap-3 flex-wrap justify-end">
 
         {saveError && (
           <div style={{ fontSize: 12, padding: '9px 14px', borderRadius: 8, color: 'var(--tc)', background: 'rgba(196,99,58,0.07)', border: '1px solid rgba(196,99,58,0.18)', flexShrink: 0 }}>
@@ -428,8 +413,8 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
           <button
             onClick={onSend}
             disabled={saving}
-            style={{ padding: '13px 28px', borderRadius: 999, fontSize: 14, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--purple, #8B7EC8)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
-            onMouseEnter={e => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(139,126,200,0.3)' } }}
+            style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--purple, #8B7EC8)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
+            onMouseEnter={e => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(139,126,200,0.3)' } }}
             onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
           >
             {saving ? 'Saving…' : 'Save Letter'}
@@ -438,8 +423,8 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
           <button
             onClick={onSend}
             disabled={saving}
-            style={{ padding: '13px 28px', borderRadius: 999, fontSize: 14, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--sage)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
-            onMouseEnter={e => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(122,158,142,0.3)' } }}
+            style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--sage)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
+            onMouseEnter={e => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(122,158,142,0.3)' } }}
             onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
           >
             {saving ? 'Sharing…' : 'Share Letter'}
@@ -447,8 +432,8 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, deliver
         ) : (
           <button
             onClick={() => onSendEmail(sendFrom)}
-            style={{ padding: '13px 28px', borderRadius: 999, fontSize: 14, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(196,99,58,0.25)' }}
+            style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.25)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
           >
             Send Letter →
@@ -497,7 +482,7 @@ function Step4({ mode, mood, deliveryType, navigate }) {
           <path d="M60 61C60 61 53 56 53 52C53 49.5 55.5 48 58 50C58.8 50.6 59.5 51.3 60 52C60.5 51.3 61.2 50.6 62 50C64.5 48 67 49.5 67 52C67 56 60 61 60 61Z" fill="rgba(255,255,255,0.3)"/>
         </svg>
       </div>
-      <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(30px, 4vw, 42px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, marginBottom: 14, letterSpacing: '-0.5px' }}>
+      <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(24px, 3.5vw, 34px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, marginBottom: 12, letterSpacing: '-0.4px' }}>
         Your letter is<br /><em style={{ fontStyle: 'italic', color: headingColor }}>{headingText}</em>
       </h2>
       <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', maxWidth: 420, lineHeight: 1.75, margin: '0 auto 32px' }}>{msg}</p>
@@ -588,49 +573,162 @@ export default function WritePage() {
 
   if (step === 4) {
     return (
-      <div className="w-full px-6 md:px-10 lg:px-16 py-10">
-        <Step4 mode={mode} mood={mood} deliveryType={deliveryType} navigate={navigate} />
+      <div className="w-full flex justify-center px-4 sm:px-6 py-10">
+        <div className="w-full max-w-2xl">
+          <Step4 mode={mode} mood={mood} deliveryType={deliveryType} navigate={navigate} />
+        </div>
       </div>
     )
   }
 
-  // Writing step (step 3) uses a more comfortable, focused layout
-  const isWritingStep = step === 3
+  const isKnown = mode === 'known'
 
   return (
     <>
-      <div className="w-full px-6 md:px-10 lg:px-16 py-10">
-        <ProgressDots total={3} current={step} />
+      <div className="w-full flex justify-center px-4 sm:px-6 md:px-10 py-6 md:py-10">
+        <div className="w-full max-w-3xl lg:max-w-4xl">
+          <ProgressDots total={3} current={step} />
 
-        <div style={{ marginTop: 36 }}>
-          {step === 1 && (
-            <Step1
-              mode={mode} setMode={setMode}
-              email={email} setEmail={setEmail}
-              onNext={() => setStep(2)}
-              onBack={() => navigate('home')}
-              canWriteStranger={canWriteStranger}
-            />
-          )}
-          {step === 2 && (
-            <Step2 mood={mood} setMood={setMood} onBack={() => setStep(1)} onNext={() => setStep(3)} />
-          )}
-          {step === 3 && (
-            <Step3
-              onBack={() => setStep(2)}
-              onSend={handleSend}
-              mood={mood}
-              sal={sal} setSal={setSal}
-              body={body} setBody={setBody}
-              mode={mode}
-              deliveryType={deliveryType} setDeliveryType={setDeliveryType}
-              saving={saving} saveError={saveError}
-              onSendEmail={(from) => { setSendFrom(from); setSendEmailOpen(true) }}
-              hasEmailAccounts={emailAccounts.length > 0}
-              emailMode={userEmailMode}
-              systemEmail={systemEmail}
-            />
-          )}
+          {/* All steps — 2-column grid with right panel */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-6" style={{ marginTop: 24 }}>
+
+          {/* ── Left: step content ── */}
+          <div>
+            {step === 1 && (
+              <Step1
+                mode={mode} setMode={setMode}
+                email={email} setEmail={setEmail}
+                onNext={() => setStep(2)}
+                onBack={() => navigate('home')}
+                canWriteStranger={canWriteStranger}
+              />
+            )}
+            {step === 2 && (
+              <Step2 mood={mood} setMood={setMood} onBack={() => setStep(1)} onNext={() => setStep(3)} />
+            )}
+            {step === 3 && (
+              <Step3
+                onBack={() => setStep(2)}
+                onSend={handleSend}
+                mood={mood}
+                sal={sal} setSal={setSal}
+                body={body} setBody={setBody}
+                mode={mode}
+                deliveryType={deliveryType} setDeliveryType={setDeliveryType}
+                saving={saving} saveError={saveError}
+                onSendEmail={(from) => { setSendFrom(from); setSendEmailOpen(true) }}
+                hasEmailAccounts={emailAccounts.length > 0}
+                emailMode={userEmailMode}
+                systemEmail={systemEmail}
+              />
+            )}
+          </div>
+
+            {/* ── Right: info panel ── */}
+            <aside className="hidden lg:flex flex-col gap-4" style={{ alignSelf: 'start', position: 'sticky', top: 68 }}>
+
+              {/* Mood */}
+              {mood && (
+                <div style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)', borderRadius: 12, padding: '14px 16px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 10 }}>Mood</div>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: mood.activeStyle.background, color: '#fff', fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>
+                    {mood.emoji} {mood.label}
+                  </span>
+                  <button
+                    onClick={() => setStep(2)}
+                    style={{ display: 'block', marginTop: 8, fontSize: 11, color: 'var(--tc)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2 }}
+                  >
+                    Change mood →
+                  </button>
+                </div>
+              )}
+
+              {/* Delivery */}
+              <div style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 10 }}>Delivery</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {[
+                    { id: 'now',     icon: '📨', name: 'Send now',         comingSoon: false },
+                    { id: 'capsule', icon: '⏳', name: 'Time capsule',     comingSoon: true  },
+                    { id: 'burn',    icon: '🔥', name: 'Burn after writing',comingSoon: true  },
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => { if (!opt.comingSoon && isKnown) setDeliveryType(opt.id) }}
+                      disabled={opt.comingSoon || !isKnown}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '8px 10px', borderRadius: 8, textAlign: 'left',
+                        border: deliveryType === opt.id && isKnown ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.09)',
+                        background: deliveryType === opt.id && isKnown ? 'rgba(196,99,58,0.06)' : '#fff',
+                        color: opt.comingSoon || !isKnown ? 'var(--ink-muted)' : deliveryType === opt.id ? 'var(--tc)' : 'var(--ink-soft)',
+                        cursor: opt.comingSoon || !isKnown ? 'default' : 'pointer',
+                        opacity: opt.comingSoon ? 0.5 : !isKnown ? 0.4 : 1,
+                        fontSize: 12.5, fontFamily: '"DM Sans", sans-serif',
+                        fontWeight: deliveryType === opt.id && isKnown ? 500 : 400,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <span style={{ fontSize: 13 }}>{opt.icon}</span>
+                      <span style={{ flex: 1 }}>{opt.name}</span>
+                      {opt.comingSoon && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: 'rgba(28,26,23,0.06)', color: 'var(--ink-muted)' }}>Soon</span>}
+                    </button>
+                  ))}
+                </div>
+                {!isKnown && (
+                  <p style={{ fontSize: 10.5, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic', marginTop: 8, lineHeight: 1.55 }}>
+                    Delivery options apply when sending to someone you know.
+                  </p>
+                )}
+              </div>
+
+              {/* Privacy */}
+              <div style={{ background: 'rgba(122,158,142,0.06)', border: '1px solid rgba(122,158,142,0.18)', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--sage)', marginBottom: 8 }}>Privacy</div>
+                <p style={{ fontSize: 11.5, fontFamily: 'Lora, serif', fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.65, margin: 0 }}>
+                  {mode === 'stranger'
+                    ? 'Your letter is anonymous. No name, no email — just your words.'
+                    : mode === 'self'
+                    ? 'This letter is private. Only you can read it.'
+                    : 'Your letter goes directly to the recipient. Your email is kept safe.'}
+                </p>
+              </div>
+
+              {/* Send from (known only) */}
+              {isKnown && (
+                <div style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)', borderRadius: 12, padding: '14px 16px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 10 }}>Send From</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {[
+                      { id: 'system', icon: '📮', label: 'System Email', sub: systemEmail || 'Platform default' },
+                      { id: 'custom', icon: '✉️', label: 'My Email', sub: emailAccounts.length > 0 ? 'Your connected account' : 'No account — go to Connections' },
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => { if (opt.id === 'custom' && !emailAccounts.length) return; setSendFrom(opt.id) }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '8px 10px', borderRadius: 8, textAlign: 'left',
+                          border: sendFrom === opt.id ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.09)',
+                          background: sendFrom === opt.id ? 'rgba(196,99,58,0.05)' : '#fff',
+                          color: sendFrom === opt.id ? 'var(--tc)' : 'var(--ink-soft)',
+                          cursor: opt.id === 'custom' && !emailAccounts.length ? 'default' : 'pointer',
+                          opacity: opt.id === 'custom' && !emailAccounts.length ? 0.45 : 1,
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        <span style={{ fontSize: 13 }}>{opt.icon}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: sendFrom === opt.id ? 600 : 400, fontFamily: '"DM Sans", sans-serif' }}>{opt.label}</div>
+                          <div style={{ fontSize: 10, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opt.sub}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
+          </div>
         </div>
       </div>
 
