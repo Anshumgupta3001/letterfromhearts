@@ -73,6 +73,10 @@ export function AppProvider({ children }) {
         if (json?.success) {
           setAuthUser(json.user)
           localStorage.setItem('lfh_user', JSON.stringify(json.user))
+          // Show role setup modal if this is a Google user who never set a role
+          if (!json.user.role && json.user.authProvider === 'google') {
+            setPendingRoleSetup(true)
+          }
         } else {
           removeToken()
           setAuthUser(null)

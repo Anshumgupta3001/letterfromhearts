@@ -84,6 +84,10 @@ export async function updateMe(req, res) {
     return res.status(400).json({ error: 'Invalid emailMode value.' })
   }
 
-  const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true })
+  // Use req.user directly so this works for both User and GoogleUser models.
+  // The protect middleware already fetched and attached the correct document.
+  const user = req.user
+  Object.assign(user, updates)
+  await user.save()
   res.json({ success: true, user: user.toSafeObject() })
 }

@@ -37,11 +37,13 @@ function Spinner() {
 
 export default function GoogleRoleSetupModal() {
   const { authUser, updateAuthUser, setPendingRoleSetup } = useApp()
-  const [role,    setRole]    = useState('both')
+  // null = nothing selected yet — user must make an explicit choice
+  const [role,    setRole]    = useState(null)
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
   async function handleSave() {
+    if (!role) { setError('Please select how you want to use Letter from Heart.'); return }
     setError('')
     setLoading(true)
     try {
@@ -129,7 +131,7 @@ export default function GoogleRoleSetupModal() {
         <button
           type="button"
           onClick={handleSave}
-          disabled={loading}
+          disabled={loading || !role}
           className="w-full py-[13px] rounded-[10px] font-sans text-[14px] font-medium border-none cursor-pointer transition-all duration-200 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 14px rgba(28,26,23,0.18)' }}
         >
