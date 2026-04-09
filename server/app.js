@@ -3,6 +3,7 @@ import cors from 'cors'
 import morgan from 'morgan'
 import config from './config/index.js'
 import authRoutes from './routes/authRoutes.js'
+import authGoogleRoutes from './routes/authGoogle.js'   // ← Google OAuth (new)
 import emailAccountRoutes from './routes/emailAccountRoutes.js'
 import sendEmailRoutes from './routes/sendEmailRoutes.js'
 import letterRoutes from './routes/letterRoutes.js'
@@ -24,6 +25,7 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/auth', authGoogleRoutes)   // ← POST /api/auth/google (new)
 app.use('/api/email-accounts', emailAccountRoutes)
 app.use('/api/send-email', sendEmailRoutes)
 app.use('/api/letters', letterRoutes)
