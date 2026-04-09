@@ -14,6 +14,10 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
   const date   = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
   const isPersonal = letter.type === 'personal'
 
+  // status: 'sent' | 'opened' | 'clicked' | 'failed' | 'saved'
+  const isOpened = letter.status === 'opened' || letter.status === 'clicked'
+  const isSentLetter = letter.type === 'sent'
+
   return (
     <div
       onMouseEnter={() => setHov(true)}
@@ -50,11 +54,26 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
 
       {/* Footer */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 22px 12px 28px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--ink-muted)' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          {date}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--ink-muted)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            {date}
+          </div>
+          {/* Open status badge — only for sent letters */}
+          {isSentLetter && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 10.5, padding: '3px 9px', borderRadius: 20, fontWeight: 500,
+              letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif',
+              background: isOpened ? 'rgba(90,158,122,0.1)' : 'rgba(28,26,23,0.05)',
+              color: isOpened ? 'var(--sage)' : 'var(--ink-muted)',
+              border: `1px solid ${isOpened ? 'rgba(90,158,122,0.25)' : 'rgba(28,26,23,0.1)'}`,
+            }}>
+              {isOpened ? '✓ Opened' : '· Not opened'}
+            </span>
+          )}
         </div>
         {/* Only personal letters can be edited/deleted */}
         {isPersonal && onEdit && onDelete && (

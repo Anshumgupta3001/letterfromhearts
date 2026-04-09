@@ -150,6 +150,39 @@ export async function updateLetter(req, res) {
   res.json({ success: true, data: letter })
 }
 
+// GET /api/letters/analytics?days=7|15|30
+// Returns aggregate stats for the requesting user, filtered by date window.
+export async function getAnalytics(req, res) {
+  const userId = req.user._id
+  const days   = Math.min(Math.max(Number(req.query.days) || 30, 1), 365)
+
+  const since = new Date()
+  since.setDate(since.getDate() - days)
+
+  const base = { userId, createdAt: { $gte: since } }
+
+  const [
+    totalWritten,
+    totalSent,
+    totalOpened,
+    totalPersonal,
+    totalStranger,
+  ] = await Promise.all([
+    Letter.countDocuments(base),
+    Letter.countDocuments({ ...base, type: 'sent' }),
+    Letter.countDocuments({ ...base, type: 'sent', status: { $in: ['opened', 'clicked'] } }),
+    Letter.countDocuments({ ...base, type: 'personal' }),
+    Letter.countDocuments({ ...base, type: 'stranger' }),
+  ])
+
+  const openRate = totalSent > 0 ? Math.round((totalOpened / totalSent) * 100) : 0
+
+  res.json({
+    success: true,
+    data: { days, totalWritten, totalSent, totalOpened, totalPersonal, totalStranger, openRate },
+  })
+}
+
 // DELETE /api/letters/:id  — owner only, personal letters only
 export async function deleteLetter(req, res) {
   const letter = await Letter.findOne({ _id: req.params.id, userId: req.user._id })
