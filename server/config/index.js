@@ -14,4 +14,8 @@ export default {
   systemEmailPass: process.env.SYSTEM_EMAIL_PASS || '',
   systemEmailHost: process.env.SYSTEM_EMAIL_HOST || 'smtp.gmail.com',
   systemEmailPort: Number(process.env.SYSTEM_EMAIL_PORT) || 587,
+  // Google OAuth (Passport)
+  googleClientId:     process.env.GOOGLE_CLIENT_ID || '',
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  googleCallbackUrl:  process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback',
 }

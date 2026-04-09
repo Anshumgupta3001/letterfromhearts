@@ -1,13 +1,9 @@
-// GoogleLoginBtn — triggers Firebase Google popup.
-// mode='signup' → shows GoogleAccountTypeModal → POST /api/auth/google-signup
-// mode='login'  → POST /api/auth/google-login (returns 404 if no account)
+// GoogleLoginBtn — redirects to GET /api/auth/google?mode={signup|login}.
+// The backend handles the full OAuth flow and redirects back to the frontend
+// with ?google_token=... (and ?google_new=true for new signups).
+// Errors come back as ?google_error=... and are picked up by AppContext.
 
-import { useState } from 'react'
-import { signInWithPopup } from 'firebase/auth'
-import { auth, googleProvider } from '../../firebase/firebase.config'
 import { useApp } from '../../context/AppContext'
-import { setToken } from '../../utils/api'
-import GoogleAccountTypeModal from './GoogleAccountTypeModal'
 
 function GoogleIcon() {
   return (
@@ -21,148 +17,48 @@ function GoogleIcon() {
   )
 }
 
-function Spinner() {
-  return (
-    <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25"/>
-      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
 // mode: 'signup' | 'login'
 export default function GoogleLoginBtn({ mode = 'login' }) {
-  const { login } = useApp()
+  const { googleAuthError, setGoogleAuthError } = useApp()
 
-  const [loading,     setLoading]     = useState(false)
-  const [error,       setError]       = useState('')
-  // signup-only: pending idToken + name while modal is open
-  const [modalOpen,   setModalOpen]   = useState(false)
-  const [pendingToken, setPendingToken] = useState(null)
-  const [googleName,   setGoogleName]   = useState('')
-  const [modalLoading, setModalLoading] = useState(false)
-  const [modalError,   setModalError]   = useState('')
+  // Show error only when it's relevant to the current mode.
+  // AppContext sets googleAuthError from the URL param after the OAuth redirect.
+  const showError = !!googleAuthError
+
+  function handleClick() {
+    setGoogleAuthError('')
+    window.location.href = `/api/auth/google?mode=${mode}`
+  }
 
   const label = mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'
 
-  async function handleClick() {
-    setError('')
-    setLoading(true)
-    try {
-      const result  = await signInWithPopup(auth, googleProvider)
-      const idToken = await result.user.getIdToken()
-
-      if (mode === 'signup') {
-        // Store the token and open the role-selection modal
-        setPendingToken(idToken)
-        setGoogleName(result.user.displayName || '')
-        setModalOpen(true)
-        return
-      }
-
-      // Login mode — send straight to backend
-      const res  = await fetch('/api/auth/google-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      })
-      const json = await res.json()
-
-      if (!res.ok) {
-        setError(json.error || 'Google sign-in failed. Please try again.')
-        return
-      }
-
-      setToken(json.token)
-      localStorage.setItem('lfh_user', JSON.stringify(json.user))
-      await login(json.token, json.user)
-
-    } catch (err) {
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        return
-      }
-      setError(err.message || 'Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleModalConfirm(role) {
-    setModalError('')
-    setModalLoading(true)
-    try {
-      const res  = await fetch('/api/auth/google-signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: pendingToken, role }),
-      })
-      const json = await res.json()
-
-      if (!res.ok) {
-        setModalError(json.error || 'Sign-up failed. Please try again.')
-        return
-      }
-
-      setModalOpen(false)
-      setToken(json.token)
-      localStorage.setItem('lfh_user', JSON.stringify(json.user))
-      await login(json.token, json.user)
-
-    } catch (err) {
-      setModalError(err.message || 'Something went wrong. Please try again.')
-    } finally {
-      setModalLoading(false)
-    }
-  }
-
-  function handleModalCancel() {
-    setModalOpen(false)
-    setPendingToken(null)
-    setGoogleName('')
-    setModalError('')
-    setError('Account type is required to complete signup.')
-  }
-
   return (
-    <>
-      <div className="flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={handleClick}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-[11px] px-4 rounded-[10px] font-sans text-[13.5px] font-medium cursor-pointer transition-all duration-200 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{
-            background: '#fff',
-            border: '1px solid rgba(28,26,23,0.16)',
-            color: 'var(--ink)',
-            boxShadow: '0 1px 4px rgba(28,26,23,0.08)',
-          }}
-          onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = '0 4px 14px rgba(28,26,23,0.12)' }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(28,26,23,0.08)' }}
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={handleClick}
+        className="w-full flex items-center justify-center gap-3 py-[11px] px-4 rounded-[10px] font-sans text-[13.5px] font-medium cursor-pointer transition-all duration-200 hover:-translate-y-px"
+        style={{
+          background: '#fff',
+          border: '1px solid rgba(28,26,23,0.16)',
+          color: 'var(--ink)',
+          boxShadow: '0 1px 4px rgba(28,26,23,0.08)',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(28,26,23,0.12)' }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(28,26,23,0.08)' }}
+      >
+        <GoogleIcon />
+        {label}
+      </button>
+
+      {showError && (
+        <div
+          className="text-[12px] px-3 py-2 rounded-[8px] text-center font-sans"
+          style={{ background: 'rgba(196,99,58,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(196,99,58,0.2)' }}
         >
-          {loading ? <Spinner /> : <GoogleIcon />}
-          {loading ? (mode === 'signup' ? 'Connecting…' : 'Signing in…') : label}
-        </button>
-
-        {error && (
-          <div
-            className="text-[12px] px-3 py-2 rounded-[8px] text-center font-sans"
-            style={{ background: 'rgba(196,99,58,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(196,99,58,0.2)' }}
-          >
-            {error}
-          </div>
-        )}
-      </div>
-
-      {modalOpen && (
-        <GoogleAccountTypeModal
-          googleName={googleName}
-          onConfirm={handleModalConfirm}
-          onCancel={handleModalCancel}
-          loading={modalLoading}
-          error={modalError}
-        />
+          {googleAuthError}
+        </div>
       )}
-    </>
+    </div>
   )
 }

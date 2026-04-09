@@ -1,211 +1,222 @@
-// Google OAuth route — POST /api/auth/google
-// Flow:
-//   1. Receive Firebase ID token from the React client
-//   2. Verify it with Firebase Admin SDK
-//   3. Find or create a GoogleUser document in MongoDB
-//   4. Issue a signed JWT (same secret as existing auth) + return user object
+// Google OAuth routes
+//
+// Passport redirect flow (primary — no Firebase needed):
+//   GET  /api/auth/google          → redirect to Google OAuth consent screen
+//   GET  /api/auth/google/callback → handle OAuth callback, issue JWT, redirect to frontend
+//
+// Firebase token flow (legacy — requires serviceAccountKey.json):
+//   POST /api/auth/google-signup   → verify Firebase idToken, create new user
+//   POST /api/auth/google-login    → verify Firebase idToken, login existing user
 
-import { Router }  from 'express'
-import jwt         from 'jsonwebtoken'
-import admin       from '../config/firebaseAdmin.js'
-import GoogleUser  from '../models/GoogleUser.js'
-import config      from '../config/index.js'
+import { Router } from 'express'
+import jwt        from 'jsonwebtoken'
+import passport   from '../config/passport.js'
+import GoogleUser from '../models/GoogleUser.js'
+import config     from '../config/index.js'
+import admin      from '../config/firebaseAdmin.js'   // legacy Firebase routes
 
 const router = Router()
 
-// ── Shared: verify Firebase idToken ──────────────────────────────────────────
-async function verifyFirebaseToken(idToken) {
-  return admin.auth().verifyIdToken(idToken)
+// ── Helper: sign a JWT for a GoogleUser ──────────────────────────────────────
+function signGoogleJwt(userId) {
+  return jwt.sign({ id: userId, provider: 'google' }, config.jwtSecret, { expiresIn: '7d' })
 }
 
-// ── POST /api/auth/google-signup ──────────────────────────────────────────────
-// Creates a new Google account. Requires role. Returns 409 if user exists.
+// ── Helper: encode mode in OAuth state param ──────────────────────────────────
+function encodeState(obj) {
+  return Buffer.from(JSON.stringify(obj)).toString('base64')
+}
+function decodeState(str) {
+  try { return JSON.parse(Buffer.from(str, 'base64').toString()) } catch { return {} }
+}
+
+// ── GET /api/auth/google ──────────────────────────────────────────────────────
+// Initiates Google OAuth. Accepts ?mode=signup|login (default: login).
+router.get('/google', (req, res, next) => {
+  if (!config.googleClientId || !config.googleClientSecret) {
+    return res.status(503).json({
+      error: 'Google login is not configured on the server. GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are missing.',
+    })
+  }
+
+  const mode  = req.query.mode === 'signup' ? 'signup' : 'login'
+  const state = encodeState({ mode })
+
+  passport.authenticate('google', {
+    scope:   ['profile', 'email'],
+    state,
+    session: false,
+    prompt:  'select_account',
+  })(req, res, next)
+})
+
+// ── GET /api/auth/google/callback ─────────────────────────────────────────────
+// Google redirects here after the user grants (or denies) permission.
+router.get(
+  '/google/callback',
+  (req, res, next) => {
+    passport.authenticate('google', {
+      session:         false,
+      failureRedirect: `${config.clientOrigin}/?google_error=auth_failed`,
+    })(req, res, next)
+  },
+  async (req, res) => {
+    try {
+      const { googleId, name, email, avatar } = req.user   // set by Passport strategy
+      const { mode } = decodeState(req.query.state || '')
+
+      if (!email) {
+        return res.redirect(`${config.clientOrigin}/?google_error=no_email`)
+      }
+
+      // ── Find existing GoogleUser by uid or email ─────────────────────────
+      let googleUser = await GoogleUser.findOne({ uid: googleId })
+      if (!googleUser) googleUser = await GoogleUser.findOne({ email })
+
+      // ── Login mode: existing users only ──────────────────────────────────
+      if (mode === 'login') {
+        if (!googleUser) {
+          return res.redirect(`${config.clientOrigin}/?google_error=no_account`)
+        }
+        // Refresh profile data from Google
+        googleUser.name   = name   || googleUser.name
+        googleUser.avatar = avatar || googleUser.avatar
+        if (googleUser.uid !== googleId) googleUser.uid = googleId
+        await googleUser.save()
+
+        const token = signGoogleJwt(googleUser._id.toString())
+        return res.redirect(`${config.clientOrigin}/?google_token=${token}`)
+      }
+
+      // ── Signup mode ───────────────────────────────────────────────────────
+      if (googleUser) {
+        // Account already exists — redirect with error
+        return res.redirect(`${config.clientOrigin}/?google_error=already_exists`)
+      }
+
+      // Create new user with default role='both'; frontend will prompt role selection
+      googleUser = await GoogleUser.create({
+        uid:    googleId,
+        name:   name   || 'Google User',
+        email,
+        avatar: avatar || '',
+        role:   'both',
+      })
+
+      const token = signGoogleJwt(googleUser._id.toString())
+      return res.redirect(`${config.clientOrigin}/?google_token=${token}&google_new=true`)
+
+    } catch (err) {
+      console.error('[google/callback] Unexpected error:', err)
+      return res.redirect(`${config.clientOrigin}/?google_error=server_error`)
+    }
+  }
+)
+
+// ── POST /api/auth/google-signup (Firebase flow — legacy) ─────────────────────
+// Kept for backward compat. Requires Firebase Admin (serviceAccountKey.json).
 router.post('/google-signup', async (req, res) => {
   try {
     const { idToken, role } = req.body
-
     if (!idToken) return res.status(400).json({ error: 'idToken is required.' })
 
     const validRoles = ['seeker', 'listener', 'both']
     if (!role || !validRoles.includes(role)) {
       return res.status(400).json({ error: 'Account type is required.' })
     }
-
     if (!admin.apps.length) {
-      return res.status(503).json({ error: 'Google login is not configured on the server.' })
+      return res.status(503).json({ error: 'Firebase Google login is not configured on the server.' })
     }
 
-    let decodedToken
-    try {
-      decodedToken = await verifyFirebaseToken(idToken)
-    } catch {
-      return res.status(401).json({ error: 'Invalid or expired Google token.' })
-    }
+    let decoded
+    try { decoded = await admin.auth().verifyIdToken(idToken) }
+    catch { return res.status(401).json({ error: 'Invalid or expired Google token.' }) }
 
-    const { uid, name, email, picture: avatar } = decodedToken
-
+    const { uid, name, email, picture: avatar } = decoded
     if (!email) return res.status(400).json({ error: 'Google account must have an email address.' })
 
-    // Check if user already exists (by uid or email)
     const existing = await GoogleUser.findOne({ $or: [{ uid }, { email: email.toLowerCase() }] })
     if (existing) {
       return res.status(409).json({ error: 'An account with this Google account already exists. Please log in.' })
     }
 
-    // Create new user with the provided role
-    const googleUser = await GoogleUser.create({
-      uid,
-      name:   name  || 'Google User',
-      email:  email.toLowerCase(),
-      avatar: avatar || '',
-      role,
-    })
-
-    const token = jwt.sign(
-      { id: googleUser._id.toString(), provider: 'google' },
-      config.jwtSecret,
-      { expiresIn: '7d' }
-    )
-
+    const googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), avatar: avatar || '', role })
+    const token = signGoogleJwt(googleUser._id.toString())
     return res.status(201).json({ success: true, token, user: googleUser.toSafeObject() })
-
   } catch (err) {
-    console.error('[google-signup] Unexpected error:', err)
+    console.error('[google-signup]', err)
     return res.status(500).json({ error: 'Server error during Google sign-up.' })
   }
 })
 
-// ── POST /api/auth/google-login ───────────────────────────────────────────────
-// Logs in an existing Google user. Never creates a new account.
+// ── POST /api/auth/google-login (Firebase flow — legacy) ──────────────────────
 router.post('/google-login', async (req, res) => {
   try {
     const { idToken } = req.body
-
     if (!idToken) return res.status(400).json({ error: 'idToken is required.' })
-
     if (!admin.apps.length) {
-      return res.status(503).json({ error: 'Google login is not configured on the server.' })
+      return res.status(503).json({ error: 'Firebase Google login is not configured on the server.' })
     }
 
-    let decodedToken
-    try {
-      decodedToken = await verifyFirebaseToken(idToken)
-    } catch {
-      return res.status(401).json({ error: 'Invalid or expired Google token.' })
-    }
+    let decoded
+    try { decoded = await admin.auth().verifyIdToken(idToken) }
+    catch { return res.status(401).json({ error: 'Invalid or expired Google token.' }) }
 
-    const { uid, name, email, picture: avatar } = decodedToken
-
-    // Find by uid first, then by email
+    const { uid, name, email, picture: avatar } = decoded
     let googleUser = await GoogleUser.findOne({ uid })
-    if (!googleUser && email) {
-      googleUser = await GoogleUser.findOne({ email: email.toLowerCase() })
-    }
+    if (!googleUser && email) googleUser = await GoogleUser.findOne({ email: email.toLowerCase() })
+    if (!googleUser) return res.status(404).json({ error: 'No account found. Please sign up first.' })
 
-    if (!googleUser) {
-      return res.status(404).json({ error: 'No account found. Please sign up first.' })
-    }
-
-    // Refresh name/avatar from Google
     googleUser.name   = name   || googleUser.name
     googleUser.avatar = avatar || googleUser.avatar
     if (uid !== googleUser.uid) googleUser.uid = uid
     await googleUser.save()
 
-    const token = jwt.sign(
-      { id: googleUser._id.toString(), provider: 'google' },
-      config.jwtSecret,
-      { expiresIn: '7d' }
-    )
-
+    const token = signGoogleJwt(googleUser._id.toString())
     return res.status(200).json({ success: true, token, user: googleUser.toSafeObject() })
-
   } catch (err) {
-    console.error('[google-login] Unexpected error:', err)
+    console.error('[google-login]', err)
     return res.status(500).json({ error: 'Server error during Google login.' })
   }
 })
 
-// ── POST /api/auth/google (legacy — kept for backward compat) ─────────────────
+// ── POST /api/auth/google (Firebase flow — legacy) ────────────────────────────
 router.post('/google', async (req, res) => {
   try {
     const { idToken } = req.body
-
-    if (!idToken) {
-      return res.status(400).json({ error: 'idToken is required.' })
-    }
-
-    // Guard: Firebase Admin must be initialised (requires serviceAccountKey.json)
+    if (!idToken) return res.status(400).json({ error: 'idToken is required.' })
     if (!admin.apps.length) {
-      return res.status(503).json({
-        error: 'Google login is not configured on the server. Please add serviceAccountKey.json.',
-      })
+      return res.status(503).json({ error: 'Firebase Google login is not configured on the server.' })
     }
 
-    // 1. Verify the token with Firebase Admin
-    let decodedToken
-    try {
-      decodedToken = await admin.auth().verifyIdToken(idToken)
-    } catch {
-      return res.status(401).json({ error: 'Invalid or expired Google token.' })
-    }
+    let decoded
+    try { decoded = await admin.auth().verifyIdToken(idToken) }
+    catch { return res.status(401).json({ error: 'Invalid or expired Google token.' }) }
 
-    const { uid, name, email, picture: avatar } = decodedToken
+    const { uid, name, email, picture: avatar } = decoded
+    if (!email) return res.status(400).json({ error: 'Google account must have an email address.' })
 
-    if (!email) {
-      return res.status(400).json({ error: 'Google account must have an email address.' })
-    }
-
-    // 2. Find existing user or create a new one (upsert by Firebase UID)
     let googleUser = await GoogleUser.findOne({ uid })
-
     if (!googleUser) {
-      // New Google user — also check if the email already belongs to a GoogleUser
-      // (handles edge case: same email, different UID)
       googleUser = await GoogleUser.findOne({ email: email.toLowerCase() })
-
       if (googleUser) {
-        // Email already exists — update UID in case it changed (rare)
         googleUser.uid    = uid
         googleUser.avatar = avatar || googleUser.avatar
         googleUser.name   = name   || googleUser.name
         await googleUser.save()
       } else {
-        // Brand-new user
-        googleUser = await GoogleUser.create({
-          uid,
-          name:  name  || 'Google User',
-          email: email.toLowerCase(),
-          avatar: avatar || '',
-        })
+        googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), avatar: avatar || '' })
       }
     } else {
-      // Existing user — refresh name/avatar from Google in case they changed
       googleUser.name   = name   || googleUser.name
       googleUser.avatar = avatar || googleUser.avatar
       await googleUser.save()
     }
 
-    // 3. Sign a JWT — payload includes provider so the auth middleware can
-    //    route lookups to the correct model
-    const token = jwt.sign(
-      {
-        id:       googleUser._id.toString(),
-        provider: 'google',
-      },
-      config.jwtSecret,
-      { expiresIn: '7d' }
-    )
-
-    // 4. Return token + safe user object (matches the shape the frontend expects)
-    return res.status(200).json({
-      success: true,
-      token,
-      user: googleUser.toSafeObject(),
-    })
-
+    const token = signGoogleJwt(googleUser._id.toString())
+    return res.status(200).json({ success: true, token, user: googleUser.toSafeObject() })
   } catch (err) {
-    console.error('[authGoogle] Unexpected error:', err)
+    console.error('[authGoogle]', err)
     return res.status(500).json({ error: 'Server error during Google authentication.' })
   }
 })

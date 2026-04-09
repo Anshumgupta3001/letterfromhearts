@@ -2,8 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
 import config from './config/index.js'
+import passport from './config/passport.js'             // ← Passport (initialises Google Strategy)
 import authRoutes from './routes/authRoutes.js'
-import authGoogleRoutes from './routes/authGoogle.js'   // ← Google OAuth (new)
+import authGoogleRoutes from './routes/authGoogle.js'   // ← Google OAuth
 import emailAccountRoutes from './routes/emailAccountRoutes.js'
 import sendEmailRoutes from './routes/sendEmailRoutes.js'
 import letterRoutes from './routes/letterRoutes.js'
@@ -15,6 +16,7 @@ const app = express()
 app.use(cors({ origin: config.clientOrigin, credentials: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(passport.initialize())   // no sessions — JWT only
 
 if (config.nodeEnv !== 'test') {
   app.use(morgan('dev'))
