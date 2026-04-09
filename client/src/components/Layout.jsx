@@ -266,11 +266,12 @@ function HomeSidebar() {
 
         {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          <StatBox n={analytics?.totalWritten ?? totalWritten} label="Written" />
-          <StatBox n={analytics?.totalSent     ?? 0}           label="Sent" />
-          <StatBox n={analytics?.totalOpened   ?? 0}           label="Opened" />
-          <StatBox n={analytics?.totalPersonal ?? 0}           label="Personal" />
-          <StatBox n={analytics?.totalStranger ?? 0}           label="Stranger" />
+          <StatBox n={analytics?.totalWritten    ?? totalWritten} label="Written" />
+          <StatBox n={analytics?.totalSent       ?? 0}           label="Sent" />
+          <StatBox n={analytics?.totalOpened     ?? 0}           label="Email opens" />
+          <StatBox n={analytics?.totalPersonal   ?? 0}           label="Personal" />
+          <StatBox n={analytics?.totalStranger   ?? 0}           label="Stranger" />
+          <StatBox n={analytics?.claimedLetters  ?? 0}           label="Heard" />
           <StatBox n={analytics?.totalSent > 0 ? `${analytics.openRate}%` : '—'} label="Open rate" />
         </div>
       </div>

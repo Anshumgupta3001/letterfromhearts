@@ -22,7 +22,10 @@ function LetterCard({ letter, onMarkRead }) {
     try {
       const res  = await apiFetch(`/api/letters/${letter._id}/read`, { method: 'POST' })
       const json = await res.json()
-      if (res.status === 403 && json.alreadyRead) { setOpen(true); onMarkRead(letter._id); return }
+      // 200 + alreadyRead = this user already claimed it — let them reopen
+      if (res.ok && json.alreadyRead) { setOpen(true); onMarkRead(letter._id); return }
+      // 403 = claimed by a different listener
+      if (res.status === 403) { setReadError(json.error || 'This letter has been claimed by another listener.'); return }
       if (!res.ok) { setReadError(json.error || 'Could not mark as read.'); return }
       setOpen(true)
       onMarkRead(letter._id)
