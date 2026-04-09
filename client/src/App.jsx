@@ -2,6 +2,7 @@ import { AppProvider } from './context/AppContext'
 import Layout from './components/Layout'
 import Drawer from './components/Drawer'
 import LetterDrawer from './components/LetterDrawer'
+import GoogleRoleSetupModal from './components/auth/GoogleRoleSetupModal'
 import HomePage from './pages/HomePage'
 import WritePage from './pages/WritePage'
 import MySpacePage from './pages/MySpacePage'
@@ -17,7 +18,7 @@ import AuthPage from './pages/AuthPage'
 import { useApp } from './context/AppContext'
 
 function PageRouter() {
-  const { currentPage, authUser, authLoading } = useApp()
+  const { currentPage, authUser, authLoading, pendingRoleSetup } = useApp()
 
   if (authLoading) {
     return (
@@ -46,6 +47,7 @@ function PageRouter() {
       </Layout>
       <Drawer />
       <LetterDrawer />
+      {pendingRoleSetup && <GoogleRoleSetupModal />}
     </>
   )
 

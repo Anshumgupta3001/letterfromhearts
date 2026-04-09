@@ -6,10 +6,12 @@ const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
   // ── Auth ─────────────────────────────────────────────────────────────────────
-  const [authUser, setAuthUser] = useState(() => {
+  const [authUser,          setAuthUser]          = useState(() => {
     try { return JSON.parse(localStorage.getItem('lfh_user')) } catch { return null }
   })
-  const [authLoading, setAuthLoading] = useState(true)
+  const [authLoading,       setAuthLoading]       = useState(true)
+  // Set to true when a brand-new Google user signs up via OAuth redirect
+  const [pendingRoleSetup,  setPendingRoleSetup]  = useState(false)
 
   async function login(token, user) {
     setToken(token)
@@ -32,13 +34,42 @@ export function AppProvider({ children }) {
     })
   }
 
-  // Verify token on mount
+  // Verify token on mount — also handles Google OAuth redirect callback
+  const [googleAuthError, setGoogleAuthError] = useState('')
+
   useEffect(() => {
-    const token = getToken()
-    if (!token) { setAuthLoading(false); return }
-    apiFetch('/api/auth/me')
-      .then(r => r.ok ? r.json() : null)
-      .then(json => {
+    async function init() {
+      // ── 1. Check for Google OAuth callback params in URL ─────────────────
+      const params      = new URLSearchParams(window.location.search)
+      const googleToken = params.get('google_token')
+      const googleNew   = params.get('google_new') === 'true'
+      const googleError = params.get('google_error')
+
+      if (googleError) {
+        const msgs = {
+          no_account:    'No account found. Please sign up first.',
+          already_exists:'An account already exists. Please log in.',
+          auth_failed:   'Google sign-in failed. Please try again.',
+          no_email:      'Google account must have an email address.',
+          server_error:  'Server error during Google sign-in.',
+        }
+        setGoogleAuthError(msgs[googleError] || 'Google sign-in failed.')
+        window.history.replaceState({}, '', '/')
+      }
+
+      if (googleToken) {
+        setToken(googleToken)
+        window.history.replaceState({}, '', '/')
+        if (googleNew) setPendingRoleSetup(true)
+      }
+
+      // ── 2. Verify stored token via /api/auth/me ──────────────────────────
+      const token = getToken()
+      if (!token) { setAuthLoading(false); return }
+
+      try {
+        const r    = await apiFetch('/api/auth/me')
+        const json = r.ok ? await r.json() : null
         if (json?.success) {
           setAuthUser(json.user)
           localStorage.setItem('lfh_user', JSON.stringify(json.user))
@@ -46,9 +77,14 @@ export function AppProvider({ children }) {
           removeToken()
           setAuthUser(null)
         }
-      })
-      .catch(() => { removeToken(); setAuthUser(null) })
-      .finally(() => setAuthLoading(false))
+      } catch {
+        removeToken()
+        setAuthUser(null)
+      } finally {
+        setAuthLoading(false)
+      }
+    }
+    init()
   }, []) // eslint-disable-line
 
   // ── Role helpers ──────────────────────────────────────────────────────────────
@@ -188,6 +224,8 @@ export function AppProvider({ children }) {
       value={{
         // auth
         authUser, authLoading, login, logout, updateAuthUser,
+        pendingRoleSetup, setPendingRoleSetup,
+        googleAuthError, setGoogleAuthError,
         // role / email mode helpers
         userRole, userEmailMode, canWrite, canWriteStranger, canReadFeed,
         // nav
