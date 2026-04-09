@@ -121,6 +121,7 @@ function HomeSidebar() {
   const {
     navigate, userRole, canReadFeed,
     personalLetters, ownStrangerLetters, sentLetters, strangerLetters,
+    analytics, analyticsDays, setAnalyticsDays,
   } = useApp()
 
   const [role, setRole] = useState(userRole === 'listener' ? 'listener' : 'seeker')
@@ -225,14 +226,52 @@ function HomeSidebar() {
         </div>
       )}
 
-      {/* This week stats */}
+      {/* Analytics */}
       <div>
-        <SibLabel text="This week" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <SibLabel text="Analytics" />
+          <select
+            value={analyticsDays}
+            onChange={e => setAnalyticsDays(Number(e.target.value))}
+            style={{
+              fontSize: 10, padding: '3px 6px', borderRadius: 6, cursor: 'pointer',
+              background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)',
+              color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+              outline: 'none', appearance: 'none', WebkitAppearance: 'none',
+            }}
+          >
+            <option value={7}>7 days</option>
+            <option value={15}>15 days</option>
+            <option value={30}>30 days</option>
+          </select>
+        </div>
+
+        {/* Open rate highlight bar (only if there are sent letters) */}
+        {analytics && analytics.totalSent > 0 && (
+          <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.07)', borderRadius: 10, padding: '11px 13px', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', fontWeight: 400 }}>Open rate</div>
+              <div style={{ fontSize: 14, fontFamily: '"Lora", serif', fontWeight: 500, color: analytics.openRate >= 50 ? 'var(--sage)' : 'var(--tc)' }}>
+                {analytics.openRate}%
+              </div>
+            </div>
+            <div style={{ height: 4, background: 'rgba(28,26,23,0.07)', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 2, width: `${analytics.openRate}%`, background: analytics.openRate >= 50 ? 'var(--sage)' : 'var(--tc)', transition: 'width 0.5s ease' }} />
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--ink-muted)', marginTop: 5, fontFamily: '"DM Sans", sans-serif' }}>
+              {analytics.totalOpened} opened of {analytics.totalSent} sent
+            </div>
+          </div>
+        )}
+
+        {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          <StatBox n={totalWritten} label="Written" />
-          <StatBox n={0} label="Heard" />
-          <StatBox n={0} label="Replied" />
-          <StatBox n={0} label="Wrote back" />
+          <StatBox n={analytics?.totalWritten ?? totalWritten} label="Written" />
+          <StatBox n={analytics?.totalSent     ?? 0}           label="Sent" />
+          <StatBox n={analytics?.totalOpened   ?? 0}           label="Opened" />
+          <StatBox n={analytics?.totalPersonal ?? 0}           label="Personal" />
+          <StatBox n={analytics?.totalStranger ?? 0}           label="Stranger" />
+          <StatBox n={analytics?.totalSent > 0 ? `${analytics.openRate}%` : '—'} label="Open rate" />
         </div>
       </div>
 

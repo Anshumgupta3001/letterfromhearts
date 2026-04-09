@@ -219,6 +219,23 @@ export function AppProvider({ children }) {
     if (!authLoading && authUser) refreshStrangerLetters()
   }, [authLoading, authUser, refreshStrangerLetters])
 
+  // ── Analytics ─────────────────────────────────────────────────────────────────
+  const [analytics,     setAnalytics]     = useState(null)
+  const [analyticsDays, setAnalyticsDays] = useState(30)
+
+  const refreshAnalytics = useCallback(async (days = analyticsDays) => {
+    if (!getToken()) return
+    try {
+      const res  = await apiFetch(`/api/letters/analytics?days=${days}`)
+      const json = await res.json()
+      if (json.success) setAnalytics(json.data)
+    } catch { /* ignore */ }
+  }, [analyticsDays]) // eslint-disable-line
+
+  useEffect(() => {
+    if (!authLoading && authUser) refreshAnalytics(analyticsDays)
+  }, [authLoading, authUser, analyticsDays]) // eslint-disable-line
+
   return (
     <AppContext.Provider
       value={{
@@ -250,6 +267,8 @@ export function AppProvider({ children }) {
         ownStrangerLetters, refreshOwnStrangerLetters,
         // caring stranger feed
         strangerLetters, refreshStrangerLetters,
+        // analytics
+        analytics, analyticsDays, setAnalyticsDays, refreshAnalytics,
       }}
     >
       {children}

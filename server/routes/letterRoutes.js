@@ -7,6 +7,7 @@ import {
   markLetterRead,
   updateLetter,
   deleteLetter,
+  getAnalytics,
 } from '../controllers/letterController.js'
 import { protect } from '../middlewares/auth.js'
 
@@ -16,6 +17,7 @@ router.use(protect)
 
 // Static routes BEFORE /:id to avoid param collision
 router.get('/stranger-feed', getStrangerFeed)
+router.get('/analytics',     getAnalytics)
 
 router.get('/',           getLetters)
 router.get('/:id',        getLetterById)
