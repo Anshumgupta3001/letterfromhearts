@@ -42,9 +42,22 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
           <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: tagBg, color: tagColor, flexShrink: 0, border: `1px solid ${tagBorder}` }}>
-            ✦ {tagLabel}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: tagBg, color: tagColor, border: `1px solid ${tagBorder}` }}>
+              ✦ {tagLabel}
+            </span>
+            {/* "Heard" indicator — stranger letters claimed by a listener */}
+            {letter.type === 'stranger' && (letter.isClaimed || letter.isRead) && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, background: 'rgba(139,126,200,0.1)', color: 'var(--purple)', border: '1px solid rgba(139,126,200,0.25)' }}>
+                ✓ Heard by a listener
+              </span>
+            )}
+            {letter.type === 'stranger' && !letter.isClaimed && !letter.isRead && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, background: 'rgba(28,26,23,0.04)', color: 'var(--ink-muted)', border: '1px solid rgba(28,26,23,0.1)' }}>
+                · Waiting to be heard
+              </span>
+            )}
+          </div>
         </div>
 
         <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

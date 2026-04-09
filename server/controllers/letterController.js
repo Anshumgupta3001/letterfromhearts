@@ -23,11 +23,16 @@ export async function getStrangerFeed(req, res) {
     return res.json({ success: true, data: [] })
   }
 
-  // Fetch: unread (globally) OR already read by this specific user
+  // Fetch: unclaimed letters OR letters this user has already claimed
+  // Supports both legacy (isRead/readBy) and new (isClaimed/claimedBy) fields.
   const letters = await Letter.find({
     type: 'stranger',
     $or: [
-      { isRead: false },
+      // Unclaimed (neither legacy nor new claim flag set)
+      { isRead: false, isClaimed: { $ne: true } },
+      // Claimed by this specific user (new field)
+      { 'claimedBy.userId': userId },
+      // Claimed by this specific user (legacy field — existing data)
       { readBy: userId },
     ],
   })
@@ -38,11 +43,14 @@ export async function getStrangerFeed(req, res) {
     .map(l => {
       const obj     = l.toObject()
       const hasRead = (l.readBy || []).some(id => id.toString() === userId.toString())
-      delete obj.readBy // never expose the full array
+        || (l.claimedBy?.userId && l.claimedBy.userId.toString() === userId.toString())
+      delete obj.readBy      // never expose the full read list
+      delete obj.claimedBy   // never expose who claimed it to others
       return {
         ...obj,
         isOwner: l.userId.toString() === userId.toString(),
         hasRead,
+        // isClaimed is safe to expose — it's a boolean, no PII
       }
     })
     // 'both' role cannot see their own stranger letters in the feed
@@ -52,8 +60,18 @@ export async function getStrangerFeed(req, res) {
 }
 
 // GET /api/letters/:id
+// Owner can always access. A listener who claimed a stranger letter can also access it.
 export async function getLetterById(req, res) {
-  const letter = await Letter.findOne({ _id: req.params.id, userId: req.user._id })
+  const userId = req.user._id
+  const letter = await Letter.findOne({
+    _id: req.params.id,
+    $or: [
+      { userId },                             // owner
+      { 'claimedBy.userId': userId },         // listener who claimed it (new field)
+      { readBy: userId },                     // listener who claimed it (legacy field)
+    ],
+  }).select('-claimedBy -readBy')             // never expose claim metadata
+
   if (!letter) return res.status(404).json({ error: 'Letter not found.' })
   res.json({ success: true, data: letter })
 }
@@ -96,9 +114,9 @@ export async function createLetter(req, res) {
   res.status(201).json({ success: true, data: letter })
 }
 
-// POST /api/letters/:id/read  — one-time global read mark
-// Once read by any listener, the letter is marked globally (isRead: true)
-// and hidden from all OTHER listeners
+// POST /api/letters/:id/read  — one-time global claim
+// First listener to open claims the letter; it disappears from everyone else's feed.
+// The claiming listener can always reopen it.
 export async function markLetterRead(req, res) {
   const userId = req.user._id
   const letter = await Letter.findById(req.params.id)
@@ -108,19 +126,31 @@ export async function markLetterRead(req, res) {
 
   const alreadyReadByUser = (letter.readBy || []).some(id => id.toString() === userId.toString())
 
-  // Already opened by this exact user — just return success (idempotent)
+  // Already claimed by this exact user — idempotent success (let them reopen)
   if (alreadyReadByUser) {
-    return res.status(403).json({ error: 'You have already read this letter.', alreadyRead: true })
+    return res.json({ success: true, alreadyRead: true })
   }
 
-  // Already globally read by someone else — unavailable
-  if (letter.isRead) {
-    return res.status(403).json({ error: 'This letter has already been claimed by another listener.', alreadyRead: true })
+  // Claimed by a different listener — unavailable
+  if (letter.isRead || letter.isClaimed) {
+    const claimedByOther =
+      letter.claimedBy?.userId && letter.claimedBy.userId.toString() !== userId.toString()
+    if (claimedByOther || (!alreadyReadByUser && letter.isRead)) {
+      return res.status(403).json({
+        error: 'This letter has already been claimed by another listener.',
+        alreadyRead: true,
+      })
+    }
   }
 
-  // Mark globally + record who read it
-  letter.isRead = true
+  const now = new Date()
+
+  // Claim: set both legacy fields (isRead / readBy) and new fields (isClaimed / claimedBy / readCount)
+  letter.isRead   = true
   letter.readBy.push(userId)
+  letter.isClaimed  = true
+  letter.claimedBy  = { userId, claimedAt: now }
+  letter.readCount  = (letter.readCount || 0) + 1
   await letter.save()
 
   res.json({ success: true })
@@ -167,19 +197,31 @@ export async function getAnalytics(req, res) {
     totalOpened,
     totalPersonal,
     totalStranger,
+    claimedLetters,
   ] = await Promise.all([
     Letter.countDocuments(base),
     Letter.countDocuments({ ...base, type: 'sent' }),
     Letter.countDocuments({ ...base, type: 'sent', status: { $in: ['opened', 'clicked'] } }),
     Letter.countDocuments({ ...base, type: 'personal' }),
     Letter.countDocuments({ ...base, type: 'stranger' }),
+    // Stranger letters this user WROTE that were claimed by a listener
+    Letter.countDocuments({ ...base, type: 'stranger', $or: [{ isRead: true }, { isClaimed: true }] }),
   ])
 
   const openRate = totalSent > 0 ? Math.round((totalOpened / totalSent) * 100) : 0
 
   res.json({
     success: true,
-    data: { days, totalWritten, totalSent, totalOpened, totalPersonal, totalStranger, openRate },
+    data: {
+      days,
+      totalWritten,
+      totalSent,
+      totalOpened,
+      totalPersonal,
+      totalStranger,
+      claimedLetters,  // stranger letters the seeker wrote that got claimed
+      openRate,
+    },
   })
 }
 

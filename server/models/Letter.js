@@ -17,6 +17,13 @@ const letterSchema = new mongoose.Schema(
     readBy:     [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     // Global one-time read flag — once true, letter hidden from ALL other listeners
     isRead:     { type: Boolean, default: false },
+    // Claim system — mirrors isRead/readBy but with richer metadata
+    isClaimed:  { type: Boolean, default: false, index: true },
+    claimedBy:  {
+      userId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      claimedAt: { type: Date },
+    },
+    readCount:  { type: Number, default: 0 },
     // Mood tag saved with letter
     mood:       { type: String, default: '' },
   },
