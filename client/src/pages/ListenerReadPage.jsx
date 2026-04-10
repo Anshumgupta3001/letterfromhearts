@@ -56,7 +56,7 @@ function LetterCard({ letter, onMarkRead }) {
       {/* Card body */}
       <div style={{ padding: '26px 28px 22px 32px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
-          <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
           {(letter.hasRead || open) ? (
@@ -139,7 +139,7 @@ export default function ListenerReadPage() {
       <div className="w-full max-w-3xl lg:max-w-4xl">
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>🔒</div>
-          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>This space is for listeners</div>
+          <div style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>This space is for listeners</div>
           <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 320, margin: '0 auto 28px' }}>
             Update your role in profile settings to access the listener feed.
           </p>
@@ -166,7 +166,7 @@ export default function ListenerReadPage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Listener feed
           </div>
-          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
             <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #ece8f5, #f0eef9)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>🎧</span>
             Be Present for a Stranger
           </h1>
@@ -203,7 +203,7 @@ export default function ListenerReadPage() {
       {letters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.35 }}>📭</div>
-          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>The feed is quiet for now</div>
+          <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>The feed is quiet for now</div>
           <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 280, margin: '0 auto' }}>
             Someone out there is writing right now. Check back soon.
           </p>

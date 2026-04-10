@@ -46,7 +46,7 @@ export default function ListenPage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Open letters
           </div>
-          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 10 }}>
+          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 10 }}>
             Letters waiting to be heard
           </h1>
           <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-soft)', lineHeight: 1.7, maxWidth: 420 }}>

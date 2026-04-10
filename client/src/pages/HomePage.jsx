@@ -25,14 +25,14 @@ function LetterCard({ letter, onClick }) {
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px' }} />
       <div style={{ padding: '20px 20px 16px 26px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-          <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: '#fdf0ee', color: 'var(--tc)', flexShrink: 0, border: '1px solid #f5d4ce' }}>
             ✦ Personal
           </span>
         </div>
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {letter.message}
         </p>
       </div>
@@ -65,7 +65,7 @@ function WorldLetter({ letter, onClick, isNew }) {
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--sage), var(--gold))', borderRadius: '4px 0 0 4px' }} />
       <div style={{ padding: '20px 20px 16px 26px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-          <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2 }}>
+          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2 }}>
             {letter.subject}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
@@ -73,7 +73,7 @@ function WorldLetter({ letter, onClick, isNew }) {
             {isNew && <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 600, background: 'rgba(122,158,142,0.08)', color: 'var(--sage)' }}>● New</span>}
           </div>
         </div>
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {letter.message}
         </p>
       </div>
@@ -99,7 +99,7 @@ function StatCard({ stat, navigate }) {
         minWidth: 0,
       }}
     >
-      <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 700, lineHeight: 1, marginBottom: 4, color: stat.color }}>
+      <div style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 700, lineHeight: 1, marginBottom: 4, color: stat.color }}>
         {stat.n}
       </div>
       <div style={{ fontSize: 12, color: 'var(--ink-muted)', letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif' }}>{stat.label}</div>
@@ -112,8 +112,8 @@ function SectionHeader({ title, subtitle, seeAll, onSeeAll }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
       <div>
-        <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginBottom: 3, lineHeight: 1.2 }}>{title}</h2>
-        {subtitle && <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>{subtitle}</p>}
+        <h2 style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginBottom: 3, lineHeight: 1.2 }}>{title}</h2>
+        {subtitle && <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>{subtitle}</p>}
       </div>
       {seeAll && (
         <button onClick={onSeeAll} style={{ fontSize: 12, color: 'var(--tc)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, letterSpacing: '0.3px', whiteSpace: 'nowrap', marginTop: 4, flexShrink: 0, padding: '4px 0', borderBottom: '1px solid rgba(196,99,58,0.25)', transition: 'opacity 0.15s' }}>
@@ -129,7 +129,7 @@ function EmptySection({ icon, text, cta, onCta }) {
   return (
     <div style={{ background: 'rgba(255,255,255,0.45)', borderRadius: 14, padding: '44px 32px', textAlign: 'center', border: `1.5px dashed ${BD}` }}>
       <div style={{ fontSize: 34, marginBottom: 14, opacity: 0.35 }}>{icon}</div>
-      <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, marginBottom: cta ? 20 : 0, maxWidth: 320, margin: cta ? '0 auto 20px' : '0 auto' }}>{text}</p>
+      <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, marginBottom: cta ? 20 : 0, maxWidth: 320, margin: cta ? '0 auto 20px' : '0 auto' }}>{text}</p>
       {cta && (
         <button onClick={onCta} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: '#fff', background: 'var(--tc)', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', fontWeight: 500, boxShadow: '0 4px 14px rgba(196,99,58,0.2)', transition: 'all 0.2s' }}>{cta}</button>
       )}
@@ -174,22 +174,18 @@ export default function HomePage() {
       <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(24px, 4vw, 40px) clamp(20px, 4vw, 48px)' }}>
 
         {/* ── Greeting ──────────────────────────────────────────────── */}
-        <div className="animate-fade-up" style={{ fontSize: 11, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="animate-fade-up" style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, fontFamily: '"DM Sans", sans-serif' }}>
           {greetingWord}
           <span style={{ flex: 1, height: 1, background: BD, maxWidth: 60 }} />
         </div>
 
         <h1
           className="animate-fade-up"
-          style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(24px, 3.5vw, 34px)', fontWeight: 700, lineHeight: 1.2, color: 'var(--ink)', marginBottom: 12, letterSpacing: '-0.3px', animationDelay: '0.08s' }}
+          style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2.5vw, 26px)', fontWeight: 700, lineHeight: 1.2, color: 'var(--ink)', marginBottom: 20, letterSpacing: '-0.3px', animationDelay: '0.08s' }}
         >
           <em style={{ color: 'var(--tc)', fontStyle: 'italic' }}>{firstName},</em> what would<br />
           you like to <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>express</em> today?
         </h1>
-
-        <p className="animate-fade-up font-lora" style={{ fontSize: 13.5, fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 400, marginBottom: 28, animationDelay: '0.15s' }}>
-          This is your quiet space. No pressure. No audience.<br />Just words, when you're ready.
-        </p>
 
         {/* ── Stats ─────────────────────────────────────────────────── */}
         <div className="animate-fade-up" style={{ display: 'flex', gap: 10, marginBottom: 32, animationDelay: '0.22s', flexWrap: 'wrap' }}>
@@ -224,10 +220,10 @@ export default function HomePage() {
             <span style={{ position: 'absolute', right: 24, top: 16, fontSize: 22, color: 'rgba(196,99,58,0.07)', pointerEvents: 'none', userSelect: 'none' }}>✦</span>
             <div style={{ paddingLeft: 8 }}>
               <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--tc)', marginBottom: 8, fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>Begin Writing</div>
-              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, color: 'var(--ink)', fontWeight: 700, lineHeight: 1.25 }}>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 19, color: 'var(--ink)', fontWeight: 700, lineHeight: 1.25 }}>
                 Pour your heart<br />into a <em style={{ fontStyle: 'italic', color: 'var(--tc)' }}>new letter</em>
               </div>
-              <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', marginTop: 7, lineHeight: 1.65 }}>
+              <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', marginTop: 7, lineHeight: 1.65 }}>
                 Unsent letters heal too. Start whenever you feel it.
               </div>
             </div>
@@ -318,8 +314,8 @@ export default function HomePage() {
               onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
               <div>
-                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Connect an email to send letters</div>
-                <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>Your letters can arrive straight in someone's inbox — personal and beautiful.</p>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Connect an email to send letters</div>
+                <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>Your letters can arrive straight in someone's inbox — personal and beautiful.</p>
               </div>
               <span style={{ fontSize: 26, flexShrink: 0 }}>🔗</span>
             </div>

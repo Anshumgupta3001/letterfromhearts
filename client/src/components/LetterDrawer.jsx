@@ -140,7 +140,7 @@ export default function LetterDrawer() {
 
               {/* Subject / title */}
               <h2 style={{
-                fontFamily: '"Playfair Display", serif',
+                fontFamily: '"Lora", serif',
                 fontSize: 'clamp(22px, 3vw, 30px)',
                 fontWeight: 700, color: 'var(--ink)',
                 lineHeight: 1.2, letterSpacing: '-0.4px',

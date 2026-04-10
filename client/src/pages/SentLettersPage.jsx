@@ -39,7 +39,7 @@ function SentCard({ letter }) {
       {/* Card body */}
       <div style={{ padding: '26px 28px 22px 32px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
-          <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: meta.bg, color: meta.color, flexShrink: 0, border: `1px solid ${meta.border}` }}>
@@ -112,7 +112,7 @@ export default function SentLettersPage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Your outbox
           </div>
-          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
             <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #fdf6e8, #fdfae8)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>📬</span>
             Sent Letters
           </h1>
@@ -144,7 +144,7 @@ export default function SentLettersPage() {
       {sentLetters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.35 }}>📭</div>
-          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>No letters sent yet</div>
+          <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>No letters sent yet</div>
           <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 300, margin: '0 auto 28px' }}>
             Write a letter and send it to someone you care about. You'll know when they open it.
           </p>
