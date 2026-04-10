@@ -207,26 +207,44 @@ export default function HomePage() {
             onClick={() => navigate('write')}
             style={{
               marginBottom: 32, animationDelay: '0.28s',
-              background: 'var(--ink)', borderRadius: 12, padding: '20px 24px',
+              background: '#fff',
+              border: `1px solid ${BD}`,
+              borderRadius: 14, padding: '20px 24px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
               flexWrap: 'wrap',
               cursor: 'pointer', overflow: 'hidden', position: 'relative',
-              transform: ctaHov ? 'scale(1.005)' : 'scale(1)', transition: 'transform 0.2s',
+              boxShadow: ctaHov ? '0 10px 32px rgba(28,18,8,0.08)' : '0 2px 8px rgba(28,18,8,0.04)',
+              transform: ctaHov ? 'translateY(-2px)' : 'translateY(0)',
+              transition: 'box-shadow 0.2s, transform 0.2s',
             }}
           >
-            <span style={{ position: 'absolute', right: 100, top: 16, fontSize: 10, color: 'rgba(255,255,255,0.1)', pointerEvents: 'none' }}>✦</span>
-            <div>
-              <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Begin Writing</div>
-              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, color: 'var(--cream)', fontWeight: 700, lineHeight: 1.25 }}>
-                Pour your heart<br />into a <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>new letter</em>
+            {/* Left accent bar */}
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px' }} />
+            {/* Decorative symbol */}
+            <span style={{ position: 'absolute', right: 24, top: 16, fontSize: 22, color: 'rgba(196,99,58,0.07)', pointerEvents: 'none', userSelect: 'none' }}>✦</span>
+            <div style={{ paddingLeft: 8 }}>
+              <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--tc)', marginBottom: 8, fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>Begin Writing</div>
+              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, color: 'var(--ink)', fontWeight: 700, lineHeight: 1.25 }}>
+                Pour your heart<br />into a <em style={{ fontStyle: 'italic', color: 'var(--tc)' }}>new letter</em>
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(245,240,232,0.5)', marginTop: 6, lineHeight: 1.6 }}>Unsent letters heal too. Start whenever you feel it.</div>
+              <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', marginTop: 7, lineHeight: 1.65 }}>
+                Unsent letters heal too. Start whenever you feel it.
+              </div>
             </div>
             <button
               onClick={e => { e.stopPropagation(); navigate('write') }}
               onMouseEnter={() => setCtaBtnHov(true)}
               onMouseLeave={() => setCtaBtnHov(false)}
-              style={{ background: ctaBtnHov ? '#D97040' : 'var(--tc)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 12.5, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0, transform: ctaBtnHov ? 'translateY(-2px)' : 'translateY(0)', boxShadow: ctaBtnHov ? '0 6px 18px rgba(196,99,58,0.3)' : '0 3px 10px rgba(196,99,58,0.2)', transition: 'all 0.2s' }}
+              style={{
+                background: ctaBtnHov ? '#D97040' : 'var(--tc)',
+                color: '#fff', border: 'none', borderRadius: 8,
+                padding: '10px 20px', fontSize: 12.5, cursor: 'pointer',
+                fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+                whiteSpace: 'nowrap', flexShrink: 0,
+                transform: ctaBtnHov ? 'translateY(-2px)' : 'translateY(0)',
+                boxShadow: ctaBtnHov ? '0 6px 18px rgba(196,99,58,0.3)' : '0 3px 10px rgba(196,99,58,0.2)',
+                transition: 'all 0.2s',
+              }}
             >
               Begin writing →
             </button>

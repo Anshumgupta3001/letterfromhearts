@@ -217,7 +217,8 @@ export default function CaringStrangerPage() {
   // ── Seeker gate ──────────────────────────────────────────────────
   if (!canReadFeed) {
     return (
-      <main className="page-enter w-full px-5 sm:px-10 md:px-16" style={{ paddingTop: 56, paddingBottom: 80 }}>
+      <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
+      <div className="w-full max-w-3xl lg:max-w-4xl">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 48, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -245,12 +246,14 @@ export default function CaringStrangerPage() {
             The Caring Stranger feed is read by listeners. Your anonymous letters travel to strangers who need them most.
           </p>
         </div>
+      </div>
       </main>
     )
   }
 
   return (
-    <main className="page-enter px-5 sm:px-10 md:px-16" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 56, paddingBottom: 80 }}>
+    <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
+      <div className="w-full max-w-3xl lg:max-w-4xl">
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
@@ -328,6 +331,7 @@ export default function CaringStrangerPage() {
       {/* ── Modals ──────────────────────────────────────────────────── */}
       {editingLetter  && <EditModal   letter={editingLetter}  onSave={handleSaved}        onClose={() => setEditingLetter(null)} />}
       {deletingLetter && <DeleteModal letter={deletingLetter} onConfirm={handleDeleteConfirm} onClose={() => setDeletingLetter(null)} deleting={deleting} />}
+      </div>
     </main>
   )
 }

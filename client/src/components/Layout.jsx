@@ -116,8 +116,8 @@ function NavTab({ item, active, onClick }) {
   )
 }
 
-// ── Home-only sidebar ─────────────────────────────────────────────────────────
-function HomeSidebar() {
+// ── Shared analytics data hook ────────────────────────────────────────────────
+function useAnalyticsData() {
   const {
     navigate, canReadFeed,
     personalLetters, ownStrangerLetters, sentLetters, strangerLetters,
@@ -134,13 +134,93 @@ function HomeSidebar() {
   const openRate = analytics?.openRate ?? 0
   const hasSent  = sent > 0
 
-  // Gentle emotional line based on data
   const heartline = (() => {
     if (opened > 0)  return 'Your words reached someone 💌'
     if (sent > 0)    return 'Your letters are on their way ✉️'
     if (written > 0) return 'Keep writing — every word matters 🌿'
     return 'Start writing. Someone is waiting 💛'
   })()
+
+  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline }
+}
+
+// ── Mobile-only compact analytics strip ──────────────────────────────────────
+function MobileAnalyticsStrip() {
+  const [expanded, setExpanded] = useState(false)
+  const { written, sent, openRate, hasSent, heartline, navigate } = useAnalyticsData()
+
+  return (
+    <div className="md:hidden" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)', background: 'rgba(247,242,234,0.6)' }}>
+      {/* Collapsed bar — always visible on mobile */}
+      <button
+        onClick={() => setExpanded(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 16px', background: 'transparent', border: 'none', cursor: 'pointer',
+          gap: 12,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+          <span style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-soft)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {heartline}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {written > 0 && (
+            <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+              <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{written}</b> written
+            </span>
+          )}
+          {hasSent && (
+            <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+              <b style={{ color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', fontWeight: 600 }}>{openRate}%</b> opened
+            </span>
+          )}
+          <svg
+            width="12" height="12" viewBox="0 0 12 12" fill="none"
+            style={{ color: 'var(--ink-muted)', transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}
+          >
+            <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </button>
+
+      {/* Expanded panel */}
+      {expanded && (
+        <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Stat pills */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {[
+              { value: written, label: 'Written', color: 'var(--tc)' },
+              { value: sent,    label: 'Sent',    color: 'var(--gold)' },
+            ].map(({ value, label, color }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 5, background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.09)', borderRadius: 8, padding: '7px 12px' }}>
+                <span style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 500, color, lineHeight: 1 }}>{value}</span>
+                <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>{label}</span>
+              </div>
+            ))}
+            {hasSent && (
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, background: 'var(--paper)', border: `0.5px solid ${openRate >= 50 ? 'rgba(122,158,142,0.25)' : 'rgba(196,99,58,0.18)'}`, borderRadius: 8, padding: '7px 12px' }}>
+                <span style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 500, color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>{openRate}%</span>
+                <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>Open rate</span>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => { setExpanded(false); navigate('myspace') }}
+            style={{ alignSelf: 'flex-start', fontSize: 11, color: 'var(--tc)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', padding: 0, textDecoration: 'underline', textUnderlineOffset: 3 }}
+          >
+            View full activity →
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Home-only sidebar ─────────────────────────────────────────────────────────
+function HomeSidebar() {
+  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline } = useAnalyticsData()
 
   const MetricCard = ({ value, label, accent }) => (
     <div style={{
@@ -150,6 +230,7 @@ function HomeSidebar() {
       padding: '13px 14px',
       position: 'relative',
       overflow: 'hidden',
+      minWidth: 0,
     }}>
       {accent && (
         <div style={{
@@ -157,10 +238,10 @@ function HomeSidebar() {
           background: accent, borderRadius: '12px 12px 0 0',
         }} />
       )}
-      <div style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>
+      <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2vw, 24px)', fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 400, marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>
+      <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 400, marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>
         {label}
       </div>
     </div>
@@ -174,6 +255,7 @@ function HomeSidebar() {
       position: 'sticky', top: 56,
       height: 'calc(100vh - 56px)',
       overflowY: 'auto',
+      overflowX: 'hidden',
       display: 'flex', flexDirection: 'column', gap: 18,
     }}>
 
@@ -182,6 +264,7 @@ function HomeSidebar() {
         background: 'linear-gradient(120deg, rgba(196,99,58,0.06), rgba(122,158,142,0.06))',
         border: '0.5px solid rgba(196,99,58,0.12)',
         borderRadius: 12, padding: '12px 14px',
+        overflowWrap: 'break-word',
       }}>
         <div style={{ fontSize: 12.5, fontFamily: '"Lora", serif', fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.55 }}>
           {heartline}
@@ -189,8 +272,8 @@ function HomeSidebar() {
       </div>
 
       {/* ── Date filter ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', flexShrink: 0 }}>
           Your story
         </div>
         <select
@@ -201,6 +284,7 @@ function HomeSidebar() {
             background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)',
             color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
             outline: 'none', appearance: 'none', WebkitAppearance: 'none',
+            maxWidth: '100%',
           }}
         >
           <option value={7}>Last 7 days</option>
@@ -210,7 +294,7 @@ function HomeSidebar() {
       </div>
 
       {/* ── Overview cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 7 }}>
         <MetricCard value={written}  label="Letters written"  accent="linear-gradient(90deg, var(--tc), var(--gold))" />
         <MetricCard value={sent}     label="Letters sent"     accent="linear-gradient(90deg, var(--gold), var(--tc))" />
         <MetricCard value={personal} label="To myself"        />
@@ -223,17 +307,18 @@ function HomeSidebar() {
           background: 'var(--paper)',
           border: `0.5px solid ${openRate >= 50 ? 'rgba(122,158,142,0.25)' : 'rgba(196,99,58,0.18)'}`,
           borderRadius: 12, padding: '14px 15px',
+          minWidth: 0,
         }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+            <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 4 }}>
                 Open rate
               </div>
-              <div style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 500, letterSpacing: '-1px', color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 500, letterSpacing: '-1px', color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>
                 {openRate}%
               </div>
             </div>
-            <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', textAlign: 'right', lineHeight: 1.5, paddingBottom: 2 }}>
+            <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', textAlign: 'right', lineHeight: 1.5, paddingBottom: 2, flexShrink: 0 }}>
               {opened} of {sent}<br />letters seen
             </div>
           </div>
@@ -262,22 +347,23 @@ function HomeSidebar() {
           background: 'var(--paper)',
           border: '0.5px solid rgba(122,158,142,0.2)',
           borderRadius: 12, padding: '13px 14px',
+          minWidth: 0,
         }}>
           <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
             Connection
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div>
-              <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}>{heard}</div>
-              <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>Strangers heard you</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2vw, 22px)', fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}>{heard}</div>
+              <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Strangers heard you</div>
             </div>
             {canReadFeed && (
               <div
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', minWidth: 0 }}
                 onClick={() => navigate('listenerread')}
               >
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
-                <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>Waiting to be read</div>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2vw, 22px)', fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
+                <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Waiting to be read</div>
               </div>
             )}
           </div>
@@ -478,14 +564,17 @@ export default function Layout({ children }) {
       <Navbar />
       {currentPage === 'home' ? (
         // Home: dashboard layout with sidebar
-        <div className="md:grid md:grid-cols-[220px_1fr]" style={{ minHeight: 'calc(100vh - 56px)' }}>
-          <div className="hidden md:block">
-            <HomeSidebar />
+        <>
+          <MobileAnalyticsStrip />
+          <div className="md:grid md:grid-cols-[220px_1fr]" style={{ minHeight: 'calc(100vh - 56px)' }}>
+            <div className="hidden md:block">
+              <HomeSidebar />
+            </div>
+            <div style={{ minWidth: 0, overflowX: 'hidden' }}>
+              {children}
+            </div>
           </div>
-          <div style={{ minWidth: 0 }}>
-            {children}
-          </div>
-        </div>
+        </>
       ) : (
         // All other pages: no sidebar, full-width (each page manages its own layout)
         <div style={{ width: '100%' }}>
