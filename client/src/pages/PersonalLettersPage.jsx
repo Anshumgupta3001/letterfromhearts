@@ -231,7 +231,8 @@ export default function PersonalLettersPage() {
   }
 
   return (
-    <main className="page-enter w-full px-5 sm:px-10 md:px-16" style={{ paddingTop: 52, paddingBottom: 72 }}>
+    <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 52, paddingBottom: 72 }}>
+      <div className="w-full max-w-3xl lg:max-w-4xl">
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
@@ -325,6 +326,7 @@ export default function PersonalLettersPage() {
       {/* ── Modals ──────────────────────────────────────────────────── */}
       {editingLetter  && <EditModal   letter={editingLetter}  onSave={handleSaved}        onClose={() => setEditingLetter(null)} />}
       {deletingLetter && <DeleteModal letter={deletingLetter} onConfirm={handleDeleteConfirm} onClose={() => setDeletingLetter(null)} deleting={deleting} />}
+      </div>
     </main>
   )
 }

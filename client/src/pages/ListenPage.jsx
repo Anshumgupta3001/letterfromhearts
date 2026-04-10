@@ -14,10 +14,31 @@ export default function ListenPage() {
       : filteredOpenLetters.filter(l => l.mood === listenFilter)
 
   return (
-    <div className="grid min-h-[calc(100vh-56px)]" style={{ gridTemplateColumns: '220px 1fr' }}>
-      <ListenSidebar filter={listenFilter} setFilter={setListenFilter} />
+    <div className="md:grid min-h-[calc(100vh-56px)]" style={{ gridTemplateColumns: '220px 1fr' }}>
+      <div className="hidden md:block">
+        <ListenSidebar filter={listenFilter} setFilter={setListenFilter} />
+      </div>
 
-      <div className="page-enter px-8 md:px-10 py-8">
+      {/* Mobile filter pills — only shown on small screens */}
+      <div className="md:hidden px-4 pt-4 pb-2 flex gap-2 overflow-x-auto" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+        {['all', 'grief', 'anxiety', 'loneliness', 'gratitude', 'love', 'hope'].map(m => (
+          <button
+            key={m}
+            onClick={() => setListenFilter(m)}
+            style={{
+              padding: '6px 14px', borderRadius: 100, fontSize: 12, whiteSpace: 'nowrap',
+              border: `1px solid ${listenFilter === m ? 'var(--sage)' : 'rgba(28,26,23,0.12)'}`,
+              background: listenFilter === m ? 'rgba(122,158,142,0.1)' : 'transparent',
+              color: listenFilter === m ? 'var(--sage)' : 'var(--ink-muted)',
+              cursor: 'pointer', fontFamily: '"DM Sans", sans-serif',
+            }}
+          >
+            {m === 'all' ? 'All' : m.charAt(0).toUpperCase() + m.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      <div className="page-enter px-4 sm:px-6 md:px-8 py-6 md:py-8" style={{ minWidth: 0 }}>
 
         {/* ── Page header ────────────────────────────────────────────── */}
         <div style={{ marginBottom: 36 }}>

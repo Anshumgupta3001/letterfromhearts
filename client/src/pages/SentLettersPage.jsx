@@ -102,7 +102,8 @@ export default function SentLettersPage() {
   useEffect(() => { refreshLetters() }, [refreshLetters])
 
   return (
-    <main className="page-enter w-full px-5 sm:px-10 md:px-16" style={{ paddingTop: 56, paddingBottom: 80 }}>
+    <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
+      <div className="w-full max-w-3xl lg:max-w-4xl">
 
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
@@ -156,6 +157,7 @@ export default function SentLettersPage() {
           {sentLetters.map(letter => <SentCard key={letter._id} letter={letter} />)}
         </div>
       )}
+      </div>
     </main>
   )
 }
