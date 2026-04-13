@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useApp } from '../context/AppContext'
 import GoogleLoginBtn from '../components/auth/GoogleLoginBtn'
 
@@ -198,9 +198,7 @@ function PasswordStrengthBar({ password }) {
           <div
             key={i}
             className="h-[3px] flex-1 rounded-full transition-all duration-300"
-            style={{
-              background: i <= strength.bars ? strength.color : 'rgba(28,26,23,0.1)',
-            }}
+            style={{ background: i <= strength.bars ? strength.color : 'rgba(28,26,23,0.1)' }}
           />
         ))}
       </div>
@@ -209,6 +207,16 @@ function PasswordStrengthBar({ password }) {
       </span>
     </div>
   )
+}
+
+function getPasswordErrors(pw) {
+  const errors = []
+  if (pw.length < 8)            errors.push('At least 8 characters')
+  if (!/[A-Z]/.test(pw))        errors.push('One uppercase letter')
+  if (!/[a-z]/.test(pw))        errors.push('One lowercase letter')
+  if (!/[0-9]/.test(pw))        errors.push('One number')
+  if (!/[^A-Za-z0-9]/.test(pw)) errors.push('One special character')
+  return errors
 }
 
 // ── Field components ──────────────────────────────────────────────────────────
@@ -321,20 +329,31 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role,            setRole]            = useState('both')
 
-  const [loading,    setLoading]    = useState(false)
-  const [error,      setError]      = useState('')
-  const [termsOpen,  setTermsOpen]  = useState(false)
+  const [loading,        setLoading]        = useState(false)
+  const [error,          setError]          = useState('')
+  const [termsOpen,      setTermsOpen]      = useState(false)
+  const [passwordErrors, setPasswordErrors] = useState([])
+  const errorRef = useRef(null)
 
   function reset() {
-    setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both')
+    setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setPasswordErrors([])
   }
   function switchMode(m) { reset(); setMode(m) }
+
+  // Clear password errors as soon as the user starts retyping
+  function handlePasswordChange(val) { setPassword(val); if (passwordErrors.length > 0) setPasswordErrors([]) }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
     if (mode === 'signup') {
+      const pwErrors = getPasswordErrors(password)
+      if (pwErrors.length > 0) {
+        setPasswordErrors(pwErrors)
+        setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+        return
+      }
       if (password !== confirmPassword) {
         setError('Passwords do not match.')
         return
@@ -483,12 +502,12 @@ export default function AuthPage() {
               )}
               <FieldInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" icon={<IconMail />} />
 
-              {/* Password with strength indicator on signup */}
+              {/* Password with strength bar on signup */}
               <div className="flex flex-col gap-1">
                 <PasswordInput
                   label="Password"
                   value={password}
-                  onChange={setPassword}
+                  onChange={mode === 'signup' ? handlePasswordChange : setPassword}
                   placeholder={mode === 'signup' ? 'Min. 8 chars, mixed case + symbol' : 'Your password'}
                 />
                 {mode === 'signup' && <PasswordStrengthBar password={password} />}
@@ -571,6 +590,23 @@ export default function AuthPage() {
                   ? (mode === 'login' ? 'Logging in…' : 'Creating account…')
                   : (mode === 'login' ? 'Log In →' : 'Create Account →')}
               </button>
+
+              {passwordErrors.length > 0 && (
+                <div
+                  ref={errorRef}
+                  className="flex flex-col gap-1 px-3 py-2.5 rounded-[9px]"
+                  style={{ background: 'rgba(196,99,58,0.07)', border: '0.5px solid rgba(196,99,58,0.2)' }}
+                >
+                  <span style={{ fontSize: 11.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--tc)', fontWeight: 600 }}>
+                    Password must include:
+                  </span>
+                  {passwordErrors.map(err => (
+                    <span key={err} style={{ fontSize: 11.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--tc)' }}>
+                      • {err}
+                    </span>
+                  ))}
+                </div>
+              )}
             </form>
 
             {/* ── OR divider ── */}

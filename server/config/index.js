@@ -14,6 +14,8 @@ export default {
   systemEmailPass: process.env.SYSTEM_EMAIL_PASS || '',
   systemEmailHost: process.env.SYSTEM_EMAIL_HOST || 'smtp.gmail.com',
   systemEmailPort: Number(process.env.SYSTEM_EMAIL_PORT) || 587,
+  reportEmails:    (process.env.REPORT_EMAILS || process.env.REPORT_EMAIL || '')
+                     .split(',').map(e => e.trim()).filter(Boolean),
   // Google OAuth (Passport)
   googleClientId:     process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
