@@ -138,7 +138,7 @@ export default function ConnectionsPage() {
           <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
           Email settings
         </div>
-        <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 12 }}>
+        <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 12 }}>
           Connections
         </h1>
         <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 440 }}>
@@ -215,7 +215,7 @@ export default function ConnectionsPage() {
                           </span>
                         )}
                       </div>
-                      <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 15, fontWeight: 600, color: active ? 'var(--tc)' : 'var(--ink)', marginBottom: 4 }}>{opt.label}</div>
+                      <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: active ? 'var(--tc)' : 'var(--ink)', marginBottom: 4 }}>{opt.label}</div>
                       <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.6 }}>{opt.desc}</div>
                     </div>
                   </button>
@@ -234,7 +234,7 @@ export default function ConnectionsPage() {
               <div style={{ padding: '16px 20px 16px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: 22, flexShrink: 0 }}>📮</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
+                  <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
                     {systemEmail || 'system@letterfromheart.com'}
                   </div>
                   <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)' }}>
@@ -271,7 +271,7 @@ export default function ConnectionsPage() {
             {emailAccounts.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 32px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
                 <div style={{ fontSize: 38, marginBottom: 14, opacity: 0.35 }}>📭</div>
-                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>No personal account connected</div>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>No personal account connected</div>
                 <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 280, margin: '0 auto 20px' }}>
                   Connect Gmail, Zoho, or any SMTP to send from your own inbox.
                 </p>
@@ -292,7 +292,7 @@ export default function ConnectionsPage() {
                       <div style={{ padding: '18px 20px 16px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
                         <div style={{ fontSize: 22, flexShrink: 0 }}>{PROVIDER_ICON[acc.provider] || '📬'}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{acc.emailAddress}</div>
+                          <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{acc.emailAddress}</div>
                           <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)' }}>{acc.provider} · connected {new Date(acc.connectedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                         </div>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: isOk ? 'rgba(122,158,142,0.1)' : 'rgba(196,99,58,0.1)', color: isOk ? 'var(--sage)' : 'var(--tc)', border: `1px solid ${isOk ? 'rgba(122,158,142,0.3)' : 'rgba(196,99,58,0.3)'}`, flexShrink: 0, fontFamily: '"DM Sans", sans-serif' }}>
@@ -328,7 +328,7 @@ export default function ConnectionsPage() {
           {/* ── Form column ────────────────────────────────────────── */}
           <section>
             <div style={{ marginBottom: 22 }}>
-              <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px', marginBottom: 5 }}>Add Email Account</h2>
+              <h2 style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px', marginBottom: 5 }}>Add Email Account</h2>
               <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.6, margin: 0 }}>
                 Connect via SMTP — works with any email provider.
               </p>
@@ -608,7 +608,7 @@ export default function ConnectionsPage() {
           >
             <div style={{ padding: '32px 28px 28px', textAlign: 'center' }}>
               <div style={{ fontSize: 36, marginBottom: 14 }}>🗑️</div>
-              <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, fontWeight: 700, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.3px' }}>Remove account?</h3>
+              <h3 style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 700, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.3px' }}>Remove account?</h3>
               <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 24 }}>
                 This email account will be disconnected.<br />You can reconnect any time.
               </p>

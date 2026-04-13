@@ -39,7 +39,7 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
         onClick={() => onOpen(letter)}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, marginBottom: 12 }}>
-          <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 19, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
@@ -134,7 +134,7 @@ function EditModal({ letter, onSave, onClose }) {
     <div className="fixed inset-0 z-[500] flex items-center justify-center" style={{ background: 'rgba(26,18,8,0.45)', backdropFilter: 'blur(4px)' }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-[560px] mx-4 overflow-hidden animate-fade-up" style={{ background: 'var(--cream)', border: `1px solid ${BD}`, borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,8,0.18)' }}>
         <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: `1px solid ${FT}` }}>
-          <span style={{ fontFamily: '"Playfair Display", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>Edit Letter</span>
+          <span style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>Edit Letter</span>
           <button onClick={onClose} className="w-7 h-7 flex items-center justify-center cursor-pointer bg-transparent border-none text-[20px]" style={{ color: 'var(--ink-muted)' }}>×</button>
         </div>
         <div className="px-6 py-5 flex flex-col gap-4">
@@ -164,7 +164,7 @@ function DeleteModal({ letter, onConfirm, onClose, deleting }) {
       <div className="w-full max-w-[400px] mx-4 overflow-hidden animate-fade-up" style={{ background: 'var(--cream)', border: `1px solid ${BD}`, borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,8,0.18)' }}>
         <div className="px-6 py-6 text-center">
           <div className="text-[32px] mb-3">🗑️</div>
-          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Delete this letter?</div>
+          <div style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Delete this letter?</div>
           <div className="text-[13px] font-light mb-1" style={{ color: 'var(--ink-muted)' }}>"{letter.subject}"</div>
           <div className="text-[12px] font-light mb-6" style={{ color: 'var(--ink-muted)' }}>This cannot be undone.</div>
           <div className="flex gap-2 justify-center">
@@ -182,7 +182,7 @@ function EmptyState({ icon, title, subtitle, cta, onCta }) {
   return (
     <div style={{ textAlign: 'center', padding: '64px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
       <div style={{ fontSize: 44, marginBottom: 16, opacity: 0.4 }}>{icon}</div>
-      <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', marginBottom: 10 }}>{title}</div>
+      <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', marginBottom: 10 }}>{title}</div>
       {subtitle && <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 300, margin: '0 auto 24px' }}>{subtitle}</p>}
       {cta && (
         <button onClick={onCta} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 22px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(139,58,42,0.25)' }}>
@@ -317,7 +317,7 @@ export default function MySpacePage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Your space
           </div>
-          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
             My Space
           </h1>
           <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 400 }}>
@@ -416,7 +416,7 @@ function ComposeTeaserBar({ onClick }) {
     >
       <div style={{ width: 40, height: 40, borderRadius: '50%', background: hov ? '#fde8e4' : '#EDE5D4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--tc)', flexShrink: 0, transition: 'background 0.2s' }}>+</div>
       <div>
-        <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Begin a new letter</div>
+        <div style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Begin a new letter</div>
         <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>No pressure. Start with "Dear…" and see where it goes.</div>
       </div>
     </div>

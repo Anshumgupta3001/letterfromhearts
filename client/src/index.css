@@ -275,7 +275,7 @@ input:focus, textarea:focus, select:focus {
   gap: 8px;
 }
 .page-header-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Lora', serif;
   font-weight: 700;
   color: var(--ink);
   line-height: 1.1;

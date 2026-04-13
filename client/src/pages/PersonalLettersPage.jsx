@@ -119,7 +119,7 @@ function LetterCard({ letter, onEdit, onDelete }) {
       {/* Card body */}
       <div style={{ padding: '26px 28px 22px 32px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
-          <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: '#fdf0ee', color: 'var(--tc)', flexShrink: 0, border: '1px solid #f5d4ce' }}>
@@ -189,7 +189,7 @@ function ComposeTeaser({ onClick }) {
     >
       <div style={{ width: 40, height: 40, borderRadius: '50%', background: hov ? '#fde8e4' : '#EDE5D4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--tc)', flexShrink: 0, transition: 'background 0.2s' }}>+</div>
       <div>
-        <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Begin a new letter</div>
+        <div style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Begin a new letter</div>
         <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>No pressure. Start with "Dear…" and see where it goes.</div>
       </div>
     </div>
@@ -241,7 +241,7 @@ export default function PersonalLettersPage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Your space
           </div>
-          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
             <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #fde8e4, #fdf0e8)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>📝</span>
             Personal Letters
           </h1>
@@ -295,7 +295,7 @@ export default function PersonalLettersPage() {
       {letters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>🪞</div>
-          <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Your private space</div>
+          <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Your private space</div>
           <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 320, margin: '0 auto 28px' }}>
             Write to yourself — your past self, your future self, or simply release what you carry. No one else will ever read these.
           </p>

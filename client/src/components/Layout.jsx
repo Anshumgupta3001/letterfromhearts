@@ -238,7 +238,7 @@ function HomeSidebar() {
           background: accent, borderRadius: '12px 12px 0 0',
         }} />
       )}
-      <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2vw, 24px)', fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>
+      <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>
         {value}
       </div>
       <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 400, marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>
@@ -248,16 +248,16 @@ function HomeSidebar() {
   )
 
   return (
-    <aside style={{
-      borderRight: '0.5px solid rgba(28,26,23,0.07)',
-      padding: '22px 16px 32px',
-      background: 'rgba(247,242,234,0.4)',
-      position: 'sticky', top: 56,
-      height: 'calc(100vh - 56px)',
-      overflowY: 'auto',
-      overflowX: 'hidden',
-      display: 'flex', flexDirection: 'column', gap: 18,
-    }}>
+    <aside
+      className="md:sticky md:top-14 md:h-[calc(100vh-56px)] md:overflow-y-auto"
+      style={{
+        padding: '16px 16px 24px',
+        background: 'rgba(247,242,234,0.4)',
+        overflowX: 'hidden',
+        display: 'flex', flexDirection: 'column', gap: 14,
+        borderBottom: '0.5px solid rgba(28,26,23,0.07)',
+        borderRight: '0.5px solid rgba(28,26,23,0.07)',
+      }}>
 
       {/* ── Emotional heartline ── */}
       <div style={{
@@ -294,7 +294,7 @@ function HomeSidebar() {
       </div>
 
       {/* ── Overview cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 7 }}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-2" style={{ gap: 7 }}>
         <MetricCard value={written}  label="Letters written"  accent="linear-gradient(90deg, var(--tc), var(--gold))" />
         <MetricCard value={sent}     label="Letters sent"     accent="linear-gradient(90deg, var(--gold), var(--tc))" />
         <MetricCard value={personal} label="To myself"        />
@@ -314,7 +314,7 @@ function HomeSidebar() {
               <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 4 }}>
                 Open rate
               </div>
-              <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 500, letterSpacing: '-1px', color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 500, letterSpacing: '-1px', color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>
                 {openRate}%
               </div>
             </div>
@@ -354,7 +354,7 @@ function HomeSidebar() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2vw, 22px)', fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}>{heard}</div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}>{heard}</div>
               <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Strangers heard you</div>
             </div>
             {canReadFeed && (
@@ -362,7 +362,7 @@ function HomeSidebar() {
                 style={{ cursor: 'pointer', minWidth: 0 }}
                 onClick={() => navigate('listenerread')}
               >
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2vw, 22px)', fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
                 <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Waiting to be read</div>
               </div>
             )}
@@ -563,18 +563,13 @@ export default function Layout({ children }) {
     <div style={{ minHeight: '100vh', background: 'var(--cream)' }}>
       <Navbar />
       {currentPage === 'home' ? (
-        // Home: dashboard layout with sidebar
-        <>
-          <MobileAnalyticsStrip />
-          <div className="md:grid md:grid-cols-[220px_1fr]" style={{ minHeight: 'calc(100vh - 56px)' }}>
-            <div className="hidden md:block">
-              <HomeSidebar />
-            </div>
-            <div style={{ minWidth: 0, overflowX: 'hidden' }}>
-              {children}
-            </div>
+        // Home: analytics sidebar always visible, stacks on mobile
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr]" style={{ minHeight: 'calc(100vh - 56px)' }}>
+          <HomeSidebar />
+          <div style={{ minWidth: 0, overflowX: 'hidden' }}>
+            {children}
           </div>
-        </>
+        </div>
       ) : (
         // All other pages: no sidebar, full-width (each page manages its own layout)
         <div style={{ width: '100%' }}>

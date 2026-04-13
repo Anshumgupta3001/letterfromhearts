@@ -26,15 +26,15 @@ function StepLabel({ n, title, subtitle, onBack }) {
         {onBack && (
           <button
             onClick={onBack}
-            style={{ fontSize: 12.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0', transition: 'color 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-soft)'}
+            style={{ fontSize: 12.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink)', fontWeight: 500, background: 'rgba(28,26,23,0.06)', border: '1px solid rgba(28,26,23,0.12)', borderRadius: 7, cursor: 'pointer', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5, transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.1)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(28,26,23,0.06)'}
           >
             ← Back
           </button>
         )}
       </div>
-      <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(20px, 2.5vw, 26px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.3px', marginBottom: 6 }}>
+      <h2 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(20px, 2.5vw, 26px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.3px', marginBottom: 6 }}>
         {title}
       </h2>
       <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
@@ -85,7 +85,7 @@ function Step1({ mode, setMode, email, setEmail, onNext, onBack, canWriteStrange
               }}
             >
               <span style={{ fontSize: 24, display: 'block', marginBottom: 10 }}>{m.icon}</span>
-              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 15, fontWeight: 700, color: 'var(--ink)', marginBottom: 5, lineHeight: 1.2 }}>{m.name}</div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 700, color: 'var(--ink)', marginBottom: 5, lineHeight: 1.2 }}>{m.name}</div>
               <div style={{ fontFamily: 'Lora, serif', fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.65, marginBottom: 10 }}>{m.desc}</div>
               <div
                 style={{
@@ -287,7 +287,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, saving,
             />
             <input
               style={{
-                fontFamily: '"Playfair Display", serif', fontSize: 22, fontWeight: 600,
+                fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600,
                 color: 'var(--ink)', background: 'transparent',
                 border: 'none', outline: 'none', width: '100%',
                 marginTop: 8,
@@ -328,9 +328,9 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, saving,
           <button
             onClick={onSend}
             disabled={saving}
-            style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--purple, #8B7EC8)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
-            onMouseEnter={e => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(139,126,200,0.3)' } }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+            style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--tc)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
+            onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = '#D97040'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.3)' } }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
           >
             {saving ? 'Saving…' : 'Save Letter'}
           </button>
@@ -338,9 +338,9 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, saving,
           <button
             onClick={onSend}
             disabled={saving}
-            style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--sage)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
-            onMouseEnter={e => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(122,158,142,0.3)' } }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+            style={{ padding: '9px 22px', borderRadius: 999, fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500, background: 'var(--tc)', color: 'white', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: saving ? 0.6 : 1 }}
+            onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = '#D97040'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.3)' } }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
           >
             {saving ? 'Sharing…' : 'Share Letter'}
           </button>
@@ -397,7 +397,7 @@ function Step4({ mode, mood, deliveryType, navigate }) {
           <path d="M60 61C60 61 53 56 53 52C53 49.5 55.5 48 58 50C58.8 50.6 59.5 51.3 60 52C60.5 51.3 61.2 50.6 62 50C64.5 48 67 49.5 67 52C67 56 60 61 60 61Z" fill="rgba(255,255,255,0.3)"/>
         </svg>
       </div>
-      <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(24px, 3.5vw, 34px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, marginBottom: 12, letterSpacing: '-0.4px' }}>
+      <h2 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(24px, 3.5vw, 34px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, marginBottom: 12, letterSpacing: '-0.4px' }}>
         Your letter is<br /><em style={{ fontStyle: 'italic', color: headingColor }}>{headingText}</em>
       </h2>
       <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', maxWidth: 420, lineHeight: 1.75, margin: '0 auto 32px' }}>{msg}</p>
@@ -556,12 +556,12 @@ export default function WritePage() {
 
               {/* Delivery */}
               <div style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)', borderRadius: 12, padding: '14px 16px' }}>
-                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 10 }}>Delivery</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 10 }}>Send or Save</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {[
-                    { id: 'now',     icon: '📨', name: 'Send now',         comingSoon: false },
-                    { id: 'capsule', icon: '⏳', name: 'Time capsule',     comingSoon: true  },
-                    { id: 'burn',    icon: '🔥', name: 'Burn after writing',comingSoon: true  },
+                    { id: 'now',     icon: '📨', name: 'Send',                        comingSoon: false },
+                    { id: 'capsule', icon: '⏳', name: 'Time Capsule',                comingSoon: true  },
+                    { id: 'burn',    icon: '🔥', name: 'Burn After Reading',           comingSoon: true  },
                   ].map(opt => (
                     <button
                       key={opt.id}
@@ -572,9 +572,9 @@ export default function WritePage() {
                         padding: '8px 10px', borderRadius: 8, textAlign: 'left',
                         border: deliveryType === opt.id && isKnown ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.09)',
                         background: deliveryType === opt.id && isKnown ? 'rgba(196,99,58,0.06)' : '#fff',
-                        color: opt.comingSoon || !isKnown ? 'var(--ink-muted)' : deliveryType === opt.id ? 'var(--tc)' : 'var(--ink-soft)',
+                        color: opt.comingSoon ? 'var(--ink-muted)' : !isKnown && opt.id === 'now' ? 'var(--tc)' : !isKnown ? 'var(--ink-muted)' : deliveryType === opt.id ? 'var(--tc)' : 'var(--ink-soft)',
                         cursor: opt.comingSoon || !isKnown ? 'default' : 'pointer',
-                        opacity: opt.comingSoon ? 0.5 : !isKnown ? 0.4 : 1,
+                        opacity: opt.comingSoon ? 0.5 : 1,
                         fontSize: 12.5, fontFamily: '"DM Sans", sans-serif',
                         fontWeight: deliveryType === opt.id && isKnown ? 500 : 400,
                         transition: 'all 0.15s',
@@ -582,7 +582,7 @@ export default function WritePage() {
                     >
                       <span style={{ fontSize: 13 }}>{opt.icon}</span>
                       <span style={{ flex: 1 }}>{opt.name}</span>
-                      {opt.comingSoon && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: 'rgba(28,26,23,0.06)', color: 'var(--ink-muted)' }}>Soon</span>}
+                      {opt.comingSoon && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: 'rgba(28,26,23,0.06)', color: 'var(--ink-muted)' }}>Coming soon</span>}
                     </button>
                   ))}
                 </div>
