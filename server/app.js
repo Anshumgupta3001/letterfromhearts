@@ -9,6 +9,7 @@ import emailAccountRoutes from './routes/emailAccountRoutes.js'
 import sendEmailRoutes from './routes/sendEmailRoutes.js'
 import letterRoutes from './routes/letterRoutes.js'
 import trackingRoutes from './routes/trackingRoutes.js'
+import reportIssueRoutes from './routes/reportIssueRoutes.js'
 import { notFound, errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
@@ -32,6 +33,7 @@ app.use('/api/email-accounts', emailAccountRoutes)
 app.use('/api/send-email', sendEmailRoutes)
 app.use('/api/letters', letterRoutes)
 app.use('/api/tracking', trackingRoutes)
+app.use('/api/report-issue', reportIssueRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

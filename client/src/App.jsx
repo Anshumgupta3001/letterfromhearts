@@ -14,6 +14,7 @@ import SentLettersPage from './pages/SentLettersPage'
 import PersonalLettersPage from './pages/PersonalLettersPage'
 import CaringStrangerPage from './pages/CaringStrangerPage'
 import ListenerReadPage from './pages/ListenerReadPage'
+import ReportIssuePage from './pages/ReportIssuePage'
 import AuthPage from './pages/AuthPage'
 import { useApp } from './context/AppContext'
 
@@ -44,6 +45,7 @@ function PageRouter() {
         {currentPage === 'personalletters'&& <PersonalLettersPage />}
         {currentPage === 'caringstranger' && <CaringStrangerPage />}
         {currentPage === 'listenerread'   && <ListenerReadPage />}
+        {currentPage === 'reportissue'    && <ReportIssuePage />}
       </Layout>
       <Drawer />
       <LetterDrawer />

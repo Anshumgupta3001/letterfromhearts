@@ -5,7 +5,7 @@ const ROLE_COLOR = { seeker: 'var(--tc)', listener: 'var(--sage)', both: 'var(--
 const ROLE_LABEL = { seeker: 'Seeker', listener: 'Listener', both: 'Seeker + Listener' }
 
 // ── Avatar dropdown ───────────────────────────────────────────────────────────
-function AvatarMenu({ authUser, userRole, logout }) {
+function AvatarMenu({ authUser, userRole, logout, navigate }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -60,6 +60,22 @@ function AvatarMenu({ authUser, userRole, logout }) {
               {rLabel}
             </span>
           </div>
+          <button
+            onClick={() => { setOpen(false); navigate('reportissue') }}
+            style={{
+              width: '100%', padding: '10px 14px', border: 'none', background: 'transparent',
+              textAlign: 'left', cursor: 'pointer', fontSize: 13, color: 'var(--ink-muted)',
+              fontFamily: '"DM Sans", sans-serif', transition: 'background 0.15s, color 0.15s',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(196,99,58,0.05)'; e.currentTarget.style.color = 'var(--tc)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-muted)' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.55 }}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Report an Issue
+          </button>
           <button
             onClick={() => { setOpen(false); logout() }}
             style={{
@@ -121,7 +137,7 @@ function useAnalyticsData() {
   const {
     navigate, canReadFeed,
     personalLetters, ownStrangerLetters, sentLetters, strangerLetters,
-    analytics, analyticsDays, setAnalyticsDays,
+    analytics, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing,
   } = useApp()
 
   const totalWritten = (personalLetters?.length || 0) + (ownStrangerLetters?.length || 0) + (sentLetters?.length || 0)
@@ -141,7 +157,7 @@ function useAnalyticsData() {
     return 'Start writing. Someone is waiting 💛'
   })()
 
-  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline }
+  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline }
 }
 
 // ── Mobile-only compact analytics strip ──────────────────────────────────────
@@ -220,7 +236,8 @@ function MobileAnalyticsStrip() {
 
 // ── Home-only sidebar ─────────────────────────────────────────────────────────
 function HomeSidebar() {
-  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline } = useAnalyticsData()
+  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline } = useAnalyticsData()
+  const { authUser, userRole, logout } = useApp()
 
   const MetricCard = ({ value, label, accent }) => (
     <div style={{
@@ -273,8 +290,23 @@ function HomeSidebar() {
 
       {/* ── Date filter ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', flexShrink: 0 }}>
-          Your story
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+            Your story
+          </div>
+          <button
+            onClick={() => refreshAnalytics()}
+            disabled={analyticsRefreshing}
+            title="Refresh analytics"
+            style={{ background: 'none', border: 'none', cursor: analyticsRefreshing ? 'default' : 'pointer', padding: '1px 2px', display: 'flex', alignItems: 'center', color: 'var(--ink-muted)', opacity: analyticsRefreshing ? 0.5 : 1, transition: 'opacity 0.2s' }}
+          >
+            <svg
+              width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ animation: analyticsRefreshing ? 'spin 0.8s linear infinite' : 'none' }}
+            >
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </button>
         </div>
         <select
           value={analyticsDays}
@@ -369,6 +401,70 @@ function HomeSidebar() {
           </div>
         </div>
       )}
+
+      {/* ── User card (always visible at bottom) ── */}
+      <div style={{ marginTop: 'auto', paddingTop: 12 }}>
+        <div style={{
+          background: 'var(--paper)',
+          border: '0.5px solid rgba(28,26,23,0.1)',
+          borderRadius: 14,
+          padding: '13px 14px',
+          boxShadow: '0 2px 8px rgba(28,26,23,0.05)',
+        }}>
+          {/* Avatar + info row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg, var(--tc), #d97040)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: '"DM Sans", sans-serif',
+              boxShadow: '0 2px 8px rgba(196,99,58,0.25)',
+            }}>
+              {authUser?.name?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {authUser?.name || 'You'}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
+                {authUser?.email || ''}
+              </div>
+              <span style={{
+                display: 'inline-block', marginTop: 4,
+                fontSize: 9.5, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+                letterSpacing: '0.4px', textTransform: 'uppercase',
+                padding: '2px 7px', borderRadius: 20,
+                background: `${ROLE_COLOR[userRole] || 'var(--gold)'}18`,
+                color: ROLE_COLOR[userRole] || 'var(--gold)',
+                border: `0.5px solid ${ROLE_COLOR[userRole] || 'var(--gold)'}30`,
+              }}>
+                {ROLE_LABEL[userRole] || 'Both'}
+              </span>
+            </div>
+          </div>
+
+          {/* Logout */}
+          <button
+            onClick={logout}
+            style={{
+              marginTop: 12, width: '100%', padding: '7px 10px', borderRadius: 8, fontSize: 12,
+              fontFamily: '"DM Sans", sans-serif', fontWeight: 400,
+              background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)',
+              color: 'var(--ink-muted)', cursor: 'pointer', transition: 'all 0.15s',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(196,99,58,0.06)'; e.currentTarget.style.color = 'var(--tc)'; e.currentTarget.style.borderColor = 'rgba(196,99,58,0.2)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--cream)'; e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.1)' }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.55 }}>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Log out
+          </button>
+        </div>
+      </div>
 
     </aside>
   )
@@ -519,7 +615,7 @@ function Navbar() {
           ))}
         </div>
 
-        {/* Right: Write button + avatar */}
+        {/* Right: Write (primary) + Report (secondary) + avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
           <button
             onClick={() => navigate('write')}
@@ -537,7 +633,22 @@ function Navbar() {
           >
             + Write
           </button>
-          <AvatarMenu authUser={authUser} userRole={userRole} logout={logout} />
+          <button
+            onClick={() => navigate('reportissue')}
+            className="hidden md:block"
+            style={{
+              padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 400,
+              fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+              background: 'transparent', color: 'var(--ink-muted)',
+              border: '0.5px solid rgba(28,26,23,0.18)', transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.04)'; e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.28)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.18)' }}
+          >
+            Report
+          </button>
+          <AvatarMenu authUser={authUser} userRole={userRole} logout={logout} navigate={navigate} />
         </div>
       </nav>
 
@@ -551,6 +662,28 @@ function Navbar() {
         userRole={userRole}
         logout={logout}
       />
+
+      {/* Floating Write button — mobile only, hidden when already on write page */}
+      {currentPage !== 'write' && (
+        <button
+          className="sm:hidden"
+          onClick={() => navigate('write')}
+          style={{
+            position: 'fixed', bottom: 22, right: 20, zIndex: 90,
+            background: 'var(--tc)', color: '#fff',
+            border: 'none', borderRadius: 999,
+            padding: '11px 22px',
+            fontSize: 13, fontWeight: 500, fontFamily: '"DM Sans", sans-serif',
+            boxShadow: '0 6px 20px rgba(196,99,58,0.35)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+            transition: 'transform 0.15s, box-shadow 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(196,99,58,0.4)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 6px 20px rgba(196,99,58,0.35)' }}
+        >
+          ✦ Write
+        </button>
+      )}
     </>
   )
 }

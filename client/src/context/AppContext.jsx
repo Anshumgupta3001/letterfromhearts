@@ -113,6 +113,7 @@ export function AppProvider({ children }) {
       if (page === 'myletters') setMyLettersFilter(filter)
       if (page === 'myreplies') setRepliesFilter(filter)
     }
+    if (page === 'home') refreshAnalytics()
     window.scrollTo(0, 0)
   }
 
@@ -224,16 +225,19 @@ export function AppProvider({ children }) {
   }, [authLoading, authUser, refreshStrangerLetters])
 
   // ── Analytics ─────────────────────────────────────────────────────────────────
-  const [analytics,     setAnalytics]     = useState(null)
-  const [analyticsDays, setAnalyticsDays] = useState(30)
+  const [analytics,           setAnalytics]           = useState(null)
+  const [analyticsDays,       setAnalyticsDays]       = useState(30)
+  const [analyticsRefreshing, setAnalyticsRefreshing] = useState(false)
 
   const refreshAnalytics = useCallback(async (days = analyticsDays) => {
     if (!getToken()) return
+    setAnalyticsRefreshing(true)
     try {
       const res  = await apiFetch(`/api/letters/analytics?days=${days}`)
       const json = await res.json()
       if (json.success) setAnalytics(json.data)
     } catch { /* ignore */ }
+    finally { setAnalyticsRefreshing(false) }
   }, [analyticsDays]) // eslint-disable-line
 
   useEffect(() => {
@@ -272,7 +276,7 @@ export function AppProvider({ children }) {
         // caring stranger feed
         strangerLetters, refreshStrangerLetters,
         // analytics
-        analytics, analyticsDays, setAnalyticsDays, refreshAnalytics,
+        analytics, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing,
       }}
     >
       {children}
