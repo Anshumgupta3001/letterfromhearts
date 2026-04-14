@@ -116,6 +116,21 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
           )}
         </div>
 
+        {/* Replied badge — only shown on held letters where listener has replied */}
+        {isHeld && letter.hasReplied && (
+          <div style={{ marginBottom: 10 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              fontSize: 10, padding: '3px 10px', borderRadius: 20, fontWeight: 600,
+              background: 'rgba(122,158,142,0.1)', color: 'var(--sage)',
+              border: '1px solid rgba(122,158,142,0.28)',
+              fontFamily: '"DM Sans", sans-serif', letterSpacing: '0.6px', textTransform: 'uppercase',
+            }}>
+              🌿 Replied
+            </span>
+          </div>
+        )}
+
         {/* Preview snippet */}
         <p style={{
           fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13,

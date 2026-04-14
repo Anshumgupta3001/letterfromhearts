@@ -1,21 +1,28 @@
-/**
- * Reply model placeholder.
- * MongoDB / Mongoose connection is intentionally excluded.
- */
+import mongoose from 'mongoose'
 
-export const ReplySchema = {
-  id: String,
-  role: String,
-  status: String,   // 'waiting' | 'new-reply' | 'closed'
-  mood: String,
-  moodLabel: String,
-  emoji: String,
-  sal: String,
-  exc: String,
-  tags: [String],
-  timeAgo: String,
-  seekerLetter: Object,
-  myReply: Object,
-  theirReply: Object,
-  closed: Boolean,
-}
+const replySchema = new mongoose.Schema(
+  {
+    parentLetterId: {
+      type:     mongoose.Schema.Types.ObjectId,
+      ref:      'Letter',
+      required: true,
+      index:    true,
+    },
+    listenerId: {
+      type:     mongoose.Schema.Types.ObjectId,
+      ref:      'User',
+      required: true,
+    },
+    message: {
+      type:      String,
+      required:  true,
+      maxlength: 3000,
+    },
+  },
+  { timestamps: true }
+)
+
+// Compound index — one reply per listener per letter
+replySchema.index({ parentLetterId: 1, listenerId: 1 }, { unique: true })
+
+export default mongoose.model('Reply', replySchema)

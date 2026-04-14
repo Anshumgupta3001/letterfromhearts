@@ -1,4 +1,5 @@
 import Letter from '../models/Letter.js'
+import Reply  from '../models/Reply.js'
 import { checkContentSafety } from '../utils/moderation.js'
 
 // GET /api/letters?type=personal|sent|stranger  — current user's letters, filtered by type
@@ -7,6 +8,24 @@ export async function getLetters(req, res) {
   if (req.query.type) filter.type = req.query.type
 
   const letters = await Letter.find(filter).sort({ createdAt: -1 })
+
+  // For stranger letters, attach reply count so the seeker can see how many replies they got
+  if (req.query.type === 'stranger' && letters.length > 0) {
+    const ids      = letters.map(l => l._id)
+    const counts   = await Reply.aggregate([
+      { $match: { parentLetterId: { $in: ids } } },
+      { $group: { _id: '$parentLetterId', count: { $sum: 1 } } },
+    ])
+    const countMap = {}
+    for (const row of counts) countMap[row._id.toString()] = row.count
+
+    const data = letters.map(l => ({
+      ...l.toObject(),
+      replyCount: countMap[l._id.toString()] || 0,
+    }))
+    return res.json({ success: true, data })
+  }
+
   res.json({ success: true, data: letters })
 }
 
@@ -39,7 +58,7 @@ export async function getStrangerFeed(req, res) {
     .sort({ createdAt: -1 })
     .select('-fromEmail -toEmail')
 
-  const data = letters
+  const baseData = letters
     .map(l => {
       const obj     = l.toObject()
       const hasRead = (l.readBy || []).some(id => id.toString() === userId.toString())
@@ -50,11 +69,26 @@ export async function getStrangerFeed(req, res) {
         ...obj,
         isOwner: l.userId.toString() === userId.toString(),
         hasRead,
-        // isClaimed is safe to expose — it's a boolean, no PII
       }
     })
     // 'both' role cannot see their own stranger letters in the feed
     .filter(l => role !== 'both' || !l.isOwner)
+
+  // For letters this listener has claimed, add hasReplied flag
+  const heldIds = baseData.filter(l => l.hasRead).map(l => l._id)
+  let repliedSet = new Set()
+  if (heldIds.length > 0) {
+    const myReplies = await Reply.find(
+      { parentLetterId: { $in: heldIds }, listenerId: userId },
+      'parentLetterId'
+    ).lean()
+    repliedSet = new Set(myReplies.map(r => r.parentLetterId.toString()))
+  }
+
+  const data = baseData.map(l => ({
+    ...l,
+    hasReplied: repliedSet.has(l._id.toString()),
+  }))
 
   res.json({ success: true, data })
 }
@@ -180,6 +214,18 @@ export async function updateLetter(req, res) {
   res.json({ success: true, data: letter })
 }
 
+// GET /api/letters/:id/replies  — letter owner fetches all replies to their stranger letter
+export async function getLetterReplies(req, res) {
+  const userId = req.user._id
+  const letter = await Letter.findOne({ _id: req.params.id, userId })
+  if (!letter) return res.status(404).json({ error: 'Letter not found.' })
+  if (letter.type !== 'stranger')
+    return res.status(400).json({ error: 'Replies are only available for Caring Stranger letters.' })
+
+  const replies = await Reply.find({ parentLetterId: letter._id }).sort({ createdAt: 1 })
+  res.json({ success: true, data: replies })
+}
+
 // GET /api/letters/analytics?days=7|15|30
 // Returns aggregate stats for the requesting user, filtered by date window.
 export async function getAnalytics(req, res) {
@@ -215,6 +261,13 @@ export async function getAnalytics(req, res) {
 
   const openRate = totalSent > 0 ? Math.round((totalOpened / totalSent) * 100) : 0
 
+  // Count replies received on this user's stranger letters (separate from the parallel block
+  // because it depends on knowing the user's stranger letter IDs first)
+  const myStrangerIds   = await Letter.distinct('_id', { userId, type: 'stranger' })
+  const repliesReceived = myStrangerIds.length > 0
+    ? await Reply.countDocuments({ parentLetterId: { $in: myStrangerIds } })
+    : 0
+
   res.json({
     success: true,
     data: {
@@ -227,6 +280,7 @@ export async function getAnalytics(req, res) {
       claimedLetters,
       totalScheduled,
       openRate,
+      repliesReceived,
     },
   })
 }

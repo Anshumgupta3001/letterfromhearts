@@ -1,23 +1,15 @@
-import { Router } from 'express'
-import {
-  getMyReplies,
-  getReplyById,
-  createReply,
-  respondToReply,
-} from '../controllers/replyController.js'
+import { Router }                  from 'express'
+import { createReply, getMyReply } from '../controllers/replyController.js'
+import { protect }                 from '../middlewares/auth.js'
 
 const router = Router()
 
-// GET  /api/replies           — listener's own replies (filterable by ?status=)
-router.get('/', getMyReplies)
+router.use(protect)
 
-// GET  /api/replies/:id       — single reply thread
-router.get('/:id', getReplyById)
+// GET  /api/replies/my?parentLetterId=:id  — listener fetches their own reply
+router.get('/my', getMyReply)
 
-// POST /api/replies           — post a reply to an open letter
+// POST /api/replies  — listener sends a reply to a claimed stranger letter
 router.post('/', createReply)
-
-// POST /api/replies/:id/respond — seeker writes back to a listener
-router.post('/:id/respond', respondToReply)
 
 export default router

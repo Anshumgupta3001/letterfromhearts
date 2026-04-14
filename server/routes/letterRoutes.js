@@ -8,6 +8,7 @@ import {
   updateLetter,
   deleteLetter,
   getAnalytics,
+  getLetterReplies,
 } from '../controllers/letterController.js'
 import { protect } from '../middlewares/auth.js'
 
@@ -19,11 +20,12 @@ router.use(protect)
 router.get('/stranger-feed', getStrangerFeed)
 router.get('/analytics',     getAnalytics)
 
-router.get('/',           getLetters)
-router.get('/:id',        getLetterById)
-router.post('/',          createLetter)
-router.post('/:id/read',  markLetterRead)
-router.put('/:id',        updateLetter)
-router.delete('/:id',     deleteLetter)
+router.get('/',                getLetters)
+router.get('/:id/replies',    getLetterReplies)
+router.get('/:id',            getLetterById)
+router.post('/',              createLetter)
+router.post('/:id/read',      markLetterRead)
+router.put('/:id',            updateLetter)
+router.delete('/:id',         deleteLetter)
 
 export default router

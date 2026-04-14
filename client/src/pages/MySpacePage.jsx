@@ -57,6 +57,12 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
                 · Waiting to be heard
               </span>
             )}
+            {/* Reply count badge */}
+            {letter.type === 'stranger' && letter.replyCount > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 600, background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.28)' }}>
+                🌿 {letter.replyCount} {letter.replyCount === 1 ? 'reply' : 'replies'}
+              </span>
+            )}
           </div>
         </div>
 
