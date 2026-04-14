@@ -757,8 +757,9 @@ function MobileDrawer({ open, onClose, navItems, currentPage, onNavigate, authUs
         display: 'flex', flexDirection: 'column',
       }}>
         <div style={{ padding: '18px 18px 16px', borderBottom: '0.5px solid rgba(28,26,23,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 16, color: 'var(--ink)' }}>
-            Letter from Heart
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
+            <span style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 16, color: 'var(--ink)' }}>Letter from Heart</span>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(28,26,23,0.05)', border: 'none', cursor: 'pointer', width: 26, height: 26, borderRadius: 6, color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
         </div>
@@ -857,17 +858,20 @@ function Navbar() {
           </svg>
         </button>
 
-        {/* Logo — Lora italic, matching HTML reference */}
+        {/* Logo — icon + Lora italic text */}
         <button
           onClick={() => navigate('home')}
           style={{
-            fontFamily: '"Lora", serif', fontSize: 17, fontStyle: 'italic',
-            color: 'var(--ink)', background: 'none', border: 'none',
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'none', border: 'none',
             cursor: 'pointer', padding: 0, flexShrink: 0,
-            marginRight: 28, whiteSpace: 'nowrap',
+            marginRight: 28,
           }}
         >
-          Letter from Heart
+          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
+          <span style={{ fontFamily: '"Lora", serif', fontSize: 17, fontStyle: 'italic', color: 'var(--ink)', whiteSpace: 'nowrap' }}>
+            Letter from Heart
+          </span>
         </button>
 
         {/* Nav tabs — desktop, full-height style */}
