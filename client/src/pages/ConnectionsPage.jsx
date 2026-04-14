@@ -133,21 +133,17 @@ export default function ConnectionsPage() {
       <div className="w-full max-w-3xl lg:max-w-4xl">
 
       {/* ── Page header ──────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 40 }}>
-        <div style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
-          Email settings
-        </div>
-        <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 12 }}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 5 }}>
           Connections
         </h1>
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 440 }}>
-          Choose how your letters travel — from your inbox, or ours. Either way, they arrive with care.
+        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>
+          Choose how your letters travel — from your inbox, or ours.
         </p>
       </div>
 
       {/* ── Tabs ─────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 0, borderBottom: `1.5px solid ${BD}`, marginBottom: 36 }}>
+      <div style={{ display: 'flex', gap: 0, borderBottom: `1.5px solid ${BD}`, marginBottom: 24 }}>
         {[
           { id: 'accounts', label: 'Connected' },
           { id: 'setup',    label: 'Add Email' },

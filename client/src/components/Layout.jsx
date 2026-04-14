@@ -1,11 +1,263 @@
 import { useState, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
+import { apiFetch } from '../utils/api'
+import { MdReportProblem } from 'react-icons/md'
+
+const ISSUE_TYPES = [
+  { value: 'bug',     label: 'Something is not working' },
+  { value: 'content', label: 'I found a bug' },
+  { value: 'account', label: 'UI looks wrong or broken' },
+  { value: 'feature', label: 'I have a suggestion' },
+  { value: 'other',   label: 'Something else' },
+]
+
+// ── Report Issue Drawer ───────────────────────────────────────────────────────
+function ReportDrawer({ open, onClose }) {
+  const [type,        setType]        = useState(ISSUE_TYPES[0].value)
+  const [subject,     setSubject]     = useState(ISSUE_TYPES[0].label)
+  const [description, setDescription] = useState('')
+  const [loading,     setLoading]     = useState(false)
+  const [error,       setError]       = useState('')
+  const [submitted,   setSubmitted]   = useState(false)
+
+  function handleClose() {
+    onClose()
+    // Reset after close animation
+    setTimeout(() => {
+      setType(ISSUE_TYPES[0].value)
+      setSubject(ISSUE_TYPES[0].label)
+      setDescription('')
+      setError('')
+      setSubmitted(false)
+    }, 300)
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+    if (!subject.trim())     return setError('Please add a subject.')
+    if (!description.trim()) return setError('Please describe the issue.')
+    setLoading(true)
+    try {
+      const res  = await apiFetch('/api/report-issue', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ type, subject: subject.trim(), description: description.trim() }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        setSubmitted(true)
+      } else {
+        setError(json.error || 'Something went wrong. Please try again.')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const BD = 'rgba(28,26,23,0.08)'
+
+  return (
+    <>
+      {/* Overlay */}
+      <div
+        onClick={handleClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 490,
+          background: 'rgba(28,26,23,0.25)',
+          backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+          transition: 'opacity 0.25s',
+        }}
+      />
+
+      {/* Panel */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 500,
+        width: '100%', maxWidth: 440,
+        background: 'var(--paper)',
+        borderLeft: '0.5px solid rgba(28,26,23,0.1)',
+        boxShadow: '-8px 0 40px rgba(28,26,23,0.12)',
+        display: 'flex', flexDirection: 'column',
+        transform: open ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
+        overflowY: 'auto',
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '18px 22px 16px',
+          borderBottom: '0.5px solid rgba(28,26,23,0.07)',
+          position: 'sticky', top: 0, background: 'var(--paper)', zIndex: 1,
+        }}>
+          <div>
+            <div style={{ fontFamily: '"Lora", serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.3px' }}>
+              Report an Issue
+            </div>
+            <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', marginTop: 2 }}>
+              Every report helps us keep this a safe, quiet space.
+            </div>
+          </div>
+          <button
+            onClick={handleClose}
+            style={{
+              width: 30, height: 30, borderRadius: 8, border: '0.5px solid rgba(28,26,23,0.1)',
+              background: 'rgba(28,26,23,0.04)', color: 'var(--ink-muted)',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 18, lineHeight: 1, flexShrink: 0, transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.08)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(28,26,23,0.04)'}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '24px 22px', flex: 1 }}>
+          {submitted ? (
+            <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+              <div style={{ fontSize: 36, marginBottom: 16 }}>💌</div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', marginBottom: 10 }}>
+                Thank you for letting us know
+              </div>
+              <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 28 }}>
+                Your report has been received. We'll look into it and get back to you if needed.
+              </p>
+              <button
+                onClick={handleClose}
+                style={{
+                  padding: '10px 24px', borderRadius: 999,
+                  background: 'var(--tc)', color: '#fff',
+                  border: 'none', cursor: 'pointer',
+                  fontSize: 13, fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#D97040'}
+                onMouseLeave={e => e.currentTarget.style.background = 'var(--tc)'}
+              >
+                Close
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {/* Issue type pills */}
+              <div>
+                <div style={{ fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
+                  What's the issue about?
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                  {ISSUE_TYPES.map(t => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => { setType(t.value); setSubject(t.label); setError('') }}
+                      style={{
+                        padding: '6px 13px', borderRadius: 999, fontSize: 12,
+                        fontFamily: '"DM Sans", sans-serif', fontWeight: type === t.value ? 500 : 400,
+                        cursor: 'pointer', transition: 'all 0.15s',
+                        background: type === t.value ? 'var(--tc)' : 'var(--paper)',
+                        color:      type === t.value ? '#fff' : 'var(--ink-soft)',
+                        border:     type === t.value ? '1px solid var(--tc)' : `0.5px solid ${BD}`,
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subject */}
+              <div>
+                <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 8 }}>
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={e => { setSubject(e.target.value); setError('') }}
+                  placeholder="Brief summary of the issue"
+                  maxLength={120}
+                  style={{
+                    width: '100%', padding: '10px 13px', borderRadius: 9,
+                    border: `0.5px solid ${BD}`, background: '#fff',
+                    fontSize: 13.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink)',
+                    outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.35)'}
+                  onBlur={e => e.target.style.borderColor = BD}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 8 }}>
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={e => { setDescription(e.target.value); setError('') }}
+                  placeholder="Describe what happened, what you expected, and any steps to reproduce..."
+                  rows={6}
+                  maxLength={2000}
+                  style={{
+                    width: '100%', padding: '10px 13px', borderRadius: 9,
+                    border: `0.5px solid ${BD}`, background: '#fff',
+                    fontSize: 13.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink)',
+                    outline: 'none', resize: 'vertical', boxSizing: 'border-box',
+                    lineHeight: 1.65, transition: 'border-color 0.15s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.35)'}
+                  onBlur={e => e.target.style.borderColor = BD}
+                />
+                <div style={{ textAlign: 'right', fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginTop: 4 }}>
+                  {description.length}/2000
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div style={{
+                  background: 'rgba(196,99,58,0.07)', border: '0.5px solid rgba(196,99,58,0.2)',
+                  borderRadius: 9, padding: '10px 13px',
+                  fontSize: 13, color: 'var(--tc)', fontFamily: '"DM Sans", sans-serif',
+                }}>
+                  {error}
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  padding: '11px 26px', borderRadius: 999,
+                  background: loading ? 'rgba(196,99,58,0.5)' : 'var(--tc)',
+                  color: '#fff', border: 'none',
+                  cursor: loading ? 'default' : 'pointer',
+                  fontSize: 13.5, fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+                  alignSelf: 'flex-start', transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#D97040' }}
+                onMouseLeave={e => { if (!loading) e.currentTarget.style.background = 'var(--tc)' }}
+              >
+                {loading ? 'Sending…' : 'Send Report'}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
 
 const ROLE_COLOR = { seeker: 'var(--tc)', listener: 'var(--sage)', both: 'var(--purple)' }
 const ROLE_LABEL = { seeker: 'Seeker', listener: 'Listener', both: 'Seeker + Listener' }
 
 // ── Avatar dropdown ───────────────────────────────────────────────────────────
-function AvatarMenu({ authUser, userRole, logout, navigate }) {
+function AvatarMenu({ authUser, userRole, logout, navigate, onOpenReport }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -61,7 +313,7 @@ function AvatarMenu({ authUser, userRole, logout, navigate }) {
             </span>
           </div>
           <button
-            onClick={() => { setOpen(false); navigate('reportissue') }}
+            onClick={() => { setOpen(false); onOpenReport() }}
             style={{
               width: '100%', padding: '10px 14px', border: 'none', background: 'transparent',
               textAlign: 'left', cursor: 'pointer', fontSize: 13, color: 'var(--ink-muted)',
@@ -141,14 +393,15 @@ function useAnalyticsData() {
   } = useApp()
 
   const totalWritten = (personalLetters?.length || 0) + (ownStrangerLetters?.length || 0) + (sentLetters?.length || 0)
-  const written  = analytics?.totalWritten  ?? totalWritten
-  const sent     = analytics?.totalSent     ?? 0
-  const opened   = analytics?.totalOpened   ?? 0
-  const personal = analytics?.totalPersonal ?? 0
-  const stranger = analytics?.totalStranger ?? 0
-  const heard    = analytics?.claimedLetters ?? 0
-  const openRate = analytics?.openRate ?? 0
-  const hasSent  = sent > 0
+  const written   = analytics?.totalWritten   ?? totalWritten
+  const sent      = analytics?.totalSent      ?? 0
+  const opened    = analytics?.totalOpened    ?? 0
+  const personal  = analytics?.totalPersonal  ?? 0
+  const stranger  = analytics?.totalStranger  ?? 0
+  const heard     = analytics?.claimedLetters ?? 0
+  const openRate  = analytics?.openRate       ?? 0
+  const scheduled = analytics?.totalScheduled ?? 0
+  const hasSent   = sent > 0
 
   const heartline = (() => {
     if (opened > 0)  return 'Your words reached someone 💌'
@@ -157,7 +410,7 @@ function useAnalyticsData() {
     return 'Start writing. Someone is waiting 💛'
   })()
 
-  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline }
+  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, hasSent, heartline }
 }
 
 // ── Mobile-only compact analytics strip ──────────────────────────────────────
@@ -236,8 +489,16 @@ function MobileAnalyticsStrip() {
 
 // ── Home-only sidebar ─────────────────────────────────────────────────────────
 function HomeSidebar() {
-  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, hasSent, heartline } = useAnalyticsData()
+  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, hasSent, heartline } = useAnalyticsData()
   const { authUser, userRole, logout } = useApp()
+
+  // Hide user card when viewport is narrow (includes zoom — innerWidth shrinks with CSS zoom)
+  const [showUserCard, setShowUserCard] = useState(() => window.innerWidth >= 768)
+  useEffect(() => {
+    function handleResize() { setShowUserCard(window.innerWidth >= 768) }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const MetricCard = ({ value, label, accent }) => (
     <div style={{
@@ -331,6 +592,9 @@ function HomeSidebar() {
         <MetricCard value={sent}     label="Letters sent"     accent="linear-gradient(90deg, var(--gold), var(--tc))" />
         <MetricCard value={personal} label="To myself"        />
         <MetricCard value={stranger} label="To a stranger"    />
+        {scheduled > 0 && (
+          <MetricCard value={scheduled} label="Scheduled ⏳" accent="linear-gradient(90deg, var(--purple), var(--sage))" />
+        )}
       </div>
 
       {/* ── Open rate — shown only when letters have been sent ── */}
@@ -402,7 +666,8 @@ function HomeSidebar() {
         </div>
       )}
 
-      {/* ── User card (always visible at bottom) ── */}
+      {/* ── User card — hidden on md+ or when zoomed (avatar dropdown covers it) ── */}
+      {!showUserCard && (
       <div style={{ marginTop: 'auto', paddingTop: 12 }}>
         <div style={{
           background: 'var(--paper)',
@@ -465,6 +730,7 @@ function HomeSidebar() {
           </button>
         </div>
       </div>
+      )}
 
     </aside>
   )
@@ -491,8 +757,9 @@ function MobileDrawer({ open, onClose, navItems, currentPage, onNavigate, authUs
         display: 'flex', flexDirection: 'column',
       }}>
         <div style={{ padding: '18px 18px 16px', borderBottom: '0.5px solid rgba(28,26,23,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 16, color: 'var(--ink)' }}>
-            Letter from Heart
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
+            <span style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 16, color: 'var(--ink)' }}>Letter from Heart</span>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(28,26,23,0.05)', border: 'none', cursor: 'pointer', width: 26, height: 26, borderRadius: 6, color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
         </div>
@@ -557,7 +824,8 @@ function Navbar() {
     strangerLetters, canReadFeed,
   } = useApp()
 
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileOpen,   setMobileOpen]   = useState(false)
+  const [reportOpen,   setReportOpen]   = useState(false)
 
   const navItems = [
     { id: 'home',        label: 'Home' },
@@ -590,17 +858,20 @@ function Navbar() {
           </svg>
         </button>
 
-        {/* Logo — Lora italic, matching HTML reference */}
+        {/* Logo — icon + Lora italic text */}
         <button
           onClick={() => navigate('home')}
           style={{
-            fontFamily: '"Lora", serif', fontSize: 17, fontStyle: 'italic',
-            color: 'var(--ink)', background: 'none', border: 'none',
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'none', border: 'none',
             cursor: 'pointer', padding: 0, flexShrink: 0,
-            marginRight: 28, whiteSpace: 'nowrap',
+            marginRight: 28,
           }}
         >
-          Letter from Heart
+          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
+          <span style={{ fontFamily: '"Lora", serif', fontSize: 17, fontStyle: 'italic', color: 'var(--ink)', whiteSpace: 'nowrap' }}>
+            Letter from Heart
+          </span>
         </button>
 
         {/* Nav tabs — desktop, full-height style */}
@@ -634,21 +905,14 @@ function Navbar() {
             + Write
           </button>
           <button
-            onClick={() => navigate('reportissue')}
-            className="hidden md:block"
-            style={{
-              padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 400,
-              fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-              background: 'transparent', color: 'var(--ink-muted)',
-              border: '0.5px solid rgba(28,26,23,0.18)', transition: 'all 0.15s',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.04)'; e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.28)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.18)' }}
+            onClick={() => setReportOpen(true)}
+            className="hidden md:flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-gray-300 bg-white hover:bg-gray-100 hover:border-gray-400 shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-gray-300"
+            style={{ fontFamily: '"DM Sans", sans-serif', whiteSpace: 'nowrap', cursor: 'pointer' }}
           >
-            Report
+            <MdReportProblem style={{ fontSize: 16, color: '#1C1A17', flexShrink: 0 }} />
+            <span className="hidden sm:inline" style={{ fontSize: 12, color: '#1C1A17', fontWeight: 400 }}>Report</span>
           </button>
-          <AvatarMenu authUser={authUser} userRole={userRole} logout={logout} navigate={navigate} />
+          <AvatarMenu authUser={authUser} userRole={userRole} logout={logout} navigate={navigate} onOpenReport={() => setReportOpen(true)} />
         </div>
       </nav>
 
@@ -662,6 +926,8 @@ function Navbar() {
         userRole={userRole}
         logout={logout}
       />
+
+      <ReportDrawer open={reportOpen} onClose={() => setReportOpen(false)} />
 
       {/* Floating Write button — mobile only, hidden when already on write page */}
       {currentPage !== 'write' && (

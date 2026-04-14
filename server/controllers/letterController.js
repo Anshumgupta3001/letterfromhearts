@@ -198,15 +198,19 @@ export async function getAnalytics(req, res) {
     totalPersonal,
     totalStranger,
     claimedLetters,
+    totalScheduled,
   ] = await Promise.all([
     Letter.countDocuments(base),
-    Letter.countDocuments({ ...base, type: 'sent' }),
-    // "Opened" = opened OR clicked (click implies open; no double-counting since it's per-letter)
+    // Exclude letters still waiting to be delivered (status:'scheduled')
+    Letter.countDocuments({ ...base, type: 'sent', status: { $ne: 'scheduled' } }),
+    // "Opened" = opened OR clicked
     Letter.countDocuments({ ...base, type: 'sent', $or: [{ status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
     Letter.countDocuments({ ...base, type: 'personal' }),
     Letter.countDocuments({ ...base, type: 'stranger' }),
     // Stranger letters this user WROTE that were claimed by a listener
     Letter.countDocuments({ ...base, type: 'stranger', $or: [{ isRead: true }, { isClaimed: true }] }),
+    // Currently queued / awaiting delivery
+    Letter.countDocuments({ ...base, type: 'sent', status: 'scheduled' }),
   ])
 
   const openRate = totalSent > 0 ? Math.round((totalOpened / totalSent) * 100) : 0
@@ -221,6 +225,7 @@ export async function getAnalytics(req, res) {
       totalPersonal,
       totalStranger,
       claimedLetters,
+      totalScheduled,
       openRate,
     },
   })

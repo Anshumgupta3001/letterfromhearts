@@ -559,9 +559,9 @@ export default function WritePage() {
                 <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 10 }}>Send or Save</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {[
-                    { id: 'now',     icon: '📨', name: 'Send',                        comingSoon: false },
-                    { id: 'capsule', icon: '⏳', name: 'Time Capsule',                comingSoon: true  },
-                    { id: 'burn',    icon: '🔥', name: 'Burn After Reading',           comingSoon: true  },
+                    { id: 'now',      icon: '📨', name: 'Send Now',          comingSoon: false },
+                    { id: 'schedule', icon: '⏳', name: 'Schedule for Later', comingSoon: false },
+                    { id: 'burn',     icon: '🔥', name: 'Burn After Reading', comingSoon: true  },
                   ].map(opt => (
                     <button
                       key={opt.id}
@@ -651,6 +651,7 @@ export default function WritePage() {
           emailAccounts={emailAccounts}
           onClose={() => setSendEmailOpen(false)}
           initialSendFrom={sendFrom}
+          initialDeliveryType={deliveryType}
           systemEmail={systemEmail}
         />
       )}

@@ -15,11 +15,16 @@ import PersonalLettersPage from './pages/PersonalLettersPage'
 import CaringStrangerPage from './pages/CaringStrangerPage'
 import ListenerReadPage from './pages/ListenerReadPage'
 import ReportIssuePage from './pages/ReportIssuePage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
 import AuthPage from './pages/AuthPage'
 import { useApp } from './context/AppContext'
 
 function PageRouter() {
   const { currentPage, authUser, authLoading, pendingRoleSetup } = useApp()
+
+  if (window.location.pathname === '/admin-secret-dashboard') {
+    return <AdminDashboardPage />
+  }
 
   if (authLoading) {
     return (

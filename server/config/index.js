@@ -14,8 +14,14 @@ export default {
   systemEmailPass: process.env.SYSTEM_EMAIL_PASS || '',
   systemEmailHost: process.env.SYSTEM_EMAIL_HOST || 'smtp.gmail.com',
   systemEmailPort: Number(process.env.SYSTEM_EMAIL_PORT) || 587,
+  adminDashboardKey: process.env.ADMIN_DASHBOARD_KEY || '',
   reportEmails:    (process.env.REPORT_EMAILS || process.env.REPORT_EMAIL || '')
                      .split(',').map(e => e.trim()).filter(Boolean),
+  // Redis (Bull queue)
+  redisHost:     process.env.REDIS_HOST     || '127.0.0.1',
+  redisPort:     Number(process.env.REDIS_PORT) || 6379,
+  redisUsername: process.env.REDIS_USERNAME || '',
+  redisPassword: process.env.REDIS_PASSWORD || '',
   // Google OAuth (Passport)
   googleClientId:     process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
