@@ -89,7 +89,7 @@ function WorldLetter({ letter, onClick, isNew }) {
 function StatCard({ stat, navigate }) {
   return (
     <div
-      onClick={() => navigate(stat.page)}
+      onClick={() => navigate(stat.page, stat.tab || null)}
       className="stat-card"
       style={{
         flex: 1, padding: '16px 20px', cursor: 'pointer',
@@ -163,7 +163,7 @@ export default function HomePage() {
   const stats = [
     { n: personalLetters.length, label: 'personal letters', color: 'var(--tc)',   page: 'myspace'      },
     ...(canReadFeed ? [{ n: strangerLetters.length, label: 'from the world',   color: 'var(--sage)',  page: 'listenerread'  }] : []),
-    { n: sentLetters.length,     label: 'letters sent',     color: 'var(--gold)', page: 'sentletters'  },
+    { n: sentLetters.length,     label: 'letters sent',     color: 'var(--gold)', page: 'myspace', tab: 'sent' },
   ]
 
   return (

@@ -44,8 +44,14 @@ export function buildEmailHtml(message, trackingId) {
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
         <tr>
           <td style="padding:0 0 20px 0;text-align:center;">
-            <p style="margin:0;font-size:22px;letter-spacing:2px;">💌</p>
-            <p style="margin:6px 0 0;font-family:Georgia,serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#9c8e80;">Letter from Heart</p>
+            <img
+              src="https://letterfromheart.com/favicon.png"
+              alt="Letter from Heart"
+              width="44"
+              height="44"
+              style="display:block;margin:0 auto 8px;object-fit:contain;border:0;outline:none;"
+            />
+            <p style="margin:0;font-family:Georgia,serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#9c8e80;">Letter from Heart</p>
           </td>
         </tr>
         <tr>

@@ -106,12 +106,16 @@ export function AppProvider({ children }) {
   const [myLettersFilter, setMyLettersFilter] = useState('all')
   const [listenFilter, setListenFilter] = useState('all')
   const [repliesFilter, setRepliesFilter] = useState('all')
+  const [mySpaceTab, setMySpaceTab] = useState(null)  // null = use default tab
 
   function navigate(page, filter) {
     setCurrentPage(page)
     if (filter) {
       if (page === 'myletters') setMyLettersFilter(filter)
       if (page === 'myreplies') setRepliesFilter(filter)
+      if (page === 'myspace')   setMySpaceTab(filter)
+    } else if (page === 'myspace') {
+      setMySpaceTab(null)  // reset to default when navigating without a tab
     }
     if (page === 'home') refreshAnalytics()
     window.scrollTo(0, 0)
@@ -254,7 +258,7 @@ export function AppProvider({ children }) {
         // role / email mode helpers
         userRole, userEmailMode, canWrite, canWriteStranger, canReadFeed,
         // nav
-        currentPage, navigate,
+        currentPage, navigate, mySpaceTab,
         // drawers (mock data legacy)
         drawer, openDrawer, openLetterDrawer, closeDrawer,
         claimedLetterIds, claimLetter, filteredOpenLetters,

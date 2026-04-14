@@ -242,7 +242,7 @@ const CARD_CONFIG = {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function MySpacePage() {
   const {
-    navigate, userRole, canReadFeed, canWriteStranger,
+    navigate, mySpaceTab, userRole, canReadFeed, canWriteStranger,
     personalLetters, refreshPersonalLetters,
     ownStrangerLetters, refreshOwnStrangerLetters,
     strangerLetters, refreshStrangerLetters,
@@ -250,7 +250,7 @@ export default function MySpacePage() {
     openLetterPanel,
   } = useApp()
 
-  const [activeTab, setActiveTab]         = useState('all')
+  const [activeTab, setActiveTab]         = useState(mySpaceTab || 'all')
   const [personal, setPersonal]           = useState(personalLetters)
   const [stranger, setStranger]           = useState(ownStrangerLetters)
   const [editingLetter, setEditingLetter] = useState(null)
