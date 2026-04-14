@@ -69,15 +69,12 @@ export default function ReportIssuePage() {
         </button>
 
         {/* Header */}
-        <div style={{ marginBottom: 36 }}>
-          <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
-            Support
-          </div>
-          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.15, marginBottom: 10 }}>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 5 }}>
             Report an Issue
           </h1>
-          <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-            Something wrong? Let us know — every report helps us keep this a safe, quiet space.
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>
+            Something wrong? Every report helps us keep this a safe, quiet space.
           </p>
         </div>
 

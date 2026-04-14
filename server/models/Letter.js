@@ -10,7 +10,7 @@ const letterSchema = new mongoose.Schema(
     message:    { type: String, required: true },
     // Tracking — only populated for type:'sent' emails
     trackingId: { type: String, index: true, sparse: true },
-    status:     { type: String, default: 'sent' }, // sent | opened | clicked | failed | saved
+    status:     { type: String, default: 'sent' }, // sent | opened | clicked | failed | saved | scheduled
     openedAt:   { type: Date },
     clickedAt:  { type: Date },
     clickCount: { type: Number, default: 0 },
@@ -26,7 +26,10 @@ const letterSchema = new mongoose.Schema(
     },
     readCount:  { type: Number, default: 0 },
     // Mood tag saved with letter
-    mood:       { type: String, default: '' },
+    mood:         { type: String, default: '' },
+    // Scheduling — populated for type:'sent' scheduled letters
+    isScheduled:  { type: Boolean, default: false, index: true },
+    scheduledFor: { type: Date },
   },
   { timestamps: true }
 )

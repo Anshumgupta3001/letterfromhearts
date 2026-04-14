@@ -7,17 +7,35 @@ const PROVIDER_ICON = { gmail: '📧', zoho: '📮', outlook: '📨', smtp: '�
 // The modal ALWAYS shows the send form.
 // System email is the default and is always available.
 // Custom account is an option only when the user has connected one.
-export default function SendEmailModal({ sal, body, recipientEmail, emailAccounts, onClose, initialSendFrom = 'system', systemEmail = '' }) {
+// Minimum datetime-local value = 5 minutes from now (avoids submitting a time already past)
+function minScheduleTime() {
+  const d = new Date(Date.now() + 5 * 60 * 1000)
+  // datetime-local format: YYYY-MM-DDTHH:MM
+  return d.toISOString().slice(0, 16)
+}
+
+function formatScheduled(isoString) {
+  if (!isoString) return ''
+  return new Date(isoString).toLocaleString(undefined, {
+    dateStyle: 'medium', timeStyle: 'short',
+  })
+}
+
+export default function SendEmailModal({ sal, body, recipientEmail, emailAccounts, onClose, initialSendFrom = 'system', initialDeliveryType = 'now', systemEmail = '' }) {
   const { refreshLetters } = useApp()
 
   // Default to 'system' regardless of initialSendFrom — always safe
-  const [sendFrom, setSendFrom]           = useState('system')
+  const [sendFrom,      setSendFrom]      = useState('system')
   const [selectedEmail, setSelectedEmail] = useState(emailAccounts[0]?.emailAddress || '')
-  const [to, setTo]                       = useState(recipientEmail || '')
-  const [subject, setSubject]             = useState(sal ? `Dear ${sal}` : 'A letter from my heart')
-  const [sending, setSending]             = useState(false)
-  const [sent, setSent]                   = useState(false)
-  const [error, setError]                 = useState('')
+  const [to,            setTo]            = useState(recipientEmail || '')
+  const [subject,       setSubject]       = useState(sal ? `Dear ${sal}` : 'A letter from my heart')
+  const [sending,       setSending]       = useState(false)
+  const [sent,          setSent]          = useState(false)
+  const [error,         setError]         = useState('')
+  // Scheduling
+  const [deliveryMode,  setDeliveryMode]  = useState(initialDeliveryType === 'schedule' ? 'schedule' : 'now')
+  const [sendAt,        setSendAt]        = useState('')
+  const [scheduledFor,  setScheduledFor]  = useState(null)  // returned after successful schedule
 
   const hasAccounts = emailAccounts.length > 0
 
@@ -32,25 +50,48 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
     setError('')
     if (!to.trim() || !to.includes('@')) { setError('Enter a valid recipient email address.'); return }
     if (!body.trim()) { setError('Your letter body is empty — write something first.'); return }
+    if (deliveryMode === 'schedule' && !sendAt) { setError('Pick a date and time to schedule delivery.'); return }
+    if (deliveryMode === 'schedule' && new Date(sendAt) <= new Date()) { setError('Schedule time must be in the future.'); return }
 
     const message = sal ? `Dear ${sal},\n\n${body}` : body
 
     setSending(true)
     try {
-      const res = await apiFetch('/api/send-email', {
-        method: 'POST',
-        body: JSON.stringify({
-          useSystem: usingSystem,
-          from: usingSystem ? undefined : selectedEmail,
-          to: to.trim(),
-          subject: subject.trim() || 'A letter from my heart',
-          message,
-        }),
-      })
-      const json = await res.json()
-      if (!res.ok) { setError(json.error || 'Failed to send.'); return }
-      setSent(true)
-      refreshLetters()
+      if (deliveryMode === 'schedule') {
+        // ── Scheduled send ──────────────────────────────────────────────────
+        const res  = await apiFetch('/api/schedule-email', {
+          method: 'POST',
+          body: JSON.stringify({
+            useSystem: usingSystem,
+            from:      usingSystem ? undefined : selectedEmail,
+            to:        to.trim(),
+            subject:   subject.trim() || 'A letter from my heart',
+            message,
+            sendAt,
+          }),
+        })
+        const json = await res.json()
+        if (!res.ok || !json.success) { setError(json.error || 'Failed to schedule.'); return }
+        setScheduledFor(json.scheduledFor)
+        setSent(true)
+        refreshLetters()
+      } else {
+        // ── Instant send ────────────────────────────────────────────────────
+        const res  = await apiFetch('/api/send-email', {
+          method: 'POST',
+          body: JSON.stringify({
+            useSystem: usingSystem,
+            from:      usingSystem ? undefined : selectedEmail,
+            to:        to.trim(),
+            subject:   subject.trim() || 'A letter from my heart',
+            message,
+          }),
+        })
+        const json = await res.json()
+        if (!res.ok) { setError(json.error || 'Failed to send.'); return }
+        setSent(true)
+        refreshLetters()
+      }
     } catch (e) {
       setError(e.message || 'Network error — check your connection.')
     } finally {
@@ -78,12 +119,30 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
           {sent ? (
             /* ── Success state ────────────────────────────────────────── */
             <div className="text-center py-4">
-              <div className="text-[40px] mb-3 animate-float-up">💌</div>
-              <div className="font-lora text-[22px] font-medium text-ink mb-2">Letter sent!</div>
-              <div className="text-[13px] text-ink-muted font-light mb-1">Delivered to <strong>{to}</strong></div>
-              <div className="text-[12px] text-ink-muted font-light mb-5">
-                via {usingSystem ? (systemEmail || 'system email') : selectedEmail}
+              <div className="text-[40px] mb-3 animate-float-up">{scheduledFor ? '⏳' : '💌'}</div>
+              <div className="font-lora text-[22px] font-medium text-ink mb-2">
+                {scheduledFor ? 'Letter scheduled!' : 'Letter sent!'}
               </div>
+              {scheduledFor ? (
+                <>
+                  <div className="text-[13px] text-ink-muted font-light mb-1">
+                    Will be delivered to <strong>{to}</strong>
+                  </div>
+                  <div className="text-[12px] font-medium mb-1" style={{ color: 'var(--tc)' }}>
+                    {formatScheduled(scheduledFor)}
+                  </div>
+                  <div className="text-[11px] text-ink-muted font-light mb-5">
+                    via {usingSystem ? (systemEmail || 'system email') : selectedEmail}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-[13px] text-ink-muted font-light mb-1">Delivered to <strong>{to}</strong></div>
+                  <div className="text-[12px] text-ink-muted font-light mb-5">
+                    via {usingSystem ? (systemEmail || 'system email') : selectedEmail}
+                  </div>
+                </>
+              )}
               <button
                 onClick={onClose}
                 className="px-6 py-[10px] rounded-pill bg-ink text-cream text-[13px] font-medium font-sans border-none cursor-pointer transition-all duration-200 hover:bg-tc"
@@ -157,6 +216,40 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                 </label>
               )}
 
+              {/* When to send */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted">When to send</span>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'now',      label: '📨 Send Now' },
+                    { id: 'schedule', label: '⏳ Schedule' },
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => { setDeliveryMode(opt.id); setError('') }}
+                      className="flex-1 py-[9px] rounded-[8px] font-sans text-[12px] font-medium border-none cursor-pointer transition-all duration-150"
+                      style={deliveryMode === opt.id
+                        ? { background: 'var(--ink)', color: 'var(--cream)' }
+                        : { background: 'var(--paper)', color: 'var(--ink-soft)', border: '0.5px solid rgba(28,26,23,0.12)' }
+                      }
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {deliveryMode === 'schedule' && (
+                  <input
+                    type="datetime-local"
+                    value={sendAt}
+                    min={minScheduleTime()}
+                    onChange={e => { setSendAt(e.target.value); setError('') }}
+                    className="w-full px-3 py-[10px] rounded-[8px] font-sans text-[13px] text-ink outline-none"
+                    style={{ background: 'var(--paper)', border: '0.5px solid rgba(196,99,58,0.35)' }}
+                  />
+                )}
+              </div>
+
               {/* To */}
               <label className="flex flex-col gap-1">
                 <span className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted">To</span>
@@ -219,7 +312,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                     </svg>
                     Sending…
                   </>
-                ) : 'Send your letter 💌'}
+                ) : deliveryMode === 'schedule' ? 'Schedule delivery ⏳' : 'Send your letter 💌'}
               </button>
             </div>
           )}

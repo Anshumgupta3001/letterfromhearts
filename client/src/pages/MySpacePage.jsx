@@ -199,12 +199,12 @@ function Tab({ label, count, active, onClick }) {
     <button
       onClick={onClick}
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: 8,
-        padding: '10px 20px', borderRadius: 10,
+        display: 'inline-flex', alignItems: 'center', gap: 7,
+        padding: '6px 13px', borderRadius: 8,
         border: `1px solid ${active ? 'rgba(196,99,58,0.35)' : 'rgba(28,26,23,0.1)'}`,
         background: active ? 'rgba(196,99,58,0.06)' : 'var(--paper)',
         color: active ? 'var(--tc)' : 'var(--ink-soft)',
-        fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: active ? 600 : 400,
+        fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: active ? 600 : 400,
         cursor: 'pointer', transition: 'all 0.18s',
         boxShadow: active ? '0 2px 10px rgba(196,99,58,0.1)' : 'none',
       }}
@@ -235,7 +235,7 @@ const CARD_CONFIG = {
   },
   sent: {
     accentGrad: 'linear-gradient(180deg, var(--gold), var(--ink-muted))',
-    tagLabel: 'Sent', tagBg: '#EDE5D4', tagColor: 'var(--ink-muted)', tagBorder: '#E0D4BC',
+    tagLabel: 'Send to Someone I Know', tagBg: '#EDE5D4', tagColor: 'var(--ink-muted)', tagBorder: '#E0D4BC',
   },
 }
 
@@ -265,11 +265,11 @@ export default function MySpacePage() {
 
   // Tabs config
   const TABS = [
-    { id: 'all',      label: 'All',             count: personal.length + stranger.length + sentLetters.length },
-    { id: 'personal', label: 'Personal',         count: personal.length },
-    { id: 'sent',     label: 'Sent',             count: sentLetters.length },
-    ...(canWriteStranger ? [{ id: 'stranger', label: 'Caring Stranger', count: stranger.length }] : []),
-    ...(canReadFeed    ? [{ id: 'read',     label: 'Listener Read',   count: readLetters.length }] : []),
+    { id: 'all',      label: 'All',                count: personal.length + stranger.length + sentLetters.length },
+    { id: 'personal', label: 'Personal',            count: personal.length },
+    { id: 'sent',     label: 'Send to Someone I Know',   count: sentLetters.length },
+    ...(canWriteStranger ? [{ id: 'stranger', label: 'Send to a Stranger',  count: stranger.length }] : []),
+    ...(canReadFeed    ? [{ id: 'read',     label: 'Held by Me',     count: readLetters.length }] : []),
   ]
 
   // Letters visible per tab
@@ -311,37 +311,33 @@ export default function MySpacePage() {
       <div className="w-full max-w-3xl lg:max-w-4xl">
 
       {/* ── Header ──────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 44, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
-            Your space
-          </div>
-          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 5 }}>
             My Space
           </h1>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 400 }}>
-            Everything you've written, read, and held — all in one quiet place.
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>
+            Everything you've written, read, and held.
           </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10, marginTop: 8 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10.5, padding: '6px 14px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: `${ROLE_COLOR[userRole]}15`, color: ROLE_COLOR[userRole], border: `1px solid ${ROLE_COLOR[userRole]}40` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '4px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.6px', textTransform: 'uppercase', background: `${ROLE_COLOR[userRole]}12`, color: ROLE_COLOR[userRole], border: `1px solid ${ROLE_COLOR[userRole]}35` }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: ROLE_COLOR[userRole] }} />
             {ROLE_LABEL[userRole]}
           </span>
           <button
             onClick={() => navigate('write')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 22px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,99,58,0.22)', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 22px rgba(196,99,58,0.28)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.22)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
           >
-            Write a letter
+            + Write
           </button>
         </div>
       </div>
 
       {/* ── Tabs ────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 32 }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 18 }}>
         {TABS.map(t => (
           <Tab key={t.id} label={t.label} count={t.count} active={activeTab === t.id} onClick={() => setActiveTab(t.id)} />
         ))}
@@ -349,7 +345,7 @@ export default function MySpacePage() {
 
       {/* ── Count row ───────────────────────────────────────────────── */}
       {visibleLetters.length > 0 && (
-        <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ background: 'rgba(28,26,23,0.06)', color: 'var(--ink-soft)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>
             {visibleLetters.length} {visibleLetters.length === 1 ? 'letter' : 'letters'}
           </span>
@@ -371,7 +367,7 @@ export default function MySpacePage() {
           <EmptyState icon="✦" title="Your space is empty" subtitle="Start by writing a letter — to yourself, to a stranger, or to someone you love." cta="Write your first letter" onCta={() => navigate('write')} />
         )
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {visibleLetters.map(letter => {
             const cfg = CARD_CONFIG[letter._cardType] || CARD_CONFIG.personal
             return (
