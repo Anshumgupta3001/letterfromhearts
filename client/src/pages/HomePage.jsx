@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import CountUp from 'react-countup'
 import { useApp } from '../context/AppContext'
 
 const BD = '#E0D4BC'
@@ -100,7 +101,7 @@ function StatCard({ stat, navigate }) {
       }}
     >
       <div style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 700, lineHeight: 1, marginBottom: 4, color: stat.color }}>
-        {stat.n}
+        <CountUp end={stat.n} duration={1.4} separator="," enableScrollSpy scrollSpyOnce />
       </div>
       <div style={{ fontSize: 12, color: 'var(--ink-muted)', letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif' }}>{stat.label}</div>
     </div>
