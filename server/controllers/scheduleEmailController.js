@@ -21,8 +21,13 @@ export async function scheduleEmail(req, res) {
   if (!sendAt)
     return res.status(400).json({ success: false, error: 'Schedule time is required.' })
 
-  const scheduledDate = new Date(sendAt)
-  const delay         = scheduledDate - Date.now()
+  const scheduledDate = new Date(sendAt)  // sendAt must be a UTC ISO string from the client
+  const now           = new Date()
+  const delay         = scheduledDate - now
+  console.log('[schedule] sendAt received:', sendAt)
+  console.log('[schedule] parsedDate (UTC):', scheduledDate.toISOString())
+  console.log('[schedule] server now (UTC):', now.toISOString())
+  console.log('[schedule] delay (ms):', delay, '→', Math.round(delay / 60000), 'min')
   if (isNaN(delay) || delay <= 0)
     return res.status(400).json({ success: false, error: 'Schedule time must be in the future.' })
 
