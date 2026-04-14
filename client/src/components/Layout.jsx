@@ -398,10 +398,11 @@ function useAnalyticsData() {
   const opened    = analytics?.totalOpened    ?? 0
   const personal  = analytics?.totalPersonal  ?? 0
   const stranger  = analytics?.totalStranger  ?? 0
-  const heard     = analytics?.claimedLetters ?? 0
-  const openRate  = analytics?.openRate       ?? 0
-  const scheduled = analytics?.totalScheduled ?? 0
-  const hasSent   = sent > 0
+  const heard           = analytics?.claimedLetters  ?? 0
+  const openRate        = analytics?.openRate        ?? 0
+  const scheduled       = analytics?.totalScheduled  ?? 0
+  const repliesReceived = analytics?.repliesReceived ?? 0
+  const hasSent         = sent > 0
 
   const heartline = (() => {
     if (opened > 0)  return 'Your words reached someone 💌'
@@ -410,7 +411,7 @@ function useAnalyticsData() {
     return 'Start writing. Someone is waiting 💛'
   })()
 
-  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, hasSent, heartline }
+  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, repliesReceived, hasSent, heartline }
 }
 
 // ── Mobile-only compact analytics strip ──────────────────────────────────────
@@ -489,7 +490,7 @@ function MobileAnalyticsStrip() {
 
 // ── Home-only sidebar ─────────────────────────────────────────────────────────
 function HomeSidebar() {
-  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, hasSent, heartline } = useAnalyticsData()
+  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, repliesReceived, hasSent, heartline } = useAnalyticsData()
   const { authUser, userRole, logout } = useApp()
 
   // Hide user card when viewport is narrow (includes zoom — innerWidth shrinks with CSS zoom)
@@ -660,6 +661,15 @@ function HomeSidebar() {
               >
                 <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
                 <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Waiting to be read</div>
+              </div>
+            )}
+            {repliesReceived > 0 && (
+              <div
+                style={{ cursor: 'pointer', minWidth: 0 }}
+                onClick={() => navigate('myspace', 'stranger')}
+              >
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--purple)', lineHeight: 1 }}>{repliesReceived}</div>
+                <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Replies received</div>
               </div>
             )}
           </div>
