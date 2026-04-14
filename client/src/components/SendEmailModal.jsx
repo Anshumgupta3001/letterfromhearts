@@ -8,16 +8,18 @@ const PROVIDER_ICON = { gmail: '📧', zoho: '📮', outlook: '📨', smtp: '�
 // System email is the default and is always available.
 // Custom account is an option only when the user has connected one.
 // Minimum datetime-local value = 5 minutes from now (avoids submitting a time already past)
+// MUST use local time format — datetime-local input interprets the min attribute as local time
 function minScheduleTime() {
   const d = new Date(Date.now() + 5 * 60 * 1000)
-  // datetime-local format: YYYY-MM-DDTHH:MM
-  return d.toISOString().slice(0, 16)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 function formatScheduled(isoString) {
   if (!isoString) return ''
-  return new Date(isoString).toLocaleString(undefined, {
-    dateStyle: 'medium', timeStyle: 'short',
+  // Always display in user's local timezone (works correctly for IST and any other tz)
+  return new Date(isoString).toLocaleString('en-IN', {
+    dateStyle: 'medium', timeStyle: 'short', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   })
 }
 
@@ -59,6 +61,10 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
     try {
       if (deliveryMode === 'schedule') {
         // ── Scheduled send ──────────────────────────────────────────────────
+        // Convert datetime-local string (naive local time) to UTC ISO string.
+        // This is critical: without this, the server on UTC/AWS would interpret
+        // "2025-06-01T14:30" as UTC instead of IST, scheduling 5h30m late.
+        const sendAtUTC = new Date(sendAt).toISOString()
         const res  = await apiFetch('/api/schedule-email', {
           method: 'POST',
           body: JSON.stringify({
@@ -67,7 +73,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
             to:        to.trim(),
             subject:   subject.trim() || 'A letter from my heart',
             message,
-            sendAt,
+            sendAt:    sendAtUTC,
           }),
         })
         const json = await res.json()
