@@ -454,7 +454,7 @@ export default function WritePage() {
   useEffect(() => {
     apiFetch('/api/send-email/system-info')
       .then(r => r.json())
-      .then(j => { if (j.success && j.email) setSystemEmail(j.email) })
+      .then(j => { if (j.success) setSystemEmail(j.emailFrom || j.email || '') })
       .catch(() => {})
   }, []) // eslint-disable-line
 
@@ -605,36 +605,21 @@ export default function WritePage() {
                 </p>
               </div>
 
-              {/* Send from (known only) */}
+              {/* Send from (known only) — display only, always Resend */}
               {isKnown && (
                 <div style={{ background: 'var(--paper)', border: '1px solid rgba(28,26,23,0.08)', borderRadius: 12, padding: '14px 16px' }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 10 }}>Send From</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {[
-                      { id: 'system', icon: '📮', label: 'System Email', sub: systemEmail || 'Platform default' },
-                      { id: 'custom', icon: '✉️', label: 'My Email', sub: emailAccounts.length > 0 ? 'Your connected account' : 'No account — go to Connections' },
-                    ].map(opt => (
-                      <button
-                        key={opt.id}
-                        onClick={() => { if (opt.id === 'custom' && !emailAccounts.length) return; setSendFrom(opt.id) }}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 8,
-                          padding: '8px 10px', borderRadius: 8, textAlign: 'left',
-                          border: sendFrom === opt.id ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.09)',
-                          background: sendFrom === opt.id ? 'rgba(196,99,58,0.05)' : '#fff',
-                          color: sendFrom === opt.id ? 'var(--tc)' : 'var(--ink-soft)',
-                          cursor: opt.id === 'custom' && !emailAccounts.length ? 'default' : 'pointer',
-                          opacity: opt.id === 'custom' && !emailAccounts.length ? 0.45 : 1,
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        <span style={{ fontSize: 13 }}>{opt.icon}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, fontWeight: sendFrom === opt.id ? 600 : 400, fontFamily: '"DM Sans", sans-serif' }}>{opt.label}</div>
-                          <div style={{ fontSize: 10, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opt.sub}</div>
-                        </div>
-                      </button>
-                    ))}
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 8 }}>Sending From</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                    <span style={{ fontSize: 16 }}>📮</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {systemEmail || 'noreply@letterfromheart.com'}
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic', marginTop: 1 }}>Platform default · always secure</div>
+                    </div>
+                    <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 20, background: 'rgba(122,158,142,0.12)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.25)', fontFamily: '"DM Sans", sans-serif' }}>
+                      Active
+                    </span>
                   </div>
                 </div>
               )}

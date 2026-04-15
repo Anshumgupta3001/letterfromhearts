@@ -43,7 +43,7 @@ function Toast({ msg, type, onDone }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ConnectionsPage() {
-  const { emailAccounts, setEmailAccounts, refreshEmailAccounts, userEmailMode, updateAuthUser } = useApp()
+  const { emailAccounts, setEmailAccounts, refreshEmailAccounts } = useApp()
 
   const [activeTab, setActiveTab]      = useState('accounts')
   const [guideTab, setGuideTab]        = useState('gmail')
@@ -56,31 +56,23 @@ export default function ConnectionsPage() {
   const [connecting, setConnecting]    = useState(false)
   const [deleteId, setDeleteId]        = useState(null)
   const [deleting, setDeleting]        = useState(false)
-  const [savingMode, setSavingMode]    = useState(false)
   const [toast, setToast]              = useState(null)
+  const [emailFrom, setEmailFrom]      = useState('')
   const [systemEmail, setSystemEmail]  = useState('')
 
   function showToast(msg, type = 'success') { setToast({ msg, type }) }
-
-  async function handleSetEmailMode(mode) {
-    if (mode === userEmailMode) return
-    setSavingMode(true)
-    try {
-      const res  = await apiFetch('/api/auth/me', { method: 'PATCH', body: JSON.stringify({ emailMode: mode }) })
-      const json = await res.json()
-      if (!res.ok) { showToast(json.error || 'Failed to update.', 'error'); return }
-      updateAuthUser({ emailMode: mode })
-      showToast(mode === 'system' ? 'System email selected.' : 'Using your own email.')
-    } catch (e) { showToast(e.message || 'Network error.', 'error') }
-    finally { setSavingMode(false) }
-  }
 
   useEffect(() => { refreshEmailAccounts() }, [refreshEmailAccounts])
 
   useEffect(() => {
     apiFetch('/api/send-email/system-info')
       .then(r => r.json())
-      .then(j => { if (j.success && j.email) setSystemEmail(j.email) })
+      .then(j => {
+        if (j.success) {
+          if (j.emailFrom)   setEmailFrom(j.emailFrom)
+          if (j.systemEmail) setSystemEmail(j.systemEmail)
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -177,72 +169,53 @@ export default function ConnectionsPage() {
       {activeTab === 'accounts' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-          {/* ── Email Mode selector ────────────────────────────────── */}
+          {/* ── How letters are sent ───────────────────────────────── */}
           <section>
             <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 14, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>
-              How should letters travel?
+              Email Settings
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-              {[
-                { id: 'custom', icon: '✉️', label: 'Your own email',  desc: 'Letters arrive from your inbox. Personal and direct.' },
-                { id: 'system', icon: '📮', label: 'Our platform',    desc: 'We send on your behalf from the system email.' },
-              ].map(opt => {
-                const active = userEmailMode === opt.id
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => handleSetEmailMode(opt.id)}
-                    disabled={savingMode}
-                    style={{
-                      background: active ? 'rgba(196,99,58,0.04)' : '#fff',
-                      borderRadius: 14, border: `1.5px solid ${active ? 'var(--tc)' : BD}`,
-                      overflow: 'hidden', position: 'relative', cursor: 'pointer',
-                      boxShadow: active ? '0 4px 18px rgba(196,99,58,0.1)' : 'none',
-                      transition: 'border-color 0.2s, box-shadow 0.2s', textAlign: 'left', padding: 0,
-                    }}
-                  >
-                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: active ? 'linear-gradient(180deg, var(--tc), var(--gold))' : 'transparent', borderRadius: '4px 0 0 4px', transition: 'background 0.2s' }} />
-                    <div style={{ padding: '16px 18px 16px 20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-                        <span style={{ fontSize: 20 }}>{opt.icon}</span>
-                        {active && (
-                          <span style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--tc)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <svg width="8" height="8" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: active ? 'var(--tc)' : 'var(--ink)', marginBottom: 4 }}>{opt.label}</div>
-                      <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.6 }}>{opt.desc}</div>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
 
-          {/* ── System Email card ──────────────────────────────────── */}
-          <section>
-            <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 14, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>
-              System Email (Default)
-            </div>
-            <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden', position: 'relative' }}>
+            {/* Intro blurb */}
+            <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, margin: '0 0 14px' }}>
+              Your letters are sent securely using our platform email — no setup needed.
+            </p>
+
+            {/* Sending-from card */}
+            <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden', position: 'relative', marginBottom: 10 }}>
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'linear-gradient(180deg, var(--sage), var(--gold))', borderRadius: '4px 0 0 4px' }} />
               <div style={{ padding: '16px 20px 16px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: 22, flexShrink: 0 }}>📮</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
-                    {systemEmail || 'system@letterfromheart.com'}
+                  <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', marginBottom: 4 }}>
+                    Sending from
+                  </div>
+                  <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>
+                    {emailFrom || 'noreply@letterfromheart.com'}
                   </div>
                   <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)' }}>
-                    Platform default · Always available · No setup needed
+                    Always available · No configuration required
                   </div>
                 </div>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.3)', flexShrink: 0, fontFamily: '"DM Sans", sans-serif' }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--sage)' }} />
-                  Active
+                  Default
                 </span>
               </div>
             </div>
+
+            {/* System / support email note */}
+            {systemEmail && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: 'rgba(245,240,232,0.7)', border: `1px solid ${FT}` }}>
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, color: 'var(--ink-muted)' }}>
+                  <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M10 9v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <circle cx="10" cy="6.5" r="0.75" fill="currentColor"/>
+                </svg>
+                <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.5 }}>
+                  Admin contact: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{systemEmail}</span>
+                </span>
+              </div>
+            )}
           </section>
 
           {/* ── User connected accounts ────────────────────────────── */}
@@ -251,7 +224,7 @@ export default function ConnectionsPage() {
               <div>
                 <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 4, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>My Connected Accounts</div>
                 <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>
-                  {emailAccounts.length === 0 ? 'No personal accounts connected yet.' : `${emailAccounts.length} account${emailAccounts.length !== 1 ? 's' : ''} ready to send.`}
+                  {emailAccounts.length === 0 ? 'No personal accounts connected yet.' : `${emailAccounts.length} account${emailAccounts.length !== 1 ? 's' : ''} connected.`}
                 </p>
               </div>
               <button
@@ -269,7 +242,7 @@ export default function ConnectionsPage() {
                 <div style={{ fontSize: 38, marginBottom: 14, opacity: 0.35 }}>📭</div>
                 <div style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>No personal account connected</div>
                 <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 280, margin: '0 auto 20px' }}>
-                  Connect Gmail, Zoho, or any SMTP to send from your own inbox.
+                  Connect Gmail, Zoho, or any SMTP — your email will be used for reply identification.
                 </p>
                 <button
                   onClick={() => setActiveTab('setup')}
@@ -326,7 +299,7 @@ export default function ConnectionsPage() {
             <div style={{ marginBottom: 22 }}>
               <h2 style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px', marginBottom: 5 }}>Add Email Account</h2>
               <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.6, margin: 0 }}>
-                Connect via SMTP — works with any email provider.
+                Connect via SMTP — your email will appear as the reply address on letters you send.
               </p>
             </div>
 

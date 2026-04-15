@@ -1,12 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 
-const PROVIDER_ICON = { gmail: '📧', zoho: '📮', outlook: '📨', smtp: '📬', sendgrid: '📤', ses: '📡', godaddy: '🌐' }
-
 // The modal ALWAYS shows the send form.
-// System email is the default and is always available.
-// Custom account is an option only when the user has connected one.
+// Emails are always sent via Resend (system path) — no custom SMTP.
 // Minimum datetime-local value = 5 minutes from now (avoids submitting a time already past)
 // MUST use local time format — datetime-local input interprets the min attribute as local time
 function minScheduleTime() {
@@ -26,27 +23,22 @@ function formatScheduled(isoString) {
 export default function SendEmailModal({ sal, body, recipientEmail, emailAccounts, onClose, initialSendFrom = 'system', initialDeliveryType = 'now', systemEmail = '' }) {
   const { refreshLetters } = useApp()
 
-  // Default to 'system' regardless of initialSendFrom — always safe
-  const [sendFrom,      setSendFrom]      = useState('system')
-  const [selectedEmail, setSelectedEmail] = useState(emailAccounts[0]?.emailAddress || '')
-  const [to,            setTo]            = useState(recipientEmail || '')
-  const [subject,       setSubject]       = useState(sal ? `Dear ${sal}` : 'A letter from my heart')
-  const [sending,       setSending]       = useState(false)
-  const [sent,          setSent]          = useState(false)
-  const [error,         setError]         = useState('')
+  const [to,           setTo]           = useState(recipientEmail || '')
+  const [subject,      setSubject]      = useState(sal ? `Dear ${sal}` : 'A letter from my heart')
+  const [sending,      setSending]      = useState(false)
+  const [sent,         setSent]         = useState(false)
+  const [error,        setError]        = useState('')
   // Scheduling
-  const [deliveryMode,  setDeliveryMode]  = useState(initialDeliveryType === 'schedule' ? 'schedule' : 'now')
-  const [sendAt,        setSendAt]        = useState('')
-  const [scheduledFor,  setScheduledFor]  = useState(null)  // returned after successful schedule
+  const [deliveryMode, setDeliveryMode] = useState(initialDeliveryType === 'schedule' ? 'schedule' : 'now')
+  const [sendAt,       setSendAt]       = useState('')
+  const [scheduledFor, setScheduledFor] = useState(null)
+  // Sender selection — system is always default; custom sets reply-to
+  const [sender,         setSender]         = useState('system')
+  const [replyToEmail,   setReplyToEmail]   = useState(emailAccounts[0]?.emailAddress || '')
 
-  const hasAccounts = emailAccounts.length > 0
-
-  useEffect(() => {
-    if (hasAccounts && !selectedEmail) setSelectedEmail(emailAccounts[0].emailAddress)
-  }, [emailAccounts]) // eslint-disable-line
-
-  const usingSystem     = sendFrom === 'system'
-  const selectedAccount = emailAccounts.find(a => a.emailAddress === selectedEmail)
+  const hasAccounts    = emailAccounts.length > 0
+  const sendingAddress = systemEmail || 'noreply@letterfromheart.com'
+  const activeReplyTo  = sender === 'custom' && replyToEmail ? replyToEmail : null
 
   async function handleSend() {
     setError('')
@@ -68,12 +60,12 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
         const res  = await apiFetch('/api/schedule-email', {
           method: 'POST',
           body: JSON.stringify({
-            useSystem: usingSystem,
-            from:      usingSystem ? undefined : selectedEmail,
+            useSystem: true,
             to:        to.trim(),
             subject:   subject.trim() || 'A letter from my heart',
             message,
             sendAt:    sendAtUTC,
+            replyTo:   activeReplyTo,
           }),
         })
         const json = await res.json()
@@ -86,11 +78,11 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
         const res  = await apiFetch('/api/send-email', {
           method: 'POST',
           body: JSON.stringify({
-            useSystem: usingSystem,
-            from:      usingSystem ? undefined : selectedEmail,
+            useSystem: true,
             to:        to.trim(),
             subject:   subject.trim() || 'A letter from my heart',
             message,
+            replyTo:   activeReplyTo,
           }),
         })
         const json = await res.json()
@@ -138,14 +130,14 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                     {formatScheduled(scheduledFor)}
                   </div>
                   <div className="text-[11px] text-ink-muted font-light mb-5">
-                    via {usingSystem ? (systemEmail || 'system email') : selectedEmail}
+                    via {sendingAddress}{activeReplyTo ? ` · replies go to ${activeReplyTo}` : ''}
                   </div>
                 </>
               ) : (
                 <>
                   <div className="text-[13px] text-ink-muted font-light mb-1">Delivered to <strong>{to}</strong></div>
                   <div className="text-[12px] text-ink-muted font-light mb-5">
-                    via {usingSystem ? (systemEmail || 'system email') : selectedEmail}
+                    via {sendingAddress}{activeReplyTo ? ` · replies go to ${activeReplyTo}` : ''}
                   </div>
                 </>
               )}
@@ -160,67 +152,86 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
             /* ── Send form — always shown ──────────────────────────────── */
             <div className="flex flex-col gap-3">
 
-              {/* Send From */}
+              {/* ── Sender selector ──────────────────────────────────── */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted">Send From</span>
-                <div className="flex gap-2">
-                  {/* System email — always available */}
+                <span className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted">Send as</span>
+
+                {/* System option — always available */}
+                <button
+                  type="button"
+                  onClick={() => setSender('system')}
+                  className="flex items-center gap-3 w-full text-left rounded-[10px] px-3 py-[10px] transition-all duration-150 border-none cursor-pointer"
+                  style={sender === 'system'
+                    ? { background: 'rgba(122,158,142,0.08)', border: '1.5px solid rgba(122,158,142,0.45)' }
+                    : { background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)' }
+                  }
+                >
+                  <div
+                    className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                    style={{ border: `2px solid ${sender === 'system' ? 'var(--sage)' : 'rgba(28,26,23,0.25)'}` }}
+                  >
+                    {sender === 'system' && <div className="w-2 h-2 rounded-full" style={{ background: 'var(--sage)' }} />}
+                  </div>
+                  <span className="text-[18px] leading-none">📮</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-medium text-ink font-sans truncate">{sendingAddress}</div>
+                    <div className="text-[10px] font-light mt-0.5" style={{ color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+                      Recommended · secure delivery
+                    </div>
+                  </div>
+                  {sender === 'system' && (
+                    <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.5px] px-2 py-[3px] rounded-full font-sans"
+                      style={{ background: 'rgba(122,158,142,0.14)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.28)' }}>
+                      Active
+                    </span>
+                  )}
+                </button>
+
+                {/* Custom option — only when accounts connected */}
+                {hasAccounts && (
                   <button
-                    onClick={() => setSendFrom('system')}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-[9px] rounded-[8px] font-sans text-[12px] font-medium border-none cursor-pointer transition-all duration-150"
-                    style={sendFrom === 'system'
-                      ? { background: 'var(--ink)', color: 'var(--cream)' }
-                      : { background: 'var(--paper)', color: 'var(--ink-soft)', border: '0.5px solid rgba(28,26,23,0.12)' }
+                    type="button"
+                    onClick={() => setSender('custom')}
+                    className="flex items-center gap-3 w-full text-left rounded-[10px] px-3 py-[10px] transition-all duration-150 border-none cursor-pointer"
+                    style={sender === 'custom'
+                      ? { background: 'rgba(196,99,58,0.05)', border: '1.5px solid rgba(196,99,58,0.35)' }
+                      : { background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)' }
                     }
                   >
-                    <span>📮</span> System Email
-                  </button>
-                  {/* My email — only selectable if account connected */}
-                  <button
-                    onClick={() => { if (hasAccounts) setSendFrom('custom') }}
-                    title={!hasAccounts ? 'Connect an account in Connections to use your own email' : ''}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-[9px] rounded-[8px] font-sans text-[12px] font-medium border-none transition-all duration-150"
-                    style={{
-                      background: sendFrom === 'custom' ? 'var(--ink)' : 'var(--paper)',
-                      color: sendFrom === 'custom' ? 'var(--cream)' : hasAccounts ? 'var(--ink-soft)' : 'var(--ink-muted)',
-                      border: sendFrom === 'custom' ? 'none' : '0.5px solid rgba(28,26,23,0.12)',
-                      opacity: hasAccounts ? 1 : 0.5,
-                      cursor: hasAccounts ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    <span>✉️</span> My Email
-                  </button>
-                </div>
-                <div className="text-[10px] text-ink-muted ml-0.5" style={{ fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
-                  {usingSystem
-                    ? `Sending via platform: ${systemEmail || 'system email'}`
-                    : `Sending from: ${selectedEmail}`}
-                </div>
-              </div>
-
-              {/* Custom account selector */}
-              {!usingSystem && hasAccounts && (
-                <label className="flex flex-col gap-1">
-                  <span className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted">Account</span>
-                  <div className="relative">
-                    <select
-                      value={selectedEmail}
-                      onChange={e => setSelectedEmail(e.target.value)}
-                      className="w-full px-3 py-[10px] pl-8 rounded-[8px] font-sans text-[13px] text-ink outline-none cursor-pointer appearance-none"
-                      style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.15)' }}
+                    <div
+                      className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                      style={{ border: `2px solid ${sender === 'custom' ? 'var(--tc)' : 'rgba(28,26,23,0.25)'}` }}
                     >
-                      {emailAccounts.map(acc => (
-                        <option key={acc._id || acc.emailAddress} value={acc.emailAddress}>
-                          {acc.emailAddress} ({acc.provider})
-                        </option>
-                      ))}
-                    </select>
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[14px] pointer-events-none">
-                      {PROVIDER_ICON[selectedAccount?.provider] || '📬'}
-                    </span>
-                  </div>
-                </label>
-              )}
+                      {sender === 'custom' && <div className="w-2 h-2 rounded-full" style={{ background: 'var(--tc)' }} />}
+                    </div>
+                    <span className="text-[18px] leading-none">✉️</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[13px] font-medium text-ink font-sans truncate">
+                        {emailAccounts.length === 1 ? emailAccounts[0].emailAddress : 'Your email'}
+                      </div>
+                      <div className="text-[10px] font-light mt-0.5" style={{ color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+                        Recipients can reply directly to you
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {/* Account picker — shown when custom selected and multiple accounts */}
+                {sender === 'custom' && emailAccounts.length > 1 && (
+                  <select
+                    value={replyToEmail}
+                    onChange={e => setReplyToEmail(e.target.value)}
+                    className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] text-ink outline-none cursor-pointer"
+                    style={{ background: 'var(--paper)', border: '0.5px solid rgba(196,99,58,0.3)', marginTop: 2 }}
+                  >
+                    {emailAccounts.map(acc => (
+                      <option key={acc._id || acc.emailAddress} value={acc.emailAddress}>
+                        {acc.emailAddress}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
 
               {/* When to send */}
               <div className="flex flex-col gap-1.5">
