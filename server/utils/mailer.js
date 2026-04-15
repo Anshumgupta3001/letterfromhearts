@@ -112,15 +112,17 @@ export function formatFromSystem() {
  * Only used for the system (useSystem=true) path.
  * @returns {Promise<string>} Resend email ID
  */
-export async function sendViaResend({ to, subject, html, text }) {
+export async function sendViaResend({ to, subject, html, text, replyTo }) {
   const resend = new Resend(config.resendApiKey)
-  const { data, error } = await resend.emails.send({
+  const payload = {
     from:    `Letter from Heart <${config.emailFrom}>`,
     to:      [to],
     subject,
     html,
     text,
-  })
+  }
+  if (replyTo?.trim()) payload.reply_to = replyTo.trim()
+  const { data, error } = await resend.emails.send(payload)
   if (error) throw new Error(error.message || 'Resend send failed')
   return data.id
 }

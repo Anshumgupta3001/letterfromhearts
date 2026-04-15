@@ -22,7 +22,7 @@ import {
 //
 // The user is NEVER blocked from sending.
 export async function sendEmail(req, res) {
-  const { from, to, subject, message, useSystem } = req.body
+  const { from, to, subject, message, useSystem, replyTo } = req.body
   const userId = req.user._id
 
   if (!to?.trim() || !to.includes('@')) return res.status(400).json({ error: 'Valid recipient email is required.' })
@@ -80,7 +80,7 @@ export async function sendEmail(req, res) {
       })
     }
     try {
-      resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
+      resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text, replyTo })
       fromEmail = config.emailFrom
     } catch (err) {
       return res.status(500).json({ error: `Failed to send: ${err.message}` })
@@ -99,7 +99,7 @@ export async function sendEmail(req, res) {
       // Custom SMTP failed — fall back to Resend as last resort
       if (config.resendApiKey) {
         try {
-          resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
+          resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text, replyTo })
           fromEmail = config.emailFrom
         } catch (sysErr) {
           return res.status(500).json({ error: `Failed to send: ${sysErr.message}` })

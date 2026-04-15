@@ -26,7 +26,7 @@ console.log('📬 Email worker started — waiting for jobs…')
 
 // ── Job processor ─────────────────────────────────────────────────────────────
 emailQueue.process(async (job) => {
-  const { letterId, userId, useSystem, fromEmailAddress, to, subject, message, trackingId } = job.data
+  const { letterId, userId, useSystem, fromEmailAddress, to, subject, message, trackingId, replyTo } = job.data
 
   // Build HTML + plain-text (tracking pixel baked in)
   const html = buildEmailHtml(message, trackingId)
@@ -64,11 +64,11 @@ emailQueue.process(async (job) => {
       await transporter.sendMail({ from: fromField, to: to.trim(), subject: subjectLine, text, html })
     } catch {
       // Fall back to Resend on failure
-      resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
+      resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text, replyTo })
     }
   } else {
     // System path → Resend
-    resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
+    resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text, replyTo })
   }
 
   // ── Mark letter as sent ───────────────────────────────────────────────────

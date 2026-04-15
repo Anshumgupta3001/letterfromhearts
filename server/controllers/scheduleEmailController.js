@@ -10,7 +10,7 @@ import { emailQueue }         from '../queues/emailQueue.js'
 // Saves the letter with status:'scheduled' and enqueues a Bull job.
 // The worker (emailWorker.js) picks it up at the right time and sends it.
 export async function scheduleEmail(req, res) {
-  const { from, to, subject, message, sendAt, useSystem } = req.body
+  const { from, to, subject, message, sendAt, useSystem, replyTo } = req.body
   const userId = req.user._id
 
   // ── Validation ────────────────────────────────────────────────────────────
@@ -93,6 +93,7 @@ export async function scheduleEmail(req, res) {
       subject:          subjectLine,
       message:          message.trim(),
       trackingId,
+      replyTo:          replyTo?.trim() || null,
     },
     {
       delay,
