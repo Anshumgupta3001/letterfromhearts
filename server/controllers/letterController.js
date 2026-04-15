@@ -13,7 +13,7 @@ export async function getLetters(req, res) {
   if (req.query.type === 'stranger' && letters.length > 0) {
     const ids      = letters.map(l => l._id)
     const counts   = await Reply.aggregate([
-      { $match: { parentLetterId: { $in: ids } } },
+      { $match: { parentLetterId: { $in: ids }, 'messages.0': { $exists: true } } },
       { $group: { _id: '$parentLetterId', count: { $sum: 1 } } },
     ])
     const countMap = {}
@@ -79,7 +79,7 @@ export async function getStrangerFeed(req, res) {
   let repliedSet = new Set()
   if (heldIds.length > 0) {
     const myReplies = await Reply.find(
-      { parentLetterId: { $in: heldIds }, listenerId: userId },
+      { parentLetterId: { $in: heldIds }, listenerId: userId, 'messages.0': { $exists: true } },
       'parentLetterId'
     ).lean()
     repliedSet = new Set(myReplies.map(r => r.parentLetterId.toString()))
@@ -217,13 +217,33 @@ export async function updateLetter(req, res) {
 // GET /api/letters/:id/replies  — letter owner fetches all replies to their stranger letter
 export async function getLetterReplies(req, res) {
   const userId = req.user._id
-  const letter = await Letter.findOne({ _id: req.params.id, userId })
+
+  // Allow access to both the letter owner (seeker) and the listener who has the conversation
+  const letter = await Letter.findOne({
+    _id: req.params.id,
+    $or: [
+      { userId },
+      { 'claimedBy.userId': userId },
+      { readBy: userId },
+    ],
+  })
   if (!letter) return res.status(404).json({ error: 'Letter not found.' })
   if (letter.type !== 'stranger')
     return res.status(400).json({ error: 'Replies are only available for Caring Stranger letters.' })
 
-  const replies = await Reply.find({ parentLetterId: letter._id }).sort({ createdAt: 1 })
-  res.json({ success: true, data: replies })
+  const isOwner = letter.userId.toString() === userId.toString()
+
+  if (isOwner) {
+    // Seeker: return all conversations on their letter, each with its messages + isEnded
+    const conversations = await Reply.find({ parentLetterId: letter._id })
+      .sort({ createdAt: 1 })
+      .lean()
+    return res.json({ success: true, data: conversations })
+  } else {
+    // Listener: return only their own conversation
+    const conv = await Reply.findOne({ parentLetterId: letter._id, listenerId: userId }).lean()
+    return res.json({ success: true, data: conv ? [conv] : [] })
+  }
 }
 
 // GET /api/letters/analytics?days=7|15|30
