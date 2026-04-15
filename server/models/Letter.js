@@ -27,6 +27,10 @@ const letterSchema = new mongoose.Schema(
     readCount:  { type: Number, default: 0 },
     // Mood tag saved with letter
     mood:         { type: String, default: '' },
+    // Resend delivery tracking — only for system-sent letters
+    resendEmailId: { type: String, index: true, sparse: true },
+    isDelivered:   { type: Boolean, default: false },
+    deliveredAt:   { type: Date },
     // Scheduling — populated for type:'sent' scheduled letters
     isScheduled:  { type: Boolean, default: false, index: true },
     scheduledFor: { type: Date },

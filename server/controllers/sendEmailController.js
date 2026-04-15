@@ -8,7 +8,7 @@ import {
   generateTrackingId,
   buildEmailHtml,
   buildEmailText,
-  createSystemTransporter,
+  sendViaResend,
 } from '../utils/mailer.js'
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -39,6 +39,7 @@ export async function sendEmail(req, res) {
   const text       = buildEmailText(message.trim())
 
   let transporter, fromEmail
+  let resendEmailId = null
 
   // ── Decide which transport to use ────────────────────────────────────────
   let useSystemFinal = Boolean(useSystem)
@@ -69,61 +70,48 @@ export async function sendEmail(req, res) {
     useSystemFinal = true
   }
 
-  // ── System SMTP (fallback or explicit) ───────────────────────────────────
+  const subjectLine = subject?.trim() || 'A letter from my heart 💌'
+
+  // ── System path: Resend ───────────────────────────────────────────────────
   if (useSystemFinal) {
-    if (!config.systemEmail || !config.systemEmailPass) {
+    if (!config.resendApiKey) {
       return res.status(500).json({
         error: 'System email is not configured on this server. Please connect your own email account in Connections.',
       })
     }
-    fromEmail   = config.systemEmail
-    transporter = createSystemTransporter()
-  }
-
-  // ── Compose mail options ──────────────────────────────────────────────────
-  // Use a display name "Letter from Heart" on the from address to improve
-  // inbox placement and trust signals. Fall back to bare address for custom accounts.
-  function formatFrom(addr) {
-    // Only add display name for the system email — custom accounts keep their own identity
-    return addr === config.systemEmail
-      ? `"Letter from Heart" <${addr}>`
-      : addr
-  }
-
-  const subjectLine = subject?.trim() || 'A letter from my heart 💌'
-
-  // ── Send ──────────────────────────────────────────────────────────────────
-  try {
-    await transporter.sendMail({
-      from:    formatFrom(fromEmail),
-      to:      to.trim(),
-      subject: subjectLine,
-      text,
-      html,
-    })
-  } catch (err) {
-    // If custom SMTP failed at send-time, retry with system as last resort
-    if (!useSystemFinal && config.systemEmail && config.systemEmailPass) {
-      try {
-        const systemTransporter = createSystemTransporter()
-        await systemTransporter.sendMail({
-          from:    formatFrom(config.systemEmail),
-          to:      to.trim(),
-          subject: subjectLine,
-          text,
-          html,
-        })
-        fromEmail = config.systemEmail // record actual sender
-      } catch (sysErr) {
-        return res.status(500).json({ error: `Failed to send: ${sysErr.message}` })
-      }
-    } else {
+    try {
+      resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
+      fromEmail = config.emailFrom
+    } catch (err) {
       return res.status(500).json({ error: `Failed to send: ${err.message}` })
+    }
+  } else {
+    // ── Custom SMTP send ──────────────────────────────────────────────────
+    try {
+      await transporter.sendMail({
+        from:    fromEmail,
+        to:      to.trim(),
+        subject: subjectLine,
+        text,
+        html,
+      })
+    } catch (err) {
+      // Custom SMTP failed — fall back to Resend as last resort
+      if (config.resendApiKey) {
+        try {
+          resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
+          fromEmail = config.emailFrom
+        } catch (sysErr) {
+          return res.status(500).json({ error: `Failed to send: ${sysErr.message}` })
+        }
+      } else {
+        return res.status(500).json({ error: `Failed to send: ${err.message}` })
+      }
     }
   }
 
   // ── Record sent letter ────────────────────────────────────────────────────
-  const letter = await Letter.create({
+  const letterData = {
     userId,
     type:      'sent',
     fromEmail,
@@ -132,7 +120,10 @@ export async function sendEmail(req, res) {
     message:   message.trim(),
     trackingId,
     status:    'sent',
-  })
+  }
+  if (resendEmailId) letterData.resendEmailId = resendEmailId
+
+  const letter = await Letter.create(letterData)
 
   res.json({ success: true, letterId: letter._id })
 }

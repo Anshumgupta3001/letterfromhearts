@@ -17,6 +17,10 @@ export default {
   adminDashboardKey: process.env.ADMIN_DASHBOARD_KEY || '',
   reportEmails:    (process.env.REPORT_EMAILS || process.env.REPORT_EMAIL || '')
                      .split(',').map(e => e.trim()).filter(Boolean),
+  // Resend (system email)
+  resendApiKey:         process.env.RESEND_API_KEY || '',
+  emailFrom:            process.env.EMAIL_FROM || 'noreply@letterfromheart.com',
+  resendWebhookSecret:  process.env.RESEND_WEBHOOK_SECRET || '',
   // Redis (Bull queue)
   redisHost:     process.env.REDIS_HOST     || '127.0.0.1',
   redisPort:     Number(process.env.REDIS_PORT) || 6379,

@@ -4,6 +4,7 @@
  */
 import crypto      from 'crypto'
 import nodemailer  from 'nodemailer'
+import { Resend }  from 'resend'
 import config      from '../config/index.js'
 
 // ── Tracking helpers ──────────────────────────────────────────────────────────
@@ -102,4 +103,24 @@ export function createSystemTransporter() {
 
 export function formatFromSystem() {
   return `"Letter from Heart" <${config.systemEmail}>`
+}
+
+// ── Resend (system path) ──────────────────────────────────────────────────────
+
+/**
+ * Send an email via Resend and return the Resend message ID.
+ * Only used for the system (useSystem=true) path.
+ * @returns {Promise<string>} Resend email ID
+ */
+export async function sendViaResend({ to, subject, html, text }) {
+  const resend = new Resend(config.resendApiKey)
+  const { data, error } = await resend.emails.send({
+    from:    `Letter from Heart <${config.emailFrom}>`,
+    to:      [to],
+    subject,
+    html,
+    text,
+  })
+  if (error) throw new Error(error.message || 'Resend send failed')
+  return data.id
 }
