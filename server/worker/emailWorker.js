@@ -9,7 +9,6 @@ dotenv.config()                                  // load .env from server/ CWD
 
 import mongoose    from 'mongoose'
 import nodemailer  from 'nodemailer'
-import config      from '../config/index.js'
 import { connectDB }  from '../config/db.js'
 import { emailQueue } from '../queues/emailQueue.js'
 import Letter         from '../models/Letter.js'
@@ -18,7 +17,7 @@ import { decrypt }    from '../controllers/emailAccountController.js'
 import {
   buildEmailHtml,
   buildEmailText,
-  createSystemTransporter,
+  sendViaResend,
 } from '../utils/mailer.js'
 
 // ── Connect to MongoDB ────────────────────────────────────────────────────────
@@ -33,8 +32,11 @@ emailQueue.process(async (job) => {
   const html = buildEmailHtml(message, trackingId)
   const text = buildEmailText(message)
 
+  const subjectLine = subject || 'A letter from my heart 💌'
+
   // ── Decide transport ──────────────────────────────────────────────────────
   let transporter, fromField
+  let resendEmailId = null
 
   if (!useSystem && fromEmailAddress) {
     try {
@@ -55,25 +57,25 @@ emailQueue.process(async (job) => {
     } catch { /* fall through to system */ }
   }
 
-  if (!transporter) {
-    transporter = createSystemTransporter()
-    fromField   = `"Letter from Heart" <${config.systemEmail}>`
+  // ── Send ──────────────────────────────────────────────────────────────────
+  if (transporter) {
+    // Custom SMTP path
+    try {
+      await transporter.sendMail({ from: fromField, to: to.trim(), subject: subjectLine, text, html })
+    } catch {
+      // Fall back to Resend on failure
+      resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
+    }
+  } else {
+    // System path → Resend
+    resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text })
   }
 
-  // ── Send ──────────────────────────────────────────────────────────────────
-  await transporter.sendMail({
-    from:    fromField,
-    to:      to.trim(),
-    subject: subject || 'A letter from my heart 💌',
-    text,
-    html,
-  })
-
   // ── Mark letter as sent ───────────────────────────────────────────────────
-  await Letter.findByIdAndUpdate(letterId, {
-    status:      'sent',
-    isScheduled: false,   // no longer "pending scheduled" — it was delivered
-  })
+  const updateData = { status: 'sent', isScheduled: false }
+  if (resendEmailId) updateData.resendEmailId = resendEmailId
+
+  await Letter.findByIdAndUpdate(letterId, updateData)
 
   console.log(`📬 Scheduled letter ${letterId} delivered to ${to}`)
 })

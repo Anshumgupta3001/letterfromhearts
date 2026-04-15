@@ -13,11 +13,16 @@ import reportIssueRoutes    from './routes/reportIssueRoutes.js'
 import scheduleEmailRoutes  from './routes/scheduleEmailRoutes.js'
 import adminRoutes          from './routes/adminRoutes.js'
 import replyRoutes          from './routes/replyRoutes.js'
+import resendWebhookRoutes  from './routes/resendWebhookRoutes.js'
 import { notFound, errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
 
 app.use(cors({ origin: config.clientOrigin, credentials: true }))
+
+// Webhook route must be registered BEFORE express.json() to receive raw body for HMAC verification
+app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }), resendWebhookRoutes)
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(passport.initialize())   // no sessions — JWT only
