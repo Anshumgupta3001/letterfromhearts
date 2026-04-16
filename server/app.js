@@ -14,6 +14,7 @@ import scheduleEmailRoutes  from './routes/scheduleEmailRoutes.js'
 import adminRoutes          from './routes/adminRoutes.js'
 import replyRoutes          from './routes/replyRoutes.js'
 import resendWebhookRoutes  from './routes/resendWebhookRoutes.js'
+import notificationRoutes   from './routes/notificationRoutes.js'
 import { notFound, errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
@@ -45,6 +46,7 @@ app.use('/api/report-issue',   reportIssueRoutes)
 app.use('/api/schedule-email', scheduleEmailRoutes)
 app.use('/api/admin',          adminRoutes)
 app.use('/api/replies',        replyRoutes)
+app.use('/api/notifications',  notificationRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

@@ -98,7 +98,7 @@ const SpinIcon = () => (
 )
 
 export default function LetterDrawer() {
-  const { letterPanel, closeLetterPanel, authUser } = useApp()
+  const { letterPanel, closeLetterPanel, authUser, refreshNotifications } = useApp()
   const { open, letter } = letterPanel
 
   const meta     = letter ? (TYPE_META[letter.type] || TYPE_META.personal) : TYPE_META.personal
@@ -219,6 +219,7 @@ export default function LetterDrawer() {
         setConv(json.data)
         setText('')
         setShowToast(true)
+        refreshNotifications()
       } else {
         setSendError(json.error || 'Failed to send.')
       }
@@ -273,6 +274,7 @@ export default function LetterDrawer() {
       if (json.success) {
         setSeekerConvs(prev => prev.map(c => c._id === json.data._id ? json.data : c))
         setSeekerText('')
+        refreshNotifications()
       } else {
         setSeekerError(json.error || 'Failed to send.')
       }

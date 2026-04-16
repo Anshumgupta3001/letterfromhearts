@@ -1,6 +1,7 @@
 import Letter from '../models/Letter.js'
 import Reply  from '../models/Reply.js'
 import { checkContentSafety } from '../utils/moderation.js'
+import { createNotification } from './notificationController.js'
 
 // GET /api/letters?type=personal|sent|stranger  — current user's letters, filtered by type
 export async function getLetters(req, res) {
@@ -186,6 +187,26 @@ export async function markLetterRead(req, res) {
   letter.claimedBy  = { userId, claimedAt: now }
   letter.readCount  = (letter.readCount || 0) + 1
   await letter.save()
+
+  // Notify the letter owner that someone opened their letter.
+  // Guard: never notify if the claimer IS the owner.
+  // dedup:true ensures reopening the same letter never fires a second notification.
+  console.log(`[Notification] claim check — letterOwner:${letter.userId} claimer:${userId} same:${letter.userId.toString() === userId.toString()}`)
+  if (letter.userId.toString() !== userId.toString()) {
+    try {
+      await createNotification({
+        userId:    letter.userId,
+        senderId:  userId,
+        letterId:  letter._id,
+        message:   'Someone opened your letter 💌',
+        type:      'claim',
+        link:      `/letters/${letter._id}`,
+        dedup:     true,
+      })
+    } catch (err) {
+      console.error('[Notification] claim trigger failed:', err.message)
+    }
+  }
 
   res.json({ success: true })
 }

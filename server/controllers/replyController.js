@@ -1,6 +1,7 @@
 import Reply  from '../models/Reply.js'
 import Letter from '../models/Letter.js'
 import { checkContentSafety } from '../utils/moderation.js'
+import { createNotification } from './notificationController.js'
 
 const MAX_MESSAGES = 10
 
@@ -59,8 +60,43 @@ export async function sendMessage(req, res) {
     return res.status(400).json({ error: 'Your message contains restricted content. Please revise it.' })
   }
 
+  const isFirstMessage = conv.messages.length === 0
   conv.messages.push({ sender: userId, content: content.trim(), createdAt: new Date() })
   await conv.save()
+
+  // Await notification so it's in DB before response is sent.
+  // reply notifications are NOT deduped — every new message deserves a ping.
+  console.log(`[Notification] reply check — isLetterOwner:${isLetterOwner} isFirstMessage:${isFirstMessage} letterOwner:${letter.userId} sender:${userId}`)
+  try {
+    if (isLetterOwner) {
+      // Seeker replied back → notify the listener
+      if (conv.listenerId.toString() !== userId.toString()) {
+        await createNotification({
+          userId:   conv.listenerId,
+          senderId: userId,
+          letterId: letter._id,
+          message:  'The letter writer replied to you 💬',
+          type:     'reply',
+          link:     `/letters/${letter._id}`,
+        })
+      }
+    } else if (isFirstMessage) {
+      // Listener's first message → notify the letter owner (seeker), once per conversation
+      if (letter.userId.toString() !== userId.toString()) {
+        await createNotification({
+          userId:   letter.userId,
+          senderId: userId,
+          letterId: letter._id,
+          message:  'You received a reply to your letter 💬',
+          type:     'reply',
+          link:     `/letters/${letter._id}`,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[Notification] trigger failed:', err.message)
+    // Notification failure must never block the message response
+  }
 
   res.status(201).json({ success: true, data: conv })
 }

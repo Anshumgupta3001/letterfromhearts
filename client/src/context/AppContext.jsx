@@ -228,6 +228,46 @@ export function AppProvider({ children }) {
     if (!authLoading && authUser) refreshStrangerLetters()
   }, [authLoading, authUser, refreshStrangerLetters])
 
+  // ── Notifications ─────────────────────────────────────────────────────────────
+  const [notifications, setNotifications] = useState([])
+
+  const refreshNotifications = useCallback(async () => {
+    if (!getToken()) return
+    try {
+      const res  = await apiFetch('/api/notifications')
+      if (!res.ok) {
+        console.warn('[Notifications] API error:', res.status)
+        return
+      }
+      const json = await res.json()
+      console.log('[Notifications] API response:', json)
+      if (json.success) {
+        setNotifications(json.data)
+      } else {
+        console.warn('[Notifications] Unexpected response:', json)
+      }
+    } catch (err) {
+      console.error('[Notifications] Fetch failed:', err.message)
+    }
+  }, [])
+
+  const markNotificationsRead = useCallback(async () => {
+    if (!getToken()) return
+    try {
+      await apiFetch('/api/notifications/mark-all-read', { method: 'PATCH' })
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    if (!authLoading && authUser) {
+      refreshNotifications()
+      // Poll every 15 seconds for new notifications
+      const interval = setInterval(refreshNotifications, 15_000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, authUser, refreshNotifications])
+
   // ── Analytics ─────────────────────────────────────────────────────────────────
   const [analytics,           setAnalytics]           = useState(null)
   const [analyticsDays,       setAnalyticsDays]       = useState(30)
@@ -279,6 +319,8 @@ export function AppProvider({ children }) {
         ownStrangerLetters, refreshOwnStrangerLetters,
         // caring stranger feed
         strangerLetters, refreshStrangerLetters,
+        // notifications
+        notifications, refreshNotifications, markNotificationsRead,
         // analytics
         analytics, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing,
       }}
