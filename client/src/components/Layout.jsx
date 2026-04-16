@@ -354,6 +354,35 @@ function AvatarMenu({ authUser, userRole, logout, navigate, onOpenReport }) {
 }
 
 // ── Nav tab — full-height with bottom-border indicator (matches HTML reference) ─
+function NavbarNotificationItem({ item, isLast }) {
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const m = Math.floor(diff / 60000)
+    if (m < 1)  return 'just now'
+    if (m < 60) return `${m}m ago`
+    const h = Math.floor(m / 60)
+    if (h < 24) return `${h}h ago`
+    const d = Math.floor(h / 24)
+    return d < 7 ? `${d}d ago` : new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+  }
+  const ICON = { reply: '💬', claim: '💌', delivery: '📬', system: '⚙️', general: '🔔' }
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 10,
+      padding: '11px 16px',
+      background: !item.isRead ? 'rgba(196,99,58,0.04)' : 'transparent',
+      borderBottom: isLast ? 'none' : '0.5px solid rgba(28,26,23,0.05)',
+    }}>
+      <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{ICON[item.type] || ICON.general}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 12.5, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', fontWeight: !item.isRead ? 500 : 400, lineHeight: 1.5 }}>{item.message}</p>
+        <p style={{ margin: '2px 0 0', fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>{timeAgo(item.createdAt)}</p>
+      </div>
+      {!item.isRead && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--tc)', flexShrink: 0, marginTop: 5 }} />}
+    </div>
+  )
+}
+
 function NavTab({ item, active, onClick }) {
   return (
     <button
@@ -833,10 +862,34 @@ function Navbar() {
   const {
     navigate, currentPage, authUser, logout, userRole,
     strangerLetters, canReadFeed,
+    notifications: rawNotifications, markNotificationsRead,
   } = useApp()
+
+  const notifications = rawNotifications ?? []
+  const unreadCount   = notifications.filter(n => !n.isRead).length
 
   const [mobileOpen,   setMobileOpen]   = useState(false)
   const [reportOpen,   setReportOpen]   = useState(false)
+  const [bellOpen,     setBellOpen]     = useState(false)
+  const bellRef = useRef(null)
+
+  function toggleBell() {
+    if (!bellOpen) {
+      setBellOpen(true)
+      if (unreadCount > 0 && typeof markNotificationsRead === 'function') markNotificationsRead()
+    } else {
+      setBellOpen(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!bellOpen) return
+    function handleClick(e) {
+      if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [bellOpen])
 
   const navItems = [
     { id: 'home',        label: 'Home' },
@@ -897,8 +950,89 @@ function Navbar() {
           ))}
         </div>
 
-        {/* Right: Write (primary) + Report (secondary) + avatar */}
+        {/* Right: Bell + Write (primary) + Report (secondary) + avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
+
+          {/* 🔔 Notification bell */}
+          <div ref={bellRef} style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={toggleBell}
+              aria-label="Notifications"
+              style={{
+                position: 'relative',
+                width: 34, height: 34,
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: 'none', cursor: 'pointer',
+                background: bellOpen ? 'rgba(196,99,58,0.1)' : 'rgba(28,26,23,0.06)',
+                color: bellOpen ? 'var(--tc)' : 'var(--ink)',
+                transition: 'background 0.15s, color 0.15s',
+                flexShrink: 0,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.1)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = bellOpen ? 'rgba(196,99,58,0.1)' : 'rgba(28,26,23,0.06)' }}
+            >
+              {/* Bell SVG */}
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              {/* Unread badge */}
+              {unreadCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: -1, right: -1,
+                  minWidth: 16, height: 16,
+                  background: 'var(--tc)', color: '#fff',
+                  borderRadius: '50%',
+                  fontSize: 9, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '0 3px',
+                  fontFamily: '"DM Sans", sans-serif',
+                  pointerEvents: 'none',
+                  lineHeight: 1,
+                }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification panel */}
+            {bellOpen && (
+              <div style={{
+                position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                width: 320, borderRadius: 14, overflow: 'hidden',
+                background: 'var(--cream)',
+                border: '0.5px solid rgba(28,26,23,0.1)',
+                boxShadow: '0 12px 40px rgba(28,26,23,0.15)',
+                zIndex: 400,
+              }}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>Notifications</span>
+                  {notifications.length > 0 && (
+                    <span style={{ fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+                      {unreadCount === 0 ? 'All caught up' : `${unreadCount} new`}
+                    </span>
+                  )}
+                </div>
+                {/* List */}
+                <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+                  {notifications.length === 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 16px', textAlign: 'center' }}>
+                      <span style={{ fontSize: 28, opacity: 0.35, marginBottom: 8 }}>🔔</span>
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>No notifications yet</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>We'll let you know when something happens</p>
+                    </div>
+                  ) : (
+                    notifications.map((n, i) => (
+                      <NavbarNotificationItem key={n._id} item={n} isLast={i === notifications.length - 1} />
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => navigate('write')}
             className="hidden sm:block"

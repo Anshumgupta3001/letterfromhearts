@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 
 const ROLE_META = {
@@ -8,8 +8,33 @@ const ROLE_META = {
 }
 
 export default function Navbar() {
-  const { currentPage, navigate, authUser, logout, userRole } = useApp()
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const { currentPage, navigate, authUser, logout, userRole, notifications: rawNotifications, markNotificationsRead } = useApp()
+  const notifications = rawNotifications ?? []
+
+  const [mobileOpen,   setMobileOpen]   = useState(false)
+  const [bellOpen,     setBellOpen]     = useState(false)
+  const bellRef = useRef(null)
+
+  const unreadCount = notifications.filter(n => !n.isRead).length
+
+  function toggleBell() {
+    if (!bellOpen) {
+      setBellOpen(true)
+      if (unreadCount > 0 && typeof markNotificationsRead === 'function') markNotificationsRead()
+    } else {
+      setBellOpen(false)
+    }
+  }
+
+  // Close panel on outside click
+  useEffect(() => {
+    if (!bellOpen) return
+    function handleClick(e) {
+      if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [bellOpen])
 
   const PRIMARY_TABS = [
     { id: 'home',    label: 'Home'     },
@@ -96,6 +121,92 @@ export default function Navbar() {
               <span className="w-[5px] h-[5px] rounded-full" style={{ background: roleMeta.color }} />
               {roleMeta.label}
             </span>
+
+            {/* Notification bell */}
+            <div ref={bellRef} className="relative flex-shrink-0">
+              <button
+                onClick={toggleBell}
+                className="relative flex items-center justify-center w-8 h-8 rounded-full cursor-pointer border-none transition-all duration-150"
+                style={{
+                  color:      bellOpen ? 'var(--tc)'  : 'var(--ink)',
+                  background: bellOpen ? 'rgba(196,99,58,0.08)' : 'rgba(28,26,23,0.06)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.1)'; e.currentTarget.style.color = 'var(--ink)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = bellOpen ? 'rgba(196,99,58,0.08)' : 'rgba(28,26,23,0.06)'; e.currentTarget.style.color = bellOpen ? 'var(--tc)' : 'var(--ink)' }}
+                aria-label="Notifications"
+              >
+                <BellIcon />
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold rounded-full px-1 leading-none pointer-events-none"
+                    style={{ background: 'var(--tc)', color: '#fff', fontFamily: '"DM Sans", sans-serif' }}
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification panel */}
+              {bellOpen && (
+                <div
+                  className="absolute right-0 top-[calc(100%+8px)] w-[320px] rounded-[14px] overflow-hidden animate-fade-up z-[300]"
+                  style={{ background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 12px 40px rgba(28,26,23,0.15)' }}
+                >
+                  {/* Panel header */}
+                  <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+                    <span className="text-[13px] font-semibold text-ink font-sans">Notifications</span>
+                    {notifications.length > 0 && (
+                      <span className="text-[10px] text-ink-muted font-sans">{notifications.filter(n => !n.isRead).length === 0 ? 'All caught up' : `${unreadCount} new`}</span>
+                    )}
+                  </div>
+
+                  {/* Notification list */}
+                  <div className="overflow-y-auto" style={{ maxHeight: 340 }}>
+                    {notifications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                        <span className="text-[28px] mb-2 opacity-40">🔔</span>
+                        <p className="text-[12px] text-ink-muted font-sans">No notifications yet</p>
+                        <p className="text-[11px] text-ink-muted font-sans mt-0.5" style={{ fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+                          We'll let you know when something happens
+                        </p>
+                      </div>
+                    ) : (
+                      notifications.map((n, i) => (
+                        <NotificationItem
+                          key={n._id}
+                          item={n}
+                          isLast={i === notifications.length - 1}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Write button (desktop) */}
+            <button
+              onClick={() => go('write')}
+              className="hidden md:flex items-center gap-1.5 flex-shrink-0 border-none cursor-pointer transition-all duration-200"
+              style={{
+                background: currentPage === 'write' ? 'var(--tc)' : 'var(--ink)',
+                color: '#fff',
+                padding: '7px 15px',
+                borderRadius: 100,
+                fontFamily: '"DM Sans", sans-serif',
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.1px',
+                boxShadow: '0 2px 10px rgba(28,18,8,0.18)',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,99,58,0.28)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = currentPage === 'write' ? 'var(--tc)' : 'var(--ink)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(28,18,8,0.18)' }}
+            >
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M5 1v8M1 5h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+              </svg>
+              Write
+            </button>
 
             {/* Avatar + dropdown */}
             <AvatarMenu authUser={authUser} initials={initials} logout={logout} />
@@ -184,6 +295,66 @@ function AvatarMenu({ authUser, initials, logout }) {
         </button>
       </div>
     </div>
+  )
+}
+
+// ── Notification item ─────────────────────────────────────────────────────────
+function NotificationItem({ item, isLast }) {
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const m = Math.floor(diff / 60000)
+    if (m < 1)  return 'just now'
+    if (m < 60) return `${m}m ago`
+    const h = Math.floor(m / 60)
+    if (h < 24) return `${h}h ago`
+    const d = Math.floor(h / 24)
+    if (d < 7)  return `${d}d ago`
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+  }
+
+  const TYPE_ICON = {
+    reply:    '💬',
+    claim:    '💌',
+    delivery: '📬',
+    system:   '⚙️',
+    general:  '🔔',
+  }
+
+  return (
+    <div
+      className="flex items-start gap-3 px-4 py-3 transition-colors duration-150"
+      style={{
+        background: !item.isRead ? 'rgba(196,99,58,0.04)' : 'transparent',
+        borderBottom: isLast ? 'none' : '0.5px solid rgba(28,26,23,0.05)',
+      }}
+    >
+      {/* Type icon */}
+      <span className="text-[15px] mt-0.5 flex-shrink-0 leading-none">
+        {TYPE_ICON[item.type] || TYPE_ICON.general}
+      </span>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <p className="text-[12.5px] text-ink leading-[1.55] font-sans m-0" style={{ fontWeight: !item.isRead ? 500 : 400 }}>
+          {item.message}
+        </p>
+        <p className="text-[10px] text-ink-muted mt-0.5 m-0 font-sans">{timeAgo(item.createdAt)}</p>
+      </div>
+
+      {/* Unread dot */}
+      {!item.isRead && (
+        <span className="w-[6px] h-[6px] rounded-full flex-shrink-0 mt-1.5" style={{ background: 'var(--tc)' }} />
+      )}
+    </div>
+  )
+}
+
+function BellIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
   )
 }
 

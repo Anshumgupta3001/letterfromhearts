@@ -60,14 +60,14 @@ export async function scheduleEmail(req, res) {
     useSystemFinal = true
   }
 
-  if (useSystemFinal && (!config.systemEmail || !config.systemEmailPass)) {
+  if (useSystemFinal && !config.resendApiKey) {
     return res.status(500).json({ success: false, error: 'System email is not configured on this server.' })
   }
 
   // ── Create Letter (status: scheduled) ────────────────────────────────────
   const trackingId  = generateTrackingId(userId.toString())
   const subjectLine = subject?.trim() || 'A letter from my heart 💌'
-  const fromEmail   = useSystemFinal ? config.systemEmail : fromEmailAddress
+  const fromEmail   = useSystemFinal ? config.emailFrom : fromEmailAddress
 
   const letter = await Letter.create({
     userId,

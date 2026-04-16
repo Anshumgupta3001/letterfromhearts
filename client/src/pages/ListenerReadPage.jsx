@@ -196,13 +196,74 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
   )
 }
 
+// ── Listener onboarding banner ────────────────────────────────────────────────
+function ListenerBanner({ onDismiss }) {
+  return (
+    <div style={{
+      marginBottom: 16,
+      padding: '12px 16px',
+      borderRadius: 10,
+      background: '#fff',
+      border: '0.5px solid rgba(28,26,23,0.1)',
+    }}>
+      <div style={{
+        fontFamily: '"Lora", serif', fontSize: 12,
+        color: 'var(--ink)', fontWeight: 600, marginBottom: 8,
+      }}>
+        You're a listener. Here's what that means.
+      </div>
+      <ul style={{ margin: '0 0 10px', padding: '0 0 0 16px', listStyle: 'disc' }}>
+        {[
+          'Each letter is from a real person. When you claim one, only you reply — it leaves the feed.',
+          'You don\'t need to fix anything. Just be present.',
+          'One letter at a time. Don\'t claim more than you can hold.',
+          'Meet people where they are, not where you\'d like them to be.',
+          'If a letter is too heavy today, leave it for someone else.',
+        ].map((item, i) => (
+          <li key={i} style={{
+            fontFamily: '"Lora", serif', fontStyle: 'italic',
+            fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.7,
+            marginBottom: 2,
+          }}>
+            {item}
+          </li>
+        ))}
+      </ul>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          onClick={onDismiss}
+          style={{
+            padding: '5px 14px', borderRadius: 100,
+            background: 'var(--ink)', color: 'var(--cream)',
+            border: 'none', cursor: 'pointer',
+            fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, fontWeight: 500,
+            letterSpacing: '0.1px', transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)' }}
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ListenerReadPage() {
-  const { strangerLetters, refreshStrangerLetters, navigate, canReadFeed, openLetterPanel } = useApp()
+  const { strangerLetters, refreshStrangerLetters, navigate, canReadFeed, openLetterPanel, refreshNotifications } = useApp()
   const [letters,    setLetters]    = useState(strangerLetters)
   const [filter,     setFilter]     = useState('all')    // all | unread | held
   const [sort,       setSort]       = useState('newest')  // newest | oldest
   const [refreshing, setRefreshing] = useState(false)
+  const [showBanner, setShowBanner] = useState(() =>
+    localStorage.getItem('listener_banner_seen') !== 'true'
+  )
+
+  function dismissBanner() {
+    localStorage.setItem('listener_banner_seen', 'true')
+    setShowBanner(false)
+  }
 
   useEffect(() => { refreshStrangerLetters() }, [refreshStrangerLetters])
   useEffect(() => { setLetters(strangerLetters) }, [strangerLetters])
@@ -215,6 +276,7 @@ export default function ListenerReadPage() {
 
   function handleMarkRead(id) {
     setLetters(prev => prev.map(l => l._id === id ? { ...l, hasRead: true } : l))
+    refreshNotifications()
   }
 
   const handleOpen = useCallback((letter) => {
@@ -259,6 +321,9 @@ export default function ListenerReadPage() {
   return (
     <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
       <div className="w-full max-w-5xl">
+
+        {/* ── Onboarding banner ── */}
+        {showBanner && <ListenerBanner onDismiss={dismissBanner} />}
 
         {/* ── Page header ── */}
         <div style={{ marginBottom: 20 }}>

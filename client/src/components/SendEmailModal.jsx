@@ -3,7 +3,8 @@ import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 
 // The modal ALWAYS shows the send form.
-// Emails are always sent via Resend (system path) — no custom SMTP.
+// system sender → Resend (noreply@letterfromheart.com)
+// custom sender → user's connected SMTP account (EmailAccount lookup in controller)
 // Minimum datetime-local value = 5 minutes from now (avoids submitting a time already past)
 // MUST use local time format — datetime-local input interprets the min attribute as local time
 function minScheduleTime() {
@@ -32,13 +33,14 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
   const [deliveryMode, setDeliveryMode] = useState(initialDeliveryType === 'schedule' ? 'schedule' : 'now')
   const [sendAt,       setSendAt]       = useState('')
   const [scheduledFor, setScheduledFor] = useState(null)
-  // Sender selection — system is always default; custom sets reply-to
-  const [sender,         setSender]         = useState('system')
-  const [replyToEmail,   setReplyToEmail]   = useState(emailAccounts[0]?.emailAddress || '')
+  // Sender selection — 'system' → Resend, 'custom' → user's SMTP account
+  const [sender,          setSender]          = useState('system')
+  const [selectedAccount, setSelectedAccount] = useState(emailAccounts[0]?.emailAddress || '')
 
   const hasAccounts    = emailAccounts.length > 0
   const sendingAddress = systemEmail || 'noreply@letterfromheart.com'
-  const activeReplyTo  = sender === 'custom' && replyToEmail ? replyToEmail : null
+  // The address shown in success state depends on which path was taken
+  const effectiveSender = sender === 'custom' && selectedAccount ? selectedAccount : sendingAddress
 
   async function handleSend() {
     setError('')
@@ -60,12 +62,12 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
         const res  = await apiFetch('/api/schedule-email', {
           method: 'POST',
           body: JSON.stringify({
-            useSystem: true,
+            useSystem: sender === 'system',
+            from:      sender === 'custom' ? selectedAccount : undefined,
             to:        to.trim(),
             subject:   subject.trim() || 'A letter from my heart',
             message,
             sendAt:    sendAtUTC,
-            replyTo:   activeReplyTo,
           }),
         })
         const json = await res.json()
@@ -78,11 +80,11 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
         const res  = await apiFetch('/api/send-email', {
           method: 'POST',
           body: JSON.stringify({
-            useSystem: true,
+            useSystem: sender === 'system',
+            from:      sender === 'custom' ? selectedAccount : undefined,
             to:        to.trim(),
             subject:   subject.trim() || 'A letter from my heart',
             message,
-            replyTo:   activeReplyTo,
           }),
         })
         const json = await res.json()
@@ -130,14 +132,14 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                     {formatScheduled(scheduledFor)}
                   </div>
                   <div className="text-[11px] text-ink-muted font-light mb-5">
-                    via {sendingAddress}{activeReplyTo ? ` · replies go to ${activeReplyTo}` : ''}
+                    via {effectiveSender}
                   </div>
                 </>
               ) : (
                 <>
                   <div className="text-[13px] text-ink-muted font-light mb-1">Delivered to <strong>{to}</strong></div>
                   <div className="text-[12px] text-ink-muted font-light mb-5">
-                    via {sendingAddress}{activeReplyTo ? ` · replies go to ${activeReplyTo}` : ''}
+                    via {effectiveSender}
                   </div>
                 </>
               )}
@@ -207,10 +209,10 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                     <span className="text-[18px] leading-none">✉️</span>
                     <div className="flex-1 min-w-0">
                       <div className="text-[13px] font-medium text-ink font-sans truncate">
-                        {emailAccounts.length === 1 ? emailAccounts[0].emailAddress : 'Your email'}
+                        {selectedAccount || 'Your email'}
                       </div>
                       <div className="text-[10px] font-light mt-0.5" style={{ color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
-                        Recipients can reply directly to you
+                        Sent from your inbox via SMTP
                       </div>
                     </div>
                   </button>
@@ -219,8 +221,8 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                 {/* Account picker — shown when custom selected and multiple accounts */}
                 {sender === 'custom' && emailAccounts.length > 1 && (
                   <select
-                    value={replyToEmail}
-                    onChange={e => setReplyToEmail(e.target.value)}
+                    value={selectedAccount}
+                    onChange={e => setSelectedAccount(e.target.value)}
                     className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] text-ink outline-none cursor-pointer"
                     style={{ background: 'var(--paper)', border: '0.5px solid rgba(196,99,58,0.3)', marginTop: 2 }}
                   >
