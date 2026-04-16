@@ -254,9 +254,30 @@ export default function LetterDrawer() {
   }
 
   // ── Seeker reply (send back) — uses the same sendMessage API ─────────────
-  const [seekerText,    setSeekerText]    = useState('')
-  const [seekerSending, setSeekerSending] = useState(false)
-  const [seekerError,   setSeekerError]   = useState('')
+  const [seekerText,       setSeekerText]       = useState('')
+  const [seekerSending,    setSeekerSending]    = useState(false)
+  const [seekerError,      setSeekerError]      = useState('')
+  // Per-conversation close confirm: keyed by conv._id
+  const [seekerConfirmEnd, setSeekerConfirmEnd] = useState(null)  // conv._id | null
+  const [seekerEnding,     setSeekerEnding]     = useState(false)
+
+  async function handleSeekerEnd(convDoc) {
+    setSeekerEnding(true)
+    try {
+      const res  = await apiFetch('/api/replies/end', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ parentLetterId: letter._id }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        setSeekerConvs(prev => prev.map(c => c._id === convDoc._id ? json.data : c))
+        refreshNotifications()
+      }
+    } catch {}
+    setSeekerEnding(false)
+    setSeekerConfirmEnd(null)
+  }
 
   async function handleSeekerSend(convDoc) {
     if (!seekerText.trim() || seekerSending) return
@@ -510,7 +531,12 @@ export default function LetterDrawer() {
                           </div>
                           <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.65 }}>
                             {isEnded
-                              ? 'This conversation has been closed with care.'
+                              ? <>
+                                  This conversation has been closed with care
+                                  {conv?.endedBy === 'seeker' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the letter writer</span></>}
+                                  {conv?.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the listener</span></>}
+                                  .
+                                </>
                               : 'This conversation has reached its natural end.'}
                           </div>
                           <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--ink-muted)', marginTop: 5 }}>
@@ -727,7 +753,14 @@ export default function LetterDrawer() {
                                   </span>
                                 </div>
                                 <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-muted)', paddingLeft: 21 }}>
-                                  {cEnded ? 'This conversation has been closed.' : 'A stranger took the time to reach out.'}
+                                  {cEnded
+                                    ? <>
+                                        Closed with care
+                                        {c.endedBy === 'seeker' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>you</span></>}
+                                        {c.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the listener</span></>}
+                                        .
+                                      </>
+                                    : 'A stranger took the time to reach out.'}
                                 </div>
                               </div>
                               {!cEnded && (
@@ -764,15 +797,84 @@ export default function LetterDrawer() {
                                 <div style={{ fontSize: 16, marginBottom: 5 }}>{cEnded ? '🕯️' : '💌'}</div>
                                 <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
                                   {cEnded
-                                    ? 'This conversation was closed with care.'
+                                    ? <>
+                                        This conversation was closed with care
+                                        {c.endedBy === 'seeker' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>you</span></>}
+                                        {c.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the listener</span></>}
+                                        .
+                                      </>
                                     : 'This conversation has reached its natural end.'}
                                 </div>
                               </div>
                             )}
 
+                            {/* Seeker: close confirm card */}
+                            {seekerConfirmEnd === c._id && !cEnded && (
+                              <div style={{
+                                margin: '0 14px 14px', padding: '16px 18px', borderRadius: 12,
+                                background: '#fff', border: '1px solid rgba(180,60,60,0.2)',
+                                boxShadow: '0 4px 16px rgba(180,60,60,0.08)',
+                              }}>
+                                <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, color: '#B83232', marginBottom: 6 }}>
+                                  Close this conversation?
+                                </div>
+                                <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.65, marginBottom: 14 }}>
+                                  Once closed, neither of you can send more messages. This cannot be undone.
+                                </div>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                  <button
+                                    onClick={() => setSeekerConfirmEnd(null)}
+                                    style={{
+                                      flex: 1, padding: '9px 0', borderRadius: 9,
+                                      background: 'transparent', border: '1px solid rgba(28,26,23,0.15)',
+                                      color: 'var(--ink-muted)', cursor: 'pointer',
+                                      fontSize: 12.5, fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.04)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  >
+                                    Keep it open
+                                  </button>
+                                  <button
+                                    onClick={() => handleSeekerEnd(c)}
+                                    disabled={seekerEnding}
+                                    style={{
+                                      flex: 1, padding: '9px 0', borderRadius: 9,
+                                      background: seekerEnding ? 'rgba(180,60,60,0.4)' : '#B83232',
+                                      color: '#fff', border: 'none', cursor: seekerEnding ? 'default' : 'pointer',
+                                      fontSize: 12.5, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                    }}
+                                  >
+                                    {seekerEnding ? <><SpinIcon /> Closing…</> : 'Yes, close it'}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Seeker reply input */}
-                            {cCanSend && (
+                            {cCanSend && seekerConfirmEnd !== c._id && (
                               <div style={{ padding: '12px 14px 14px', borderTop: '1px solid rgba(28,26,23,0.07)', background: '#fff', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {/* Close affordance */}
+                                {cMessages.length > 0 && (
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 2 }}>
+                                    <span style={{ fontSize: 11, fontFamily: '"Lora", serif', fontStyle: 'italic', color: 'var(--ink-muted)', opacity: 0.8 }}>
+                                      You can close this conversation anytime.
+                                    </span>
+                                    <button
+                                      onClick={() => setSeekerConfirmEnd(c._id)}
+                                      style={{
+                                        fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+                                        color: 'rgba(180,60,60,0.7)', background: 'none', border: 'none',
+                                        cursor: 'pointer', padding: '2px 4px', borderRadius: 4,
+                                      }}
+                                      onMouseEnter={e => e.currentTarget.style.color = '#B83232'}
+                                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(180,60,60,0.7)'}
+                                    >
+                                      Close
+                                    </button>
+                                  </div>
+                                )}
                                 {seekerError && (
                                   <div style={{ fontSize: 12, color: 'var(--tc)', fontFamily: '"DM Sans", sans-serif', padding: '6px 10px', background: 'rgba(196,99,58,0.06)', borderRadius: 8 }}>
                                     {seekerError}

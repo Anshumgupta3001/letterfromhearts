@@ -15,6 +15,7 @@ const replySchema = new Schema({
   listenerId:     { type: Schema.Types.ObjectId, ref: 'User',   required: true },
   messages:       { type: [messageSchema], default: [] },
   isEnded:        { type: Boolean, default: false },
+  endedBy:        { type: String, enum: ['seeker', 'listener'], default: null },
 }, { timestamps: true })
 
 // Compound unique index — one conversation per listener per letter
