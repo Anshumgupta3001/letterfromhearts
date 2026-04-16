@@ -354,7 +354,8 @@ function AvatarMenu({ authUser, userRole, logout, navigate, onOpenReport }) {
 }
 
 // ── Nav tab — full-height with bottom-border indicator (matches HTML reference) ─
-function NavbarNotificationItem({ item, isLast }) {
+function NavbarNotificationItem({ item, isLast, onClick }) {
+  const [loading, setLoading] = useState(false)
   function timeAgo(dateStr) {
     const diff = Date.now() - new Date(dateStr).getTime()
     const m = Math.floor(diff / 60000)
@@ -366,17 +367,35 @@ function NavbarNotificationItem({ item, isLast }) {
     return d < 7 ? `${d}d ago` : new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
   }
   const ICON = { reply: '💬', claim: '💌', delivery: '📬', system: '⚙️', general: '🔔' }
+  const clickable = !!(item.letterId || item.link)
   return (
-    <div style={{
-      display: 'flex', alignItems: 'flex-start', gap: 10,
-      padding: '11px 16px',
-      background: !item.isRead ? 'rgba(196,99,58,0.04)' : 'transparent',
-      borderBottom: isLast ? 'none' : '0.5px solid rgba(28,26,23,0.05)',
-    }}>
-      <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{ICON[item.type] || ICON.general}</span>
+    <div
+      onClick={async () => {
+        if (!clickable || loading) return
+        setLoading(true)
+        await onClick(item)
+        setLoading(false)
+      }}
+      style={{
+        display: 'flex', alignItems: 'flex-start', gap: 10,
+        padding: '11px 16px',
+        background: !item.isRead ? 'rgba(196,99,58,0.04)' : 'transparent',
+        borderBottom: isLast ? 'none' : '0.5px solid rgba(28,26,23,0.05)',
+        cursor: clickable ? 'pointer' : 'default',
+        transition: 'background 0.12s',
+      }}
+      onMouseEnter={e => { if (clickable) e.currentTarget.style.background = 'rgba(28,26,23,0.04)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = !item.isRead ? 'rgba(196,99,58,0.04)' : 'transparent' }}
+    >
+      <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>
+        {loading ? '⏳' : (ICON[item.type] || ICON.general)}
+      </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ margin: 0, fontSize: 12.5, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', fontWeight: !item.isRead ? 500 : 400, lineHeight: 1.5 }}>{item.message}</p>
-        <p style={{ margin: '2px 0 0', fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>{timeAgo(item.createdAt)}</p>
+        <p style={{ margin: '2px 0 0', fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+          {timeAgo(item.createdAt)}
+          {clickable && <span style={{ marginLeft: 6, color: 'var(--tc)', opacity: 0.7 }}>· View letter →</span>}
+        </p>
       </div>
       {!item.isRead && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--tc)', flexShrink: 0, marginTop: 5 }} />}
     </div>
@@ -863,6 +882,7 @@ function Navbar() {
     navigate, currentPage, authUser, logout, userRole,
     strangerLetters, canReadFeed,
     notifications: rawNotifications, markNotificationsRead,
+    openLetterPanel,
   } = useApp()
 
   const notifications = rawNotifications ?? []
@@ -879,6 +899,21 @@ function Navbar() {
       if (unreadCount > 0 && typeof markNotificationsRead === 'function') markNotificationsRead()
     } else {
       setBellOpen(false)
+    }
+  }
+
+  async function handleNotificationClick(notification) {
+    const letterId = notification.letterId || notification.link?.split('/letters/')?.[1]
+    if (!letterId) return
+    setBellOpen(false)
+    try {
+      const res  = await apiFetch(`/api/letters/${letterId}`)
+      const json = await res.json()
+      if (json.success && json.data) {
+        openLetterPanel(json.data)
+      }
+    } catch (err) {
+      console.error('[Notification click] Failed to open letter:', err.message)
     }
   }
 
@@ -1025,7 +1060,7 @@ function Navbar() {
                     </div>
                   ) : (
                     notifications.map((n, i) => (
-                      <NavbarNotificationItem key={n._id} item={n} isLast={i === notifications.length - 1} />
+                      <NavbarNotificationItem key={n._id} item={n} isLast={i === notifications.length - 1} onClick={handleNotificationClick} />
                     ))
                   )}
                 </div>
