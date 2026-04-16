@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import GoogleLoginBtn from '../components/auth/GoogleLoginBtn'
 
@@ -174,50 +174,6 @@ function IconEye({ open }) {
   )
 }
 
-// ── Password strength ─────────────────────────────────────────────────────────
-function getPasswordStrength(pw) {
-  if (!pw) return null
-  let score = 0
-  if (pw.length >= 8)          score++
-  if (/[A-Z]/.test(pw))        score++
-  if (/[a-z]/.test(pw))        score++
-  if (/[0-9]/.test(pw))        score++
-  if (/[^A-Za-z0-9]/.test(pw)) score++
-  if (score <= 2) return { label: 'Weak',   color: '#c4633a', bars: 1 }
-  if (score <= 3) return { label: 'Medium', color: '#d4a017', bars: 2 }
-  return              { label: 'Strong',  color: '#5a9e7a', bars: 3 }
-}
-
-function PasswordStrengthBar({ password }) {
-  const strength = getPasswordStrength(password)
-  if (!strength) return null
-  return (
-    <div className="flex items-center gap-2 mt-1">
-      <div className="flex gap-1 flex-1">
-        {[1, 2, 3].map(i => (
-          <div
-            key={i}
-            className="h-[3px] flex-1 rounded-full transition-all duration-300"
-            style={{ background: i <= strength.bars ? strength.color : 'rgba(28,26,23,0.1)' }}
-          />
-        ))}
-      </div>
-      <span className="text-[10px] font-medium" style={{ color: strength.color, minWidth: 36 }}>
-        {strength.label}
-      </span>
-    </div>
-  )
-}
-
-function getPasswordErrors(pw) {
-  const errors = []
-  if (pw.length < 8)            errors.push('At least 8 characters')
-  if (!/[A-Z]/.test(pw))        errors.push('One uppercase letter')
-  if (!/[a-z]/.test(pw))        errors.push('One lowercase letter')
-  if (!/[0-9]/.test(pw))        errors.push('One number')
-  if (!/[^A-Za-z0-9]/.test(pw)) errors.push('One special character')
-  return errors
-}
 
 // ── Field components ──────────────────────────────────────────────────────────
 function FieldInput({ label, type = 'text', value, onChange, placeholder, hint, icon }) {
@@ -328,34 +284,37 @@ export default function AuthPage() {
   const [password,        setPassword]        = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role,            setRole]            = useState('both')
+  const [source,          setSource]          = useState('')
+  const [otherSource,     setOtherSource]     = useState('')
 
-  const [loading,        setLoading]        = useState(false)
-  const [error,          setError]          = useState('')
-  const [termsOpen,      setTermsOpen]      = useState(false)
-  const [passwordErrors, setPasswordErrors] = useState([])
-  const errorRef = useRef(null)
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState('')
+  const [termsOpen, setTermsOpen] = useState(false)
 
   function reset() {
-    setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setPasswordErrors([])
+    setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setSource(''); setOtherSource('')
   }
   function switchMode(m) { reset(); setMode(m) }
-
-  // Clear password errors as soon as the user starts retyping
-  function handlePasswordChange(val) { setPassword(val); if (passwordErrors.length > 0) setPasswordErrors([]) }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
     if (mode === 'signup') {
-      const pwErrors = getPasswordErrors(password)
-      if (pwErrors.length > 0) {
-        setPasswordErrors(pwErrors)
-        setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters.')
         return
       }
       if (password !== confirmPassword) {
         setError('Passwords do not match.')
+        return
+      }
+      if (!source) {
+        setError('Please tell us where you heard about us.')
+        return
+      }
+      if (source === 'Other' && !otherSource.trim()) {
+        setError('Please specify where you heard about us.')
         return
       }
     }
@@ -364,7 +323,7 @@ export default function AuthPage() {
     try {
       const url  = mode === 'signup' ? '/api/auth/signup' : '/api/auth/login'
       const body = mode === 'signup'
-        ? { name, email, password, role }
+        ? { name, email, password, role, source, otherSource }
         : { email, password }
       const res  = await fetch(url, {
         method: 'POST',
@@ -498,19 +457,23 @@ export default function AuthPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {mode === 'signup' && (
-                <FieldInput label="Your name" value={name} onChange={setName} placeholder="Divya" icon={<IconPerson />} />
+                <FieldInput label="Your name" value={name} onChange={setName} placeholder="Your name" icon={<IconPerson />} />
               )}
               <FieldInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" icon={<IconMail />} />
 
-              {/* Password with strength bar on signup */}
+              {/* Password */}
               <div className="flex flex-col gap-1">
                 <PasswordInput
                   label="Password"
                   value={password}
-                  onChange={mode === 'signup' ? handlePasswordChange : setPassword}
-                  placeholder={mode === 'signup' ? 'Min. 8 chars, mixed case + symbol' : 'Your password'}
+                  onChange={setPassword}
+                  placeholder={mode === 'signup' ? 'At least 6 characters' : 'Your password'}
                 />
-                {mode === 'signup' && <PasswordStrengthBar password={password} />}
+                {mode === 'signup' && (
+                  <span className="text-[10px] font-light" style={{ color: 'var(--ink-muted)' }}>
+                    Minimum 6 characters
+                  </span>
+                )}
               </div>
 
               {/* Confirm password — signup only */}
@@ -565,6 +528,51 @@ export default function AuthPage() {
                 </div>
               )}
 
+              {/* Where did you hear about us — signup only */}
+              {mode === 'signup' && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[11px] uppercase tracking-[1.2px] font-medium" style={{ color: 'var(--ink-muted)' }}>
+                    Where did you hear about us?
+                  </span>
+                  <select
+                    value={source}
+                    onChange={e => { setSource(e.target.value); setOtherSource('') }}
+                    style={{
+                      width: '100%', padding: '11px 14px', borderRadius: 10,
+                      background: 'var(--cream)', border: `1px solid ${source ? 'var(--tc)' : 'rgba(28,26,23,0.14)'}`,
+                      fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: source ? 'var(--ink)' : 'rgba(28,26,23,0.4)',
+                      outline: 'none', cursor: 'pointer', appearance: 'none',
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231C1A17' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+                      boxShadow: source ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
+                      transition: 'border 0.2s, box-shadow 0.2s',
+                    }}
+                  >
+                    <option value="" disabled>Select an option</option>
+                    {['Instagram', 'Twitter (X)', 'Friend / Referral', 'Google Search', 'LinkedIn', 'Other'].map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  {source === 'Other' && (
+                    <input
+                      type="text"
+                      value={otherSource}
+                      onChange={e => setOtherSource(e.target.value)}
+                      placeholder="Please specify"
+                      style={{
+                        width: '100%', padding: '11px 14px', borderRadius: 10,
+                        background: 'var(--cream)', border: '1px solid rgba(28,26,23,0.14)',
+                        fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: 'var(--ink)',
+                        outline: 'none', transition: 'border 0.2s, box-shadow 0.2s',
+                        boxSizing: 'border-box',
+                      }}
+                      onFocus={e => { e.target.style.border = '1px solid var(--tc)'; e.target.style.boxShadow = '0 0 0 3px rgba(196,99,58,0.08)' }}
+                      onBlur={e => { e.target.style.border = '1px solid rgba(28,26,23,0.14)'; e.target.style.boxShadow = 'none' }}
+                    />
+                  )}
+                </div>
+              )}
+
               {error && (
                 <div
                   className="text-[12px] px-3 py-2.5 rounded-[9px] font-sans"
@@ -591,22 +599,6 @@ export default function AuthPage() {
                   : (mode === 'login' ? 'Log In →' : 'Create Account →')}
               </button>
 
-              {passwordErrors.length > 0 && (
-                <div
-                  ref={errorRef}
-                  className="flex flex-col gap-1 px-3 py-2.5 rounded-[9px]"
-                  style={{ background: 'rgba(196,99,58,0.07)', border: '0.5px solid rgba(196,99,58,0.2)' }}
-                >
-                  <span style={{ fontSize: 11.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--tc)', fontWeight: 600 }}>
-                    Password must include:
-                  </span>
-                  {passwordErrors.map(err => (
-                    <span key={err} style={{ fontSize: 11.5, fontFamily: '"DM Sans", sans-serif', color: 'var(--tc)' }}>
-                      • {err}
-                    </span>
-                  ))}
-                </div>
-              )}
             </form>
 
             {/* ── OR divider ── */}

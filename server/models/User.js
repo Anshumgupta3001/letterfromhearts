@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema(
     role:      { type: String, enum: ['seeker', 'listener', 'both'], default: 'both' },
     // Email mode: 'custom' = use own SMTP, 'system' = use platform email (coming soon)
     emailMode: { type: String, enum: ['custom', 'system'], default: 'custom' },
+    // Acquisition channel
+    heardFrom: { type: String, default: '' },
   },
   { timestamps: true }
 )

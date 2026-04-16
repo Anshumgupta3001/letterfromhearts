@@ -248,7 +248,7 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, saving,
                 outline: 'none', flex: 1, paddingBottom: 2, minWidth: 0,
                 transition: 'border-color 0.2s',
               }}
-              placeholder="someone…"
+              placeholder={isStranger ? 'Stranger' : 'someone…'}
               value={sal}
               onChange={e => setSal(e.target.value)}
               onFocus={e => (e.target.style.borderBottomColor = 'var(--tc)')}
@@ -450,6 +450,14 @@ export default function WritePage() {
   const [systemEmail, setSystemEmail] = useState('')
 
   const bodyRef = useRef('')
+
+  // Auto-set salutation when mode is chosen, only if user hasn't typed anything yet
+  useEffect(() => {
+    if (!mode) return
+    if (sal.trim()) return  // never overwrite user input
+    if (mode === 'stranger') setSal('Stranger')
+    else setSal('')
+  }, [mode]) // eslint-disable-line
 
   useEffect(() => {
     apiFetch('/api/send-email/system-info')

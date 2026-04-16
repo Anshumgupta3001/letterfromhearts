@@ -256,6 +256,7 @@ export default function ListenerReadPage() {
   const [filter,     setFilter]     = useState('all')    // all | unread | held
   const [sort,       setSort]       = useState('newest')  // newest | oldest
   const [refreshing, setRefreshing] = useState(false)
+  const [moodFilter, setMoodFilter] = useState('all')    // all | vent | joy | love | grief | gratitude | longing
   const [showBanner, setShowBanner] = useState(() =>
     localStorage.getItem('listener_banner_seen') !== 'true'
   )
@@ -283,17 +284,37 @@ export default function ListenerReadPage() {
     openLetterPanel({ ...letter, type: letter.type || 'stranger' })
   }, [openLetterPanel])
 
+  const MOODS = [
+    { id: 'all',       emoji: '✨', label: 'All moods'    },
+    { id: 'vent',      emoji: '🌧️', label: 'Need to vent' },
+    { id: 'joy',       emoji: '🌟', label: 'Pure joy'     },
+    { id: 'love',      emoji: '💌', label: 'Love & warmth'},
+    { id: 'grief',     emoji: '🕯️', label: 'Grief & loss' },
+    { id: 'gratitude', emoji: '🌿', label: 'Gratitude'    },
+    { id: 'longing',   emoji: '🌙', label: 'Longing'      },
+  ]
+
+  // Count letters per mood (unclaimed only — exclude already-held ones from totals)
+  const moodCounts = useMemo(() => {
+    const counts = { all: letters.length }
+    for (const l of letters) {
+      if (l.mood) counts[l.mood] = (counts[l.mood] || 0) + 1
+    }
+    return counts
+  }, [letters])
+
   // Filter + sort derived list
   const displayed = useMemo(() => {
     let list = letters
     if (filter === 'unread') list = letters.filter(l => !l.hasRead)
     if (filter === 'held')   list = letters.filter(l =>  l.hasRead)
+    if (moodFilter !== 'all') list = list.filter(l => l.mood === moodFilter)
     return [...list].sort((a, b) =>
       sort === 'oldest'
         ? new Date(a.createdAt) - new Date(b.createdAt)
         : new Date(b.createdAt) - new Date(a.createdAt)
     )
-  }, [letters, filter, sort])
+  }, [letters, filter, sort, moodFilter])
 
   // ── Access guard ──
   if (!canReadFeed) {
@@ -320,7 +341,93 @@ export default function ListenerReadPage() {
 
   return (
     <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
-      <div className="w-full max-w-5xl">
+      <div className="w-full max-w-6xl flex gap-6 items-start">
+
+        {/* ── Mood sidebar — desktop only ── */}
+        <aside className="hidden lg:flex flex-col flex-shrink-0" style={{ width: 172, position: 'sticky', top: 72 }}>
+          <div style={{
+            fontFamily: '"DM Sans", sans-serif', fontSize: 10, fontWeight: 700,
+            letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink-muted)',
+            marginBottom: 10, paddingLeft: 4,
+          }}>
+            Filter by mood
+          </div>
+          {MOODS.map(m => {
+            const active = moodFilter === m.id
+            const count  = moodCounts[m.id] ?? 0
+            const empty  = m.id !== 'all' && count === 0
+            return (
+              <button
+                key={m.id}
+                onClick={() => !empty && setMoodFilter(m.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 9,
+                  width: '100%', padding: '8px 10px', borderRadius: 9, marginBottom: 2,
+                  background: active ? 'rgba(196,99,58,0.08)' : 'transparent',
+                  border: active ? '1px solid rgba(196,99,58,0.2)' : '1px solid transparent',
+                  cursor: empty ? 'default' : 'pointer', textAlign: 'left', transition: 'all 0.14s',
+                  opacity: empty ? 0.38 : 1,
+                }}
+                onMouseEnter={e => { if (!active && !empty) e.currentTarget.style.background = 'rgba(28,26,23,0.04)' }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+              >
+                <span style={{ fontSize: 14, flexShrink: 0 }}>{m.emoji}</span>
+                <span style={{
+                  fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, flex: 1,
+                  fontWeight: active ? 600 : 400,
+                  color: active ? 'var(--tc)' : 'var(--ink-muted)',
+                  transition: 'color 0.14s',
+                }}>
+                  {m.label}
+                </span>
+                <span style={{
+                  fontFamily: '"DM Sans", sans-serif', fontSize: 10.5, fontWeight: 600,
+                  color: active ? 'var(--tc)' : 'rgba(28,26,23,0.3)',
+                  minWidth: 16, textAlign: 'right',
+                }}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </aside>
+
+        {/* ── Main content ── */}
+        <div className="flex-1 min-w-0">
+
+        {/* Mobile mood filter — horizontal scroll */}
+        <div className="flex lg:hidden gap-2 mb-4" style={{ overflowX: 'auto', paddingBottom: 4 }}>
+          {MOODS.map(m => {
+            const active = moodFilter === m.id
+            const count  = moodCounts[m.id] ?? 0
+            const empty  = m.id !== 'all' && count === 0
+            return (
+              <button
+                key={m.id}
+                onClick={() => !empty && setMoodFilter(m.id)}
+                style={{
+                  flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '5px 12px', borderRadius: 99, fontSize: 12,
+                  cursor: empty ? 'default' : 'pointer',
+                  fontFamily: '"DM Sans", sans-serif', fontWeight: active ? 600 : 400,
+                  background: active ? 'var(--tc)' : '#fff',
+                  color:      active ? '#fff' : 'var(--ink-muted)',
+                  border:     active ? '1px solid var(--tc)' : `1px solid ${BD}`,
+                  whiteSpace: 'nowrap', transition: 'all 0.14s',
+                  opacity: empty ? 0.38 : 1,
+                }}
+              >
+                {m.emoji} {m.id === 'all' ? 'All' : m.label}
+                <span style={{
+                  fontSize: 10, fontWeight: 700, marginLeft: 2,
+                  opacity: active ? 0.85 : 0.55,
+                }}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
 
         {/* ── Onboarding banner ── */}
         {showBanner && <ListenerBanner onDismiss={dismissBanner} />}
@@ -422,6 +529,7 @@ export default function ListenerReadPage() {
           </div>
         )}
 
+        </div>{/* end flex-1 main content */}
       </div>
     </main>
   )

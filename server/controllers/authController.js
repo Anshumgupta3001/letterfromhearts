@@ -7,17 +7,13 @@ function signToken(id) {
 }
 
 function validatePassword(password) {
-  if (!password || password.length < 8) return 'Password must be at least 8 characters.'
-  if (!/[A-Z]/.test(password))          return 'Password must contain at least one uppercase letter.'
-  if (!/[a-z]/.test(password))          return 'Password must contain at least one lowercase letter.'
-  if (!/[0-9]/.test(password))          return 'Password must contain at least one number.'
-  if (!/[^A-Za-z0-9]/.test(password))   return 'Password must contain at least one special character.'
+  if (!password || password.length < 6) return 'Password must be at least 6 characters.'
   return null
 }
 
 // POST /api/auth/signup
 export async function signup(req, res) {
-  const { name, email, password, role } = req.body
+  const { name, email, password, role, source, otherSource } = req.body
 
   if (!name?.trim())  return res.status(400).json({ error: 'Name is required.' })
   if (!email?.trim()) return res.status(400).json({ error: 'Email is required.' })
@@ -30,12 +26,18 @@ export async function signup(req, res) {
   if (!role || !validRoles.includes(role)) {
     return res.status(400).json({ error: 'Account type is required.' })
   }
-  const userRole = role
+
+  if (!source?.trim()) return res.status(400).json({ error: 'Please tell us where you heard about us.' })
+  if (source === 'Other' && !otherSource?.trim()) {
+    return res.status(400).json({ error: 'Please specify where you heard about us.' })
+  }
+
+  const heardFrom = source === 'Other' ? otherSource.trim() : source.trim()
 
   const exists = await User.findOne({ email: email.toLowerCase().trim() })
   if (exists) return res.status(409).json({ error: 'An account with this email already exists.' })
 
-  const user = await User.create({ name: name.trim(), email, password, role: userRole })
+  const user = await User.create({ name: name.trim(), email, password, role, heardFrom })
   const token = signToken(user._id)
 
   res.status(201).json({ success: true, token, user: user.toSafeObject() })

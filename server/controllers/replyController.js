@@ -102,18 +102,28 @@ export async function sendMessage(req, res) {
 }
 
 // POST /api/replies/end
-// End the conversation. Only the listener (conversation owner) can do this.
+// End the conversation. Both the listener and the seeker (letter owner) can close it.
 export async function endConversation(req, res) {
   const { parentLetterId } = req.body
   const userId = req.user._id
 
   if (!parentLetterId) return res.status(400).json({ error: 'parentLetterId is required.' })
 
-  const conv = await Reply.findOne({ parentLetterId, listenerId: userId })
+  // Find the conversation — listener can look up directly; seeker looks up by parentLetterId
+  const letter = await (await import('../models/Letter.js')).default.findById(parentLetterId)
+  if (!letter) return res.status(404).json({ error: 'Letter not found.' })
+
+  const isSeeker = letter.userId.toString() === userId.toString()
+
+  const conv = isSeeker
+    ? await Reply.findOne({ parentLetterId })          // seeker closes the one conversation
+    : await Reply.findOne({ parentLetterId, listenerId: userId })
+
   if (!conv) return res.status(404).json({ error: 'Conversation not found.' })
   if (conv.isEnded) return res.json({ success: true, data: conv }) // idempotent
 
   conv.isEnded = true
+  conv.endedBy = isSeeker ? 'seeker' : 'listener'
   await conv.save()
 
   res.json({ success: true, data: conv })
