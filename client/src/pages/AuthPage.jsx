@@ -281,10 +281,11 @@ function getEmailFromUrl() {
 
 export default function AuthPage() {
   const { login } = useApp()
-  const [mode, setMode] = useState(() => getEmailFromUrl() ? 'signup' : 'login')
+  const emailFromUrl = getEmailFromUrl()
+  const [mode, setMode] = useState(() => emailFromUrl ? 'signup' : 'login')
 
   const [name,            setName]            = useState('')
-  const [email,           setEmail]           = useState(getEmailFromUrl)
+  const [email,           setEmail]           = useState(() => emailFromUrl)
   const [password,        setPassword]        = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role,            setRole]            = useState('both')
@@ -445,7 +446,7 @@ export default function AuthPage() {
             }}
           >
             {/* Heading */}
-            <div className="mb-6">
+            <div className={emailFromUrl && mode === 'signup' ? 'mb-4' : 'mb-6'}>
               <h2 className="font-lora text-[22px] font-medium" style={{ color: 'var(--ink)' }}>
                 {mode === 'login' ? 'Welcome back' : 'Create account'}
               </h2>
@@ -453,6 +454,24 @@ export default function AuthPage() {
                 {mode === 'login' ? 'Sign in to continue writing.' : 'Join and start writing today.'}
               </p>
             </div>
+
+            {/* Email-link contextual banner */}
+            {emailFromUrl && mode === 'signup' && (
+              <div className="mb-5" style={{
+                padding: '11px 14px',
+                borderRadius: 12,
+                background: 'rgba(196,99,58,0.06)',
+                border: '1px solid rgba(196,99,58,0.18)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 9,
+              }}>
+                <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>💌</span>
+                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>
+                  Someone wrote you a letter. Create an account to read it and reply.
+                </p>
+              </div>
+            )}
 
             {/* Mode switcher */}
             <div className="flex gap-1 p-1 rounded-[11px] mb-6" style={{ background: 'var(--cream)' }}>
