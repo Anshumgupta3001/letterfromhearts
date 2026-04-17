@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import GoogleLoginBtn from '../components/auth/GoogleLoginBtn'
 
@@ -275,12 +275,16 @@ function FloatingCard({ style, children }) {
   )
 }
 
+function getEmailFromUrl() {
+  return new URLSearchParams(window.location.search).get('email') || ''
+}
+
 export default function AuthPage() {
   const { login } = useApp()
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState(() => getEmailFromUrl() ? 'signup' : 'login')
 
   const [name,            setName]            = useState('')
-  const [email,           setEmail]           = useState('')
+  const [email,           setEmail]           = useState(getEmailFromUrl)
   const [password,        setPassword]        = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role,            setRole]            = useState('both')
@@ -290,6 +294,17 @@ export default function AuthPage() {
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState('')
   const [termsOpen, setTermsOpen] = useState(false)
+
+  // Belt-and-suspenders: lazy initializer above handles the common case;
+  // this effect catches any edge case where the initializer ran before the
+  // URL was stable (StrictMode double-invoke, auth redirect timing, etc.)
+  useEffect(() => {
+    const emailParam = new URLSearchParams(window.location.search).get('email')
+    if (emailParam) {
+      setEmail(decodeURIComponent(emailParam))
+      setMode('signup')
+    }
+  }, [])
 
   function reset() {
     setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setSource(''); setOtherSource('')

@@ -1,8 +1,10 @@
-import mongoose    from 'mongoose'
-import User         from '../models/User.js'
-import GoogleUser   from '../models/GoogleUser.js'
-import Letter       from '../models/Letter.js'
-import EmailAccount from '../models/EmailAccount.js'
+import mongoose      from 'mongoose'
+import User           from '../models/User.js'
+import GoogleUser     from '../models/GoogleUser.js'
+import Letter         from '../models/Letter.js'
+import EmailAccount   from '../models/EmailAccount.js'
+import Notification   from '../models/Notification.js'
+import Reply          from '../models/Reply.js'
 
 // GET /api/admin/analytics?key=xxx&days=7
 export async function getAdminAnalytics(req, res) {
@@ -44,6 +46,95 @@ export async function getAdminAnalytics(req, res) {
   const totalUsers = totalEmailUsers + totalGoogleUsers
   const newUsers   = newEmailUsers + newGoogleUsers
   const openRate   = sentLetters > 0 ? Math.round((openedLetters / sentLetters) * 100) : 0
+
+  // ── Extended metrics (parallel) ───────────────────────────────────────────
+  const [
+    // Role breakdown
+    seekerEmail, listenerEmail, bothEmail,
+    seekerGoogle, listenerGoogle, bothGoogle,
+    // Mood distribution (all letters with a mood)
+    moodAgg,
+    // Notification stats
+    totalNotifs, unreadNotifs, notifTypeAgg,
+    // Conversation (Reply) stats
+    totalConversations, endedConversations,
+    endedBySeekerCount, endedByListenerCount,
+    msgAgg,
+    // Signup source breakdown (email users only — GoogleUser has no heardFrom)
+    sourceAgg,
+    // Daily trend — letters created in window
+    letterTrendAgg,
+    // Daily trend — user signups
+    userTrendEmailAgg, userTrendGoogleAgg,
+  ] = await Promise.all([
+    // Roles
+    User.countDocuments({ role: 'seeker' }),
+    User.countDocuments({ role: 'listener' }),
+    User.countDocuments({ role: 'both' }),
+    GoogleUser.countDocuments({ role: 'seeker' }),
+    GoogleUser.countDocuments({ role: 'listener' }),
+    GoogleUser.countDocuments({ role: 'both' }),
+    // Moods
+    Letter.aggregate([
+      { $match: { mood: { $exists: true, $ne: '' } } },
+      { $group: { _id: '$mood', count: { $sum: 1 } } },
+      { $sort:  { count: -1 } },
+    ]),
+    // Notifications
+    Notification.countDocuments(),
+    Notification.countDocuments({ isRead: false }),
+    Notification.aggregate([
+      { $group: { _id: '$type', count: { $sum: 1 } } },
+      { $sort:  { count: -1 } },
+    ]),
+    // Conversations
+    Reply.countDocuments(),
+    Reply.countDocuments({ isEnded: true }),
+    Reply.countDocuments({ isEnded: true, endedBy: 'seeker' }),
+    Reply.countDocuments({ isEnded: true, endedBy: 'listener' }),
+    Reply.aggregate([
+      { $group: { _id: null, total: { $sum: { $size: '$messages' } } } },
+    ]),
+    // Signup sources
+    User.aggregate([
+      { $match: { heardFrom: { $exists: true, $ne: '' } } },
+      { $group: { _id: '$heardFrom', count: { $sum: 1 } } },
+      { $sort:  { count: -1 } },
+    ]),
+    // Daily letter trend
+    Letter.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: {
+        _id:     { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        letters: { $sum: 1 },
+        sent:    { $sum: { $cond: [{ $eq: ['$type', 'sent'] }, 1, 0] } },
+      }},
+      { $sort: { _id: 1 } },
+    ]),
+    // Daily signup trend
+    User.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
+    ]),
+    GoogleUser.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
+    ]),
+  ])
+
+  // Merge user-trend data
+  const userTrendMap = {}
+  for (const r of [...userTrendEmailAgg, ...userTrendGoogleAgg]) {
+    userTrendMap[r._id] = (userTrendMap[r._id] || 0) + r.count
+  }
+  const userTrend = Object.entries(userTrendMap).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count }))
+
+  const roles = {
+    seeker:   seekerEmail   + seekerGoogle,
+    listener: listenerEmail + listenerGoogle,
+    both:     bothEmail     + bothGoogle,
+  }
+  const totalRepliesSent = msgAgg[0]?.total || 0
 
   // ── Per-user letter stats via aggregation (single query, no N+1) ──────────
   const letterAgg = await Letter.aggregate([
@@ -135,6 +226,25 @@ export async function getAdminAnalytics(req, res) {
       openRate,
       // Infrastructure
       emailConnections,
+      // Roles
+      roles,
+      // Moods: [{ _id: 'joy', count: 12 }, ...]
+      moods: moodAgg,
+      // Notifications
+      totalNotifs,
+      unreadNotifs,
+      notifByType: notifTypeAgg,
+      // Conversations
+      totalConversations,
+      endedConversations,
+      endedBySeeker:   endedBySeekerCount,
+      endedByListener: endedByListenerCount,
+      totalRepliesSent,
+      // Signup sources
+      sources: sourceAgg,
+      // Trends
+      letterTrend: letterTrendAgg,
+      userTrend,
       // Tables
       userStats,
       recentLetters: recentLettersOut,

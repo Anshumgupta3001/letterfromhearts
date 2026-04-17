@@ -34,6 +34,42 @@ function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 }
 
+// ── Sparkline (SVG, no deps) ──────────────────────────────────────────────────
+function Sparkline({ data, color = C.tc, height = 40, width = 160 }) {
+  if (!data || data.length < 2) return <span style={{ fontSize: 11, color: C.muted }}>No trend data</span>
+  const vals = data.map(d => d.count ?? d.letters ?? 0)
+  const max  = Math.max(...vals, 1)
+  const step = width / (vals.length - 1)
+  const pts  = vals.map((v, i) => `${i * step},${height - (v / max) * (height - 4)}`).join(' ')
+  return (
+    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={pts} />
+      {vals.map((v, i) => (
+        <circle key={i} cx={i * step} cy={height - (v / max) * (height - 4)} r="2.5" fill={color} />
+      ))}
+    </svg>
+  )
+}
+
+// ── Horizontal bar (for breakdown lists) ─────────────────────────────────────
+function BarRow({ label, value, max, color, icon }) {
+  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+      {icon && <span style={{ fontSize: 15, width: 20, flexShrink: 0 }}>{icon}</span>}
+      <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+          <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, textTransform: 'capitalize' }}>{label}</span>
+          <span style={{ fontSize: 12, color, fontFamily: '"DM Sans",sans-serif', fontWeight: 700 }}>{fmt(value)}</span>
+        </div>
+        <div style={{ width: '100%', background: `${color}18`, borderRadius: 99, height: 6, overflow: 'hidden' }}>
+          <div style={{ width: `${Math.min(pctVal, 100)}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.6s ease' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Section Header ────────────────────────────────────────────────────────────
 function SectionHeading({ children, sub }) {
   return (
@@ -315,6 +351,7 @@ export default function AdminDashboardPage() {
   const sendRate  = pct(d.sentLetters,    d.totalLetters)
   const claimRate = pct(d.claimedLetters, d.strangerLetters)
   const avgLetters = d.totalUsers > 0 ? (d.totalLetters / d.totalUsers).toFixed(1) : '0'
+  const endRate   = pct(d.endedConversations, d.totalConversations)
 
   return (
     <div style={{ minHeight: '100vh', background: C.paper, fontFamily: '"DM Sans",sans-serif', paddingBottom: 80 }}>
@@ -448,6 +485,148 @@ export default function AdminDashboardPage() {
               value={d.claimedLetters} max={d.strangerLetters} color={C.purple} />
           </div>
         </section>
+
+        {/* ── SECTION 4: Roles + Sources ── */}
+        <section>
+          <SectionHeading sub="User role distribution and signup acquisition channels">Roles &amp; Sources</SectionHeading>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
+            {/* Role breakdown */}
+            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Users by Role</div>
+              {[
+                { key: 'seeker',   label: 'Seeker',   icon: '✍️', color: C.tc },
+                { key: 'listener', label: 'Listener', icon: '🫂', color: C.sage },
+                { key: 'both',     label: 'Both',     icon: '🌿', color: C.purple },
+              ].map(r => (
+                <BarRow key={r.key} label={r.label} value={(d.roles || {})[r.key] || 0} max={d.totalUsers} color={r.color} icon={r.icon} />
+              ))}
+            </div>
+            {/* Signup source breakdown */}
+            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Where Did They Hear About Us</div>
+              {(d.sources || []).length === 0
+                ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No source data yet.</div>
+                : (d.sources || []).map((s, i) => (
+                    <BarRow key={s._id} label={s._id} value={s.count} max={(d.sources || [])[0]?.count || 1}
+                      color={[C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C'][i % 6]} />
+                  ))
+              }
+            </div>
+          </div>
+        </section>
+
+        {/* ── SECTION 5: Moods ── */}
+        <section>
+          <SectionHeading sub="Emotional tone distribution across all letters">Mood Distribution</SectionHeading>
+          <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+            {(d.moods || []).length === 0
+              ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No mood data yet.</div>
+              : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '4px 28px' }}>
+                  {(d.moods || []).map((m, i) => {
+                    const MOOD_ICON = { joy: '😊', sad: '😔', caring: '🫂', hope: '🌱', lonely: '🌧️', gratitude: '🙏' }
+                    const MOOD_COLOR = { joy: C.gold, sad: '#4A90C4', caring: C.sage, hope: '#6BAA62', lonely: C.purple, gratitude: C.tc }
+                    const color = MOOD_COLOR[m._id?.toLowerCase()] || [C.tc, C.sage, C.purple, C.gold][i % 4]
+                    const icon  = MOOD_ICON[m._id?.toLowerCase()] || '💬'
+                    return <BarRow key={m._id} label={m._id} value={m.count} max={(d.moods || [])[0]?.count || 1} color={color} icon={icon} />
+                  })}
+                </div>
+              )
+            }
+          </div>
+        </section>
+
+        {/* ── SECTION 6: Conversations + Notifications ── */}
+        <section>
+          <SectionHeading sub="Caring Stranger conversation stats and platform notifications">Conversations &amp; Notifications</SectionHeading>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
+            {/* Conversation stats */}
+            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Conversations</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                {[
+                  { label: 'Total',        value: d.totalConversations, color: C.ink },
+                  { label: 'Ended',        value: d.endedConversations, color: C.tc },
+                  { label: 'Messages Sent',value: d.totalRepliesSent,   color: C.sage },
+                  { label: 'End Rate',     value: `${endRate}%`,        color: C.purple },
+                ].map(s => (
+                  <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
+                    <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 11, color: C.muted, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span>Ended by seeker</span>
+                  <strong style={{ color: C.tc }}>{fmt(d.endedBySeeker)}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Ended by listener</span>
+                  <strong style={{ color: C.sage }}>{fmt(d.endedByListener)}</strong>
+                </div>
+              </div>
+            </div>
+            {/* Notification stats */}
+            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Notifications</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                {[
+                  { label: 'Total',  value: d.totalNotifs,  color: C.ink },
+                  { label: 'Unread', value: d.unreadNotifs, color: C.tc },
+                ].map(s => (
+                  <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
+                    <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 11, color: C.muted }}>
+                {(d.notifByType || []).map((n, i) => {
+                  const NOTIF_ICON  = { reply: '💬', claim: '💌', delivery: '📬', system: '⚙️', general: '🔔' }
+                  const NOTIF_COLOR = { reply: C.tc, claim: C.sage, delivery: C.gold, system: C.purple, general: '#4A4640' }
+                  const color = NOTIF_COLOR[n._id] || '#4A4640'
+                  const icon  = NOTIF_ICON[n._id]  || '🔔'
+                  return (
+                    <div key={n._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < (d.notifByType || []).length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                      <span style={{ textTransform: 'capitalize' }}>{icon} {n._id}</span>
+                      <strong style={{ color }}>{fmt(n.count)}</strong>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SECTION 7: Trends ── */}
+        {((d.letterTrend || []).length > 1 || (d.userTrend || []).length > 1) && (
+          <section>
+            <SectionHeading sub={`Daily activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Trends</SectionHeading>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16 }}>
+              {[
+                { title: 'Letters Created / Day', data: d.letterTrend || [], key: 'letters', color: C.tc },
+                { title: 'Emails Sent / Day',     data: d.letterTrend || [], key: 'sent',    color: C.gold },
+                { title: 'New Users / Day',        data: d.userTrend  || [], key: 'count',   color: C.sage },
+              ].map(({ title, data: tdata, key, color }) => {
+                const mapped = tdata.map(r => ({ count: r[key] ?? 0 }))
+                const total  = mapped.reduce((s, r) => s + r.count, 0)
+                return (
+                  <div key={title} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted }}>{title}</div>
+                        <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Lora",serif', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
+                        <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2 }}>total this period</div>
+                      </div>
+                    </div>
+                    <Sparkline data={mapped} color={color} height={44} width={220} />
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         {/* ── Tabs ── */}
         <section>

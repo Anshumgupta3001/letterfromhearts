@@ -35,7 +35,7 @@ export async function sendEmail(req, res) {
   }
 
   const trackingId = generateTrackingId(userId.toString())
-  const html       = buildEmailHtml(message.trim(), trackingId)
+  const html       = buildEmailHtml(message.trim(), trackingId, to.trim())
   const text       = buildEmailText(message.trim())
 
   let transporter, fromEmail
