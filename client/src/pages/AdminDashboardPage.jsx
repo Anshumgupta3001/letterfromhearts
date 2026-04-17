@@ -70,6 +70,40 @@ function BarRow({ label, value, max, color, icon }) {
   )
 }
 
+// ── Letter Lifecycle Funnel ───────────────────────────────────────────────────
+function Funnel({ steps }) {
+  const max = steps[0]?.value || 1
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {steps.map((step, i) => {
+        const width = max > 0 ? Math.max((step.value / max) * 100, 4) : 4
+        const dropPct = i > 0 && steps[i - 1].value > 0
+          ? Math.round(((steps[i - 1].value - step.value) / steps[i - 1].value) * 100)
+          : null
+        return (
+          <div key={step.label}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 15 }}>{step.icon}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{step.label}</span>
+                {dropPct !== null && (
+                  <span style={{ fontSize: 10.5, color: C.muted, background: `${C.muted}12`, borderRadius: 99, padding: '1px 7px', fontFamily: '"DM Sans",sans-serif' }}>
+                    −{dropPct}% drop-off
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 700, color: step.color, fontFamily: '"Lora",serif' }}>{fmt(step.value)}</span>
+            </div>
+            <div style={{ height: 10, background: `${step.color}18`, borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ width: `${width}%`, height: '100%', background: step.color, borderRadius: 99, transition: 'width 0.7s ease' }} />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Section Header ────────────────────────────────────────────────────────────
 function SectionHeading({ children, sub }) {
   return (
@@ -82,7 +116,7 @@ function SectionHeading({ children, sub }) {
   )
 }
 
-// ── Stat Card — THREE layers: label + number + description ───────────────────
+// ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, desc, accent = C.tc, iconBg }) {
   const bg = iconBg || `${accent}15`
   return (
@@ -147,7 +181,7 @@ function Badge({ label, color }) {
   )
 }
 
-// ── Sort / Filter Button ──────────────────────────────────────────────────────
+// ── Sort / Filter Chip ────────────────────────────────────────────────────────
 function Chip({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
@@ -186,9 +220,8 @@ function DayFilter({ active, onChange }) {
 const STATUS_COLOR   = { sent: C.sage, scheduled: C.purple, opened: C.tc, clicked: C.gold, failed: C.red, personal: '#4A4640', stranger: '#7A6E5C' }
 const ROLE_COLOR     = { seeker: C.tc, listener: C.sage, both: C.purple }
 const PROVIDER_COLOR = { email: '#4A4640', google: C.google }
+const AVATAR_COLORS  = [C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C']
 
-// Avatar initials circle
-const AVATAR_COLORS = [C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C']
 function Avatar({ name, idx = 0 }) {
   const color = AVATAR_COLORS[idx % AVATAR_COLORS.length]
   return (
@@ -203,7 +236,6 @@ function Avatar({ name, idx = 0 }) {
   )
 }
 
-// ── Table header cell ─────────────────────────────────────────────────────────
 function TH({ children, center }) {
   return (
     <th style={{
@@ -216,7 +248,6 @@ function TH({ children, center }) {
   )
 }
 
-// ── Table data cell ───────────────────────────────────────────────────────────
 function TD({ children, center, muted, bold, color, nowrap, small, maxW }) {
   return (
     <td style={{
@@ -234,20 +265,30 @@ function TD({ children, center, muted, bold, color, nowrap, small, maxW }) {
   )
 }
 
+// ── Tab definitions ───────────────────────────────────────────────────────────
+const TABS = [
+  { id: 'overview',      icon: '📊', label: 'Overview',      desc: 'Platform health & totals' },
+  { id: 'engagement',    icon: '📈', label: 'Engagement',    desc: 'Activity, rates & funnel' },
+  { id: 'users',         icon: '👤', label: 'Users',         desc: 'Directory & demographics' },
+  { id: 'letters',       icon: '📬', label: 'Letters',       desc: 'Recent activity & moods' },
+  { id: 'notifications', icon: '🔔', label: 'Notifications', desc: 'Platform notifications' },
+  { id: 'trends',        icon: '📉', label: 'Trends',        desc: 'Daily activity charts' },
+]
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
-  const [key,      setKey]      = useState('')
-  const [days,     setDays]     = useState(7)
-  const [data,     setData]     = useState(null)
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState('')
-  const [unlocked, setUnlocked] = useState(false)
-  const [tab,      setTab]      = useState('recent')
-  const [userSort, setUserSort] = useState('written')
-  const [search,   setSearch]   = useState('')
-  const [page,     setPage]     = useState(1)
+  const [key,       setKey]       = useState('')
+  const [days,      setDays]      = useState(7)
+  const [data,      setData]      = useState(null)
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState('')
+  const [unlocked,  setUnlocked]  = useState(false)
+  const [activeTab, setActiveTab] = useState('overview')
+  const [userSort,  setUserSort]  = useState('written')
+  const [search,    setSearch]    = useState('')
+  const [page,      setPage]      = useState(1)
 
   const fetchData = useCallback(async (k, d) => {
     setLoading(true)
@@ -345,13 +386,14 @@ export default function AdminDashboardPage() {
     )
   }
 
-  // ── Dashboard ─────────────────────────────────────────────────────────────────
-  const d = data
+  // ── Derived values ────────────────────────────────────────────────────────────
+  const d         = data
   const openRate  = pct(d.openedLetters,  d.sentLetters)
   const sendRate  = pct(d.sentLetters,    d.totalLetters)
   const claimRate = pct(d.claimedLetters, d.strangerLetters)
-  const avgLetters = d.totalUsers > 0 ? (d.totalLetters / d.totalUsers).toFixed(1) : '0'
   const endRate   = pct(d.endedConversations, d.totalConversations)
+  const avgLetters = d.totalUsers > 0 ? (d.totalLetters / d.totalUsers).toFixed(1) : '0'
+  const funnel    = d.letterFunnel || {}
 
   return (
     <div style={{ minHeight: '100vh', background: C.paper, fontFamily: '"DM Sans",sans-serif', paddingBottom: 80 }}>
@@ -384,25 +426,27 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Sub-header ── */}
-      <div style={{ background: C.white, padding: '16px clamp(16px,4vw,52px)', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+      {/* ── KPI sub-header ── */}
+      <div style={{ background: C.white, padding: '14px clamp(16px,4vw,52px)', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontFamily: '"Lora",serif', fontSize: 21, fontWeight: 700, color: C.ink }}>Analytics Overview</div>
-          <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3 }}>
-            Last <strong style={{ color: C.ink }}>{d.days} day{d.days !== 1 ? 's' : ''}</strong> · {fmt(d.totalUsers)} total registered users · data refreshes on demand
+          <div style={{ fontFamily: '"Lora",serif', fontSize: 20, fontWeight: 700, color: C.ink }}>Analytics</div>
+          <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
+            Last <strong style={{ color: C.ink }}>{d.days}d</strong> ·{' '}
+            <strong style={{ color: C.ink }}>{fmt(d.totalUsers)}</strong> total users ·{' '}
+            <strong style={{ color: C.tc }}>{fmt(d.activeUsers)}</strong> active this period
           </div>
         </div>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           {[
-            { label: 'Email Open Rate', value: `${d.openRate}%`, color: C.tc, tip: 'Of sent emails' },
-            { label: 'New Signups',     value: fmt(d.newUsers),  color: C.sage, tip: 'This period' },
-            { label: 'Scheduled Queue', value: fmt(d.scheduledLetters), color: C.purple, tip: 'Awaiting delivery' },
+            { label: 'Open Rate',    value: `${d.openRate}%`,         color: C.tc },
+            { label: 'New Signups',  value: fmt(d.newUsers),          color: C.sage },
+            { label: 'Scheduled',    value: fmt(d.scheduledLetters),  color: C.purple },
+            { label: 'Active Convos',value: fmt(d.activeConversations), color: C.gold },
           ].map((kpi, i, arr) => (
             <div key={kpi.label} style={{ display: 'flex', gap: 20 }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 20, fontWeight: 700, color: kpi.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{kpi.value}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: kpi.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{kpi.value}</div>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: C.muted, marginTop: 3 }}>{kpi.label}</div>
-                <div style={{ fontSize: 10.5, color: C.muted, marginTop: 1 }}>{kpi.tip}</div>
               </div>
               {i < arr.length - 1 && <div style={{ width: 1, background: C.border, alignSelf: 'stretch' }} />}
             </div>
@@ -410,293 +454,195 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Main content ── */}
+      {/* ── Tab strip ── */}
+      <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, display: 'flex', overflowX: 'auto', scrollbarWidth: 'none' }}>
+        {TABS.map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+            padding: '12px 20px', fontSize: 13, border: 'none', whiteSpace: 'nowrap',
+            background: activeTab === tab.id ? C.white : 'transparent',
+            fontFamily: '"DM Sans",sans-serif', cursor: 'pointer',
+            color: activeTab === tab.id ? C.ink : C.muted,
+            fontWeight: activeTab === tab.id ? 600 : 400,
+            borderBottom: activeTab === tab.id ? `2.5px solid ${C.tc}` : '2.5px solid transparent',
+            transition: 'all 0.15s',
+          }}>
+            {tab.icon} {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Tab content ── */}
       <div style={{ padding: '28px clamp(16px,4vw,52px)', display: 'flex', flexDirection: 'column', gap: 36 }}>
 
-        {/* ── SECTION 1: Overview ── */}
-        <section>
-          <SectionHeading sub="Platform-wide totals, not limited by date filter">Overview</SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px,1fr))', gap: 12 }}>
-            <StatCard icon="👥" label="Total Users"        accent={C.ink}    iconBg="rgba(28,26,23,0.08)"
-              value={d.totalUsers}
-              desc="All registered accounts — email + Google" />
-            <StatCard icon="📧" label="Email / Password"   accent="#4A4640"  iconBg="rgba(74,70,64,0.09)"
-              value={d.totalEmailUsers}
-              desc="Users who signed up with an email address and password" />
-            <StatCard icon="🔑" label="Google Sign-In"     accent={C.google} iconBg="rgba(234,67,53,0.09)"
-              value={d.totalGoogleUsers}
-              desc="Users who authenticated via Google OAuth" />
-            <StatCard icon="🔗" label="Custom SMTP"        accent={C.sage}   iconBg={`${C.sage}15`}
-              value={d.emailConnections}
-              desc="Users who connected their own email account to send from" />
-          </div>
-        </section>
-
-        {/* ── SECTION 2: Engagement ── */}
-        <section>
-          <SectionHeading sub={`Activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Engagement</SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: 12 }}>
-            <StatCard icon="✍️" label="Letters Created"   accent={C.tc}
-              value={d.totalLetters}
-              desc={`Total letters drafted by all users · avg ${avgLetters} per user`} />
-            <StatCard icon="⏳" label="Scheduled Emails"  accent={C.purple} iconBg={`${C.purple}15`}
-              value={d.scheduledLetters}
-              desc="Letters queued for future delivery — not yet sent" />
-            <StatCard icon="🫂" label="Personal Letters"  accent="#4A4640"  iconBg="rgba(74,70,64,0.09)"
-              value={d.personalLetters}
-              desc="Private letters saved to user's own journal — not emailed" />
-            <StatCard icon="💬" label="Stranger Letters"  accent="#7A6E5C"  iconBg="rgba(122,110,92,0.1)"
-              value={d.strangerLetters}
-              desc={`Letters sent to anonymous readers · ${fmt(d.claimedLetters)} claimed`} />
-          </div>
-        </section>
-
-        {/* ── SECTION 3: Email Activity ── */}
-        <section>
-          <SectionHeading sub={`Delivery and open metrics over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Email Activity</SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: 12 }}>
-            <StatCard icon="📨" label="Emails Sent"       accent={C.gold}   iconBg={`${C.gold}15`}
-              value={d.sentLetters}
-              desc={`Emails delivered to recipients · ${sendRate}% of all letters written`} />
-            <StatCard icon="💌" label="Emails Opened"     accent={C.sage}
-              value={d.openedLetters}
-              desc={`Emails the recipient actually opened · ${openRate}% open rate`} />
-            <StatCard icon="👤" label="New Signups"       accent={C.tc}
-              value={d.newUsers}
-              desc={`New users who joined in the last ${d.days} day${d.days !== 1 ? 's' : ''}`} />
-          </div>
-        </section>
-
-        {/* ── Engagement Rates ── */}
-        <section>
-          <SectionHeading sub="How well are letters being sent, read, and claimed?">Engagement Rates</SectionHeading>
-          <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 28 }}>
-            <ProgressMetric
-              label="Email Open Rate"
-              desc="Of all sent emails, how many were opened by the recipient"
-              value={d.openedLetters} max={d.sentLetters} color={C.tc} />
-            <ProgressMetric
-              label="Send Rate"
-              desc="Of all letters written, how many were actually emailed out"
-              value={d.sentLetters} max={d.totalLetters} color={C.gold} />
-            <ProgressMetric
-              label="Stranger Letter Claim Rate"
-              desc="Of letters sent to strangers, how many were claimed or read"
-              value={d.claimedLetters} max={d.strangerLetters} color={C.purple} />
-          </div>
-        </section>
-
-        {/* ── SECTION 4: Roles + Sources ── */}
-        <section>
-          <SectionHeading sub="User role distribution and signup acquisition channels">Roles &amp; Sources</SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
-            {/* Role breakdown */}
-            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Users by Role</div>
-              {[
-                { key: 'seeker',   label: 'Seeker',   icon: '✍️', color: C.tc },
-                { key: 'listener', label: 'Listener', icon: '🫂', color: C.sage },
-                { key: 'both',     label: 'Both',     icon: '🌿', color: C.purple },
-              ].map(r => (
-                <BarRow key={r.key} label={r.label} value={(d.roles || {})[r.key] || 0} max={d.totalUsers} color={r.color} icon={r.icon} />
-              ))}
-            </div>
-            {/* Signup source breakdown */}
-            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Where Did They Hear About Us</div>
-              {(d.sources || []).length === 0
-                ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No source data yet.</div>
-                : (d.sources || []).map((s, i) => (
-                    <BarRow key={s._id} label={s._id} value={s.count} max={(d.sources || [])[0]?.count || 1}
-                      color={[C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C'][i % 6]} />
-                  ))
-              }
-            </div>
-          </div>
-        </section>
-
-        {/* ── SECTION 5: Moods ── */}
-        <section>
-          <SectionHeading sub="Emotional tone distribution across all letters">Mood Distribution</SectionHeading>
-          <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-            {(d.moods || []).length === 0
-              ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No mood data yet.</div>
-              : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '4px 28px' }}>
-                  {(d.moods || []).map((m, i) => {
-                    const MOOD_ICON = { joy: '😊', sad: '😔', caring: '🫂', hope: '🌱', lonely: '🌧️', gratitude: '🙏' }
-                    const MOOD_COLOR = { joy: C.gold, sad: '#4A90C4', caring: C.sage, hope: '#6BAA62', lonely: C.purple, gratitude: C.tc }
-                    const color = MOOD_COLOR[m._id?.toLowerCase()] || [C.tc, C.sage, C.purple, C.gold][i % 4]
-                    const icon  = MOOD_ICON[m._id?.toLowerCase()] || '💬'
-                    return <BarRow key={m._id} label={m._id} value={m.count} max={(d.moods || [])[0]?.count || 1} color={color} icon={icon} />
-                  })}
-                </div>
-              )
-            }
-          </div>
-        </section>
-
-        {/* ── SECTION 6: Conversations + Notifications ── */}
-        <section>
-          <SectionHeading sub="Caring Stranger conversation stats and platform notifications">Conversations &amp; Notifications</SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
-            {/* Conversation stats */}
-            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Conversations</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                {[
-                  { label: 'Total',        value: d.totalConversations, color: C.ink },
-                  { label: 'Ended',        value: d.endedConversations, color: C.tc },
-                  { label: 'Messages Sent',value: d.totalRepliesSent,   color: C.sage },
-                  { label: 'End Rate',     value: `${endRate}%`,        color: C.purple },
-                ].map(s => (
-                  <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
-                    <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
-                  </div>
-                ))}
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: OVERVIEW
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'overview' && (
+          <>
+            <section>
+              <SectionHeading sub="All-time platform totals across both user types">Platform Totals</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px,1fr))', gap: 12 }}>
+                <StatCard icon="👥" label="Total Users"       accent={C.ink}    iconBg="rgba(28,26,23,0.08)"
+                  value={d.totalUsers} desc="All registered accounts — email + Google" />
+                <StatCard icon="📧" label="Email / Password"  accent="#4A4640"  iconBg="rgba(74,70,64,0.09)"
+                  value={d.totalEmailUsers} desc="Signed up with email & password" />
+                <StatCard icon="🔑" label="Google Sign-In"    accent={C.google} iconBg="rgba(234,67,53,0.09)"
+                  value={d.totalGoogleUsers} desc="Authenticated via Google OAuth" />
+                <StatCard icon="🔗" label="Custom SMTP"       accent={C.sage}   iconBg={`${C.sage}15`}
+                  value={d.emailConnections} desc="Users with their own email connected" />
               </div>
-              <div style={{ fontSize: 11, color: C.muted, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span>Ended by seeker</span>
-                  <strong style={{ color: C.tc }}>{fmt(d.endedBySeeker)}</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Ended by listener</span>
-                  <strong style={{ color: C.sage }}>{fmt(d.endedByListener)}</strong>
-                </div>
-              </div>
-            </div>
-            {/* Notification stats */}
-            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Notifications</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                {[
-                  { label: 'Total',  value: d.totalNotifs,  color: C.ink },
-                  { label: 'Unread', value: d.unreadNotifs, color: C.tc },
-                ].map(s => (
-                  <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
-                    <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize: 11, color: C.muted }}>
-                {(d.notifByType || []).map((n, i) => {
-                  const NOTIF_ICON  = { reply: '💬', claim: '💌', delivery: '📬', system: '⚙️', general: '🔔' }
-                  const NOTIF_COLOR = { reply: C.tc, claim: C.sage, delivery: C.gold, system: C.purple, general: '#4A4640' }
-                  const color = NOTIF_COLOR[n._id] || '#4A4640'
-                  const icon  = NOTIF_ICON[n._id]  || '🔔'
-                  return (
-                    <div key={n._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < (d.notifByType || []).length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                      <span style={{ textTransform: 'capitalize' }}>{icon} {n._id}</span>
-                      <strong style={{ color }}>{fmt(n.count)}</strong>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
+            </section>
 
-        {/* ── SECTION 7: Trends ── */}
-        {((d.letterTrend || []).length > 1 || (d.userTrend || []).length > 1) && (
-          <section>
-            <SectionHeading sub={`Daily activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Trends</SectionHeading>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16 }}>
-              {[
-                { title: 'Letters Created / Day', data: d.letterTrend || [], key: 'letters', color: C.tc },
-                { title: 'Emails Sent / Day',     data: d.letterTrend || [], key: 'sent',    color: C.gold },
-                { title: 'New Users / Day',        data: d.userTrend  || [], key: 'count',   color: C.sage },
-              ].map(({ title, data: tdata, key, color }) => {
-                const mapped = tdata.map(r => ({ count: r[key] ?? 0 }))
-                const total  = mapped.reduce((s, r) => s + r.count, 0)
-                return (
-                  <div key={title} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-                      <div>
-                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted }}>{title}</div>
-                        <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Lora",serif', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
-                        <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2 }}>total this period</div>
-                      </div>
-                    </div>
-                    <Sparkline data={mapped} color={color} height={44} width={220} />
-                  </div>
-                )
-              })}
-            </div>
-          </section>
+            <section>
+              <SectionHeading sub={`Activity within the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Period Activity</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px,1fr))', gap: 12 }}>
+                <StatCard icon="✅" label="Active Users"      accent={C.tc}
+                  value={d.activeUsers} desc={`Users who wrote a letter in the last ${d.days}d`} />
+                <StatCard icon="😴" label="Inactive Users"    accent={C.muted}  iconBg="rgba(140,132,120,0.1)"
+                  value={d.inactiveUsers} desc="Registered but no letters this period" />
+                <StatCard icon="🆕" label="New Signups"       accent={C.sage}
+                  value={d.newUsers} desc={`Joined in the last ${d.days} day${d.days !== 1 ? 's' : ''}`} />
+                <StatCard icon="⏳" label="Scheduled Queue"   accent={C.purple} iconBg={`${C.purple}15`}
+                  value={d.scheduledLetters} desc="Letters queued for future delivery" />
+              </div>
+            </section>
+
+            <section>
+              <SectionHeading sub="Conversations currently in progress vs closed">Conversation Snapshot</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px,1fr))', gap: 12 }}>
+                <StatCard icon="💬" label="Active Convos"     accent={C.gold}   iconBg={`${C.gold}15`}
+                  value={d.activeConversations} desc="Caring Stranger conversations still open" />
+                <StatCard icon="✅" label="Ended Convos"      accent={C.sage}
+                  value={d.endedConversations} desc={`Closed conversations · ${endRate}% end rate`} />
+                <StatCard icon="📨" label="Total Messages"    accent={C.tc}
+                  value={d.totalRepliesSent} desc="All messages sent across all conversations" />
+                <StatCard icon="🫂" label="Stranger Letters"  accent="#7A6E5C"  iconBg="rgba(122,110,92,0.1)"
+                  value={d.strangerLetters} desc={`Sent to anonymous readers · ${claimRate}% claimed`} />
+              </div>
+            </section>
+          </>
         )}
 
-        {/* ── Tabs ── */}
-        <section>
-          {/* Tab strip */}
-          <div style={{ display: 'flex', background: C.white, borderRadius: '16px 16px 0 0', border: `1px solid ${C.border}`, overflow: 'hidden' }}>
-            {[
-              { id: 'recent', label: '📬 Recent Letters', desc: 'Last 20 letters sent across all users' },
-              { id: 'users',  label: '👤 User Directory', desc: 'All users with activity breakdown' },
-            ].map((t, i, arr) => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{
-                flex: 1, padding: '13px 20px', fontSize: 13, border: 'none',
-                background: tab === t.id ? C.white : '#F2EEE8',
-                fontFamily: '"DM Sans",sans-serif', cursor: 'pointer',
-                color: tab === t.id ? C.ink : C.muted,
-                fontWeight: tab === t.id ? 600 : 400,
-                borderBottom: tab === t.id ? `2.5px solid ${C.tc}` : '2.5px solid transparent',
-                borderRight: i < arr.length - 1 ? `1px solid ${C.border}` : 'none',
-                transition: 'all 0.15s', textAlign: 'left',
-              }}>
-                <div>{t.label}</div>
-                <div style={{ fontSize: 10.5, color: C.muted, fontWeight: 400, marginTop: 1 }}>{t.desc}</div>
-              </button>
-            ))}
-          </div>
-
-          <div style={{ background: C.white, border: `1px solid ${C.border}`, borderTop: 'none', borderRadius: '0 0 16px 16px', overflow: 'hidden' }}>
-
-            {/* ── Recent Letters tab ── */}
-            {tab === 'recent' && (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                  <thead>
-                    <tr>
-                      <TH>Sender</TH>
-                      <TH>Subject Line</TH>
-                      <TH>Letter Type</TH>
-                      <TH>Delivery Status</TH>
-                      <TH>Recipient Email</TH>
-                      <TH>Date &amp; Time</TH>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(d.recentLetters || []).length === 0 ? (
-                      <tr>
-                        <td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
-                          No letters found for this time period.
-                        </td>
-                      </tr>
-                    ) : (d.recentLetters || []).map((l, i) => (
-                      <tr key={i}
-                        style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
-                        onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
-                      >
-                        <TD small muted maxW={180} nowrap>{l.senderEmail}</TD>
-                        <TD bold maxW={220} nowrap>{l.subject || <span style={{ color: C.muted, fontWeight: 400 }}>No subject</span>}</TD>
-                        <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#4A4640'} /></td>
-                        <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#4A4640'} /></td>
-                        <TD small muted maxW={180} nowrap>{l.toEmail || '—'}</TD>
-                        <TD small muted nowrap>{fmtDateTime(l.createdAt)}</TD>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: ENGAGEMENT
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'engagement' && (
+          <>
+            <section>
+              <SectionHeading sub={`Activity metrics over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Activity This Period</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: 12 }}>
+                <StatCard icon="✍️" label="Letters Created"  accent={C.tc}
+                  value={d.totalLetters} desc={`Avg ${avgLetters} per registered user`} />
+                <StatCard icon="📨" label="Emails Sent"      accent={C.gold}   iconBg={`${C.gold}15`}
+                  value={d.sentLetters} desc={`${sendRate}% of letters were emailed out`} />
+                <StatCard icon="💌" label="Emails Opened"    accent={C.sage}
+                  value={d.openedLetters} desc={`${openRate}% open rate of sent emails`} />
+                <StatCard icon="🫂" label="Personal Letters" accent="#4A4640"  iconBg="rgba(74,70,64,0.09)"
+                  value={d.personalLetters} desc="Saved to journal — not emailed" />
               </div>
-            )}
+            </section>
 
-            {/* ── User Directory tab ── */}
-            {tab === 'users' && (
-              <div>
+            <section>
+              <SectionHeading sub="How well are letters being sent, read, and claimed?">Engagement Rates</SectionHeading>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 28 }}>
+                <ProgressMetric
+                  label="Email Open Rate"
+                  desc="Of all sent emails, how many were opened"
+                  value={d.openedLetters} max={d.sentLetters} color={C.tc} />
+                <ProgressMetric
+                  label="Send Rate"
+                  desc="Of all letters written, how many were emailed"
+                  value={d.sentLetters} max={d.totalLetters} color={C.gold} />
+                <ProgressMetric
+                  label="Stranger Claim Rate"
+                  desc="Of stranger letters, how many were claimed"
+                  value={d.claimedLetters} max={d.strangerLetters} color={C.purple} />
+                <ProgressMetric
+                  label="Conversation End Rate"
+                  desc="Of all conversations, how many have ended"
+                  value={d.endedConversations} max={d.totalConversations} color={C.sage} />
+              </div>
+            </section>
+
+            <section>
+              <SectionHeading sub="All-time letter lifecycle from creation to claimed — no date filter">Letter Lifecycle Funnel</SectionHeading>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <Funnel steps={[
+                  { label: 'Created',        value: funnel.total   || 0, icon: '✍️', color: C.ink    },
+                  { label: 'Sent via Email', value: funnel.sent    || 0, icon: '📨', color: C.gold   },
+                  { label: 'Opened',         value: funnel.opened  || 0, icon: '💌', color: C.tc     },
+                  { label: 'Replied (Convos)',value: funnel.replied || 0, icon: '💬', color: C.sage   },
+                  { label: 'Stranger Claimed',value: funnel.claimed || 0, icon: '🎯', color: C.purple },
+                ]} />
+              </div>
+            </section>
+
+            <section>
+              <SectionHeading sub="Most prolific writers and most active listeners">Top Contributors</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
+                {/* Top senders */}
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Top Senders (by letters written)</div>
+                  {(d.topSenders || []).length === 0
+                    ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
+                    : (d.topSenders || []).map((u, i) => (
+                        <BarRow key={i} label={u.name !== '—' ? u.name : u.email} value={u.count}
+                          max={(d.topSenders || [])[0]?.count || 1}
+                          color={AVATAR_COLORS[i % AVATAR_COLORS.length]} />
+                      ))
+                  }
+                </div>
+                {/* Top listeners */}
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Top Listeners (by conversations)</div>
+                  {(d.topListeners || []).length === 0
+                    ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
+                    : (d.topListeners || []).map((u, i) => (
+                        <BarRow key={i} label={u.name !== '—' ? u.name : u.email} value={u.count}
+                          max={(d.topListeners || [])[0]?.count || 1}
+                          color={AVATAR_COLORS[(i + 2) % AVATAR_COLORS.length]} />
+                      ))
+                  }
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: USERS
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'users' && (
+          <>
+            <section>
+              <SectionHeading sub="User role distribution and signup acquisition channels">Demographics</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Users by Role</div>
+                  {[
+                    { key: 'seeker',   label: 'Seeker',   icon: '✍️', color: C.tc },
+                    { key: 'listener', label: 'Listener', icon: '🫂', color: C.sage },
+                    { key: 'both',     label: 'Both',     icon: '🌿', color: C.purple },
+                  ].map(r => (
+                    <BarRow key={r.key} label={r.label} value={(d.roles || {})[r.key] || 0} max={d.totalUsers} color={r.color} icon={r.icon} />
+                  ))}
+                </div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Where Did They Hear About Us</div>
+                  {(d.sources || []).length === 0
+                    ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No source data yet.</div>
+                    : (d.sources || []).map((s, i) => (
+                        <BarRow key={s._id} label={s._id} value={s.count} max={(d.sources || [])[0]?.count || 1}
+                          color={[C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C'][i % 6]} />
+                      ))
+                  }
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <SectionHeading sub="All users with full activity breakdown — sortable & searchable">User Directory</SectionHeading>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
                 {/* Controls */}
                 <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFAF7', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                   <input
@@ -715,47 +661,36 @@ export default function AdminDashboardPage() {
                     onBlur={e  => e.target.style.border  = `1px solid ${C.border}`}
                   />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 11, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>Sort by:</span>
+                    <span style={{ fontSize: 11, color: C.muted }}>Sort by:</span>
                     {[
-                      { id: 'written', label: 'Letters Created' },
-                      { id: 'sent',    label: 'Emails Sent' },
-                      { id: 'opened',  label: 'Emails Opened' },
-                      { id: 'joined',  label: 'Newest First' },
+                      { id: 'written', label: 'Letters' },
+                      { id: 'sent',    label: 'Sent' },
+                      { id: 'opened',  label: 'Opened' },
+                      { id: 'joined',  label: 'Newest' },
                     ].map(s => (
                       <Chip key={s.id} label={s.label} active={userSort === s.id} onClick={() => setUserSort(s.id)} />
                     ))}
                   </div>
+                  <span style={{ marginLeft: 'auto', fontSize: 11.5, color: C.muted, whiteSpace: 'nowrap' }}>
+                    {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
 
-                {/* Legend + count */}
-                <div style={{ padding: '10px 18px', borderBottom: `1px solid ${C.border}`, background: '#FDFCFA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                  <div style={{ fontSize: 11, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
-                    <strong style={{ color: C.tc }}>Letters Created</strong> = total drafted &nbsp;·&nbsp;
-                    <strong style={{ color: C.gold }}>Emails Sent</strong> = delivered to inbox &nbsp;·&nbsp;
-                    <strong style={{ color: C.sage }}>Emails Opened</strong> = recipient viewed &nbsp;·&nbsp;
-                    <strong style={{ color: C.purple }}>Scheduled</strong> = queued for later
-                  </div>
-                  <div style={{ fontSize: 11.5, color: C.muted, fontFamily: '"DM Sans",sans-serif', whiteSpace: 'nowrap' }}>
-                    Showing <strong style={{ color: C.ink }}>{paginatedUsers.length}</strong> of <strong style={{ color: C.ink }}>{filteredUsers.length}</strong> user{filteredUsers.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-
-                {/* Table */}
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
                       <tr>
                         <TH>User</TH>
-                        <TH>Email Address</TH>
-                        <TH>Sign-in Method</TH>
-                        <TH>Account Role</TH>
-                        <TH center>Letters Created</TH>
-                        <TH center>Emails Sent</TH>
-                        <TH center>Emails Opened</TH>
+                        <TH>Email</TH>
+                        <TH>Auth</TH>
+                        <TH>Role</TH>
+                        <TH center>Written</TH>
+                        <TH center>Sent</TH>
+                        <TH center>Opened</TH>
                         <TH center>Scheduled</TH>
                         <TH center>Personal</TH>
                         <TH center>Strangers</TH>
-                        <TH>Date Joined</TH>
+                        <TH>Joined</TH>
                         <TH>Last Active</TH>
                       </tr>
                     </thead>
@@ -763,9 +698,7 @@ export default function AdminDashboardPage() {
                       {filteredUsers.length === 0 ? (
                         <tr>
                           <td colSpan={12} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"DM Sans",sans-serif', fontSize: 13 }}>
-                            {search
-                              ? `No users match "${search}". Try a different name or email.`
-                              : 'No users registered yet.'}
+                            {search ? `No users match "${search}"` : 'No users registered yet.'}
                           </td>
                         </tr>
                       ) : paginatedUsers.map((u, i) => (
@@ -774,7 +707,6 @@ export default function AdminDashboardPage() {
                           onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
                           onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
                         >
-                          {/* User + avatar */}
                           <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <Avatar name={u.name} idx={i} />
@@ -798,38 +730,203 @@ export default function AdminDashboardPage() {
                   </table>
                 </div>
 
-                {/* Pagination */}
                 {filteredUsers.length > PER_PAGE && (
                   <div style={{ padding: '14px 18px', borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                    <button
-                      disabled={page === 1}
-                      onClick={() => setPage(p => p - 1)}
-                      style={{
-                        padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page === 1 ? 'default' : 'pointer',
-                        fontFamily: '"DM Sans",sans-serif', background: C.white,
-                        border: `1px solid ${C.border}`, color: C.ink,
-                        opacity: page === 1 ? 0.35 : 1, transition: 'opacity 0.15s',
-                      }}
-                    >← Previous</button>
-                    <span style={{ fontSize: 12.5, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+                    <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
+                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page === 1 ? 'default' : 'pointer', fontFamily: '"DM Sans",sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page === 1 ? 0.35 : 1 }}>
+                      ← Previous
+                    </button>
+                    <span style={{ fontSize: 12.5, color: C.muted }}>
                       Page <strong style={{ color: C.ink }}>{page}</strong> of <strong style={{ color: C.ink }}>{totalPages}</strong>
                     </span>
-                    <button
-                      disabled={page >= totalPages}
-                      onClick={() => setPage(p => p + 1)}
-                      style={{
-                        padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page >= totalPages ? 'default' : 'pointer',
-                        fontFamily: '"DM Sans",sans-serif', background: C.white,
-                        border: `1px solid ${C.border}`, color: C.ink,
-                        opacity: page >= totalPages ? 0.35 : 1, transition: 'opacity 0.15s',
-                      }}
-                    >Next →</button>
+                    <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
+                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page >= totalPages ? 'default' : 'pointer', fontFamily: '"DM Sans",sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page >= totalPages ? 0.35 : 1 }}>
+                      Next →
+                    </button>
                   </div>
                 )}
               </div>
+            </section>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: LETTERS
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'letters' && (
+          <>
+            <section>
+              <SectionHeading sub="Mood distribution across all letters ever written">Mood Distribution</SectionHeading>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                {(d.moods || []).length === 0
+                  ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No mood data yet.</div>
+                  : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '4px 28px' }}>
+                      {(d.moods || []).map((m, i) => {
+                        const MOOD_ICON  = { joy: '😊', sad: '😔', caring: '🫂', hope: '🌱', lonely: '🌧️', gratitude: '🙏' }
+                        const MOOD_COLOR = { joy: C.gold, sad: '#4A90C4', caring: C.sage, hope: '#6BAA62', lonely: C.purple, gratitude: C.tc }
+                        const color = MOOD_COLOR[m._id?.toLowerCase()] || [C.tc, C.sage, C.purple, C.gold][i % 4]
+                        const icon  = MOOD_ICON[m._id?.toLowerCase()] || '💬'
+                        return <BarRow key={m._id} label={m._id} value={m.count} max={(d.moods || [])[0]?.count || 1} color={color} icon={icon} />
+                      })}
+                    </div>
+                  )
+                }
+              </div>
+            </section>
+
+            <section>
+              <SectionHeading sub="Most recent 20 letters sent across all users">Recent Letters</SectionHeading>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr>
+                        <TH>Sender</TH>
+                        <TH>Subject</TH>
+                        <TH>Type</TH>
+                        <TH>Status</TH>
+                        <TH>Recipient</TH>
+                        <TH>Date &amp; Time</TH>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(d.recentLetters || []).length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
+                            No letters found.
+                          </td>
+                        </tr>
+                      ) : (d.recentLetters || []).map((l, i) => (
+                        <tr key={i}
+                          style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
+                          onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                        >
+                          <TD small muted maxW={180} nowrap>{l.senderEmail}</TD>
+                          <TD bold maxW={220} nowrap>{l.subject || <span style={{ color: C.muted, fontWeight: 400 }}>No subject</span>}</TD>
+                          <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#4A4640'} /></td>
+                          <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#4A4640'} /></td>
+                          <TD small muted maxW={180} nowrap>{l.toEmail || '—'}</TD>
+                          <TD small muted nowrap>{fmtDateTime(l.createdAt)}</TD>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: NOTIFICATIONS
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'notifications' && (
+          <section>
+            <SectionHeading sub="Caring Stranger conversations and platform notification stats">Conversations &amp; Notifications</SectionHeading>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
+              {/* Conversation stats */}
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Conversations</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  {[
+                    { label: 'Total',        value: d.totalConversations,  color: C.ink },
+                    { label: 'Active',        value: d.activeConversations, color: C.gold },
+                    { label: 'Ended',         value: d.endedConversations,  color: C.tc },
+                    { label: 'Messages Sent', value: d.totalRepliesSent,    color: C.sage },
+                  ].map(s => (
+                    <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 11, color: C.muted, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span>Ended by seeker</span>
+                    <strong style={{ color: C.tc }}>{fmt(d.endedBySeeker)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span>Ended by listener</span>
+                    <strong style={{ color: C.sage }}>{fmt(d.endedByListener)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>End rate</span>
+                    <strong style={{ color: C.purple }}>{endRate}%</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notification stats */}
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Notifications</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  {[
+                    { label: 'Total',  value: d.totalNotifs,  color: C.ink },
+                    { label: 'Unread', value: d.unreadNotifs, color: C.tc },
+                  ].map(s => (
+                    <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 11, color: C.muted }}>
+                  {(d.notifByType || []).map((n, i) => {
+                    const NOTIF_ICON  = { reply: '💬', claim: '💌', delivery: '📬', system: '⚙️', general: '🔔' }
+                    const NOTIF_COLOR = { reply: C.tc, claim: C.sage, delivery: C.gold, system: C.purple, general: '#4A4640' }
+                    const color = NOTIF_COLOR[n._id] || '#4A4640'
+                    const icon  = NOTIF_ICON[n._id]  || '🔔'
+                    return (
+                      <div key={n._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < (d.notifByType || []).length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                        <span style={{ textTransform: 'capitalize' }}>{icon} {n._id}</span>
+                        <strong style={{ color }}>{fmt(n.count)}</strong>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: TRENDS
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'trends' && (
+          <section>
+            <SectionHeading sub={`Daily activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Daily Trends</SectionHeading>
+            {((d.letterTrend || []).length < 2 && (d.userTrend || []).length < 2) ? (
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+                Not enough data for trend charts — try a wider date range.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16 }}>
+                {[
+                  { title: 'Letters Created / Day', data: d.letterTrend || [], key: 'letters', color: C.tc },
+                  { title: 'Emails Sent / Day',     data: d.letterTrend || [], key: 'sent',    color: C.gold },
+                  { title: 'New Users / Day',        data: d.userTrend  || [], key: 'count',   color: C.sage },
+                ].map(({ title, data: tdata, key, color }) => {
+                  const mapped = tdata.map(r => ({ count: r[key] ?? 0 }))
+                  const total  = mapped.reduce((s, r) => s + r.count, 0)
+                  return (
+                    <div key={title} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted }}>{title}</div>
+                          <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Lora",serif', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
+                          <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2 }}>total this period</div>
+                        </div>
+                      </div>
+                      <Sparkline data={mapped} color={color} height={44} width={220} />
+                    </div>
+                  )
+                })}
+              </div>
             )}
-          </div>
-        </section>
+          </section>
+        )}
 
       </div>
     </div>
