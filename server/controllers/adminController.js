@@ -136,6 +136,30 @@ export async function getAdminAnalytics(req, res) {
   }
   const totalRepliesSent = msgAgg[0]?.total || 0
 
+  // ── Active users + all-time funnel + top listeners (parallel) ───────────────
+  const [
+    activeUserDistinct,
+    allTimeLetters,
+    allTimeSent,
+    allTimeOpened,
+    allTimeClaimed,
+    topListenersAgg,
+  ] = await Promise.all([
+    Letter.distinct('userId', { createdAt: { $gte: since } }),
+    Letter.countDocuments(),
+    Letter.countDocuments({ type: 'sent', status: { $ne: 'scheduled' } }),
+    Letter.countDocuments({ type: 'sent', $or: [{ status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
+    Letter.countDocuments({ type: 'stranger', $or: [{ isRead: true }, { isClaimed: true }] }),
+    Reply.aggregate([
+      { $group: { _id: '$listenerId', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]),
+  ])
+
+  const activeUsers   = activeUserDistinct.length
+  const inactiveUsers = Math.max(0, totalUsers - activeUsers)
+
   // ── Per-user letter stats via aggregation (single query, no N+1) ──────────
   const letterAgg = await Letter.aggregate([
     { $group: {
@@ -188,6 +212,20 @@ export async function getAdminAnalytics(req, res) {
     ...googleUsers.map(u => mergeUser(u, 'google')),
   ].sort((a, b) => b.written - a.written)
 
+  // Build name+email maps for enriching top listeners
+  const allUsersFlat  = [...emailUsers, ...googleUsers]
+  const userInfoMap   = {}
+  for (const u of allUsersFlat) {
+    userInfoMap[u._id.toString()] = { name: u.name || '—', email: u.email }
+  }
+
+  const topListeners = topListenersAgg.map(l => ({
+    id:    l._id,
+    name:  userInfoMap[l._id?.toString()]?.name  || '—',
+    email: userInfoMap[l._id?.toString()]?.email || '—',
+    count: l.count,
+  }))
+
   // ── Recent letters (last 20 across all users) ─────────────────────────────
   const recentLetters = await Letter.find({})
     .sort({ createdAt: -1 })
@@ -196,8 +234,6 @@ export async function getAdminAnalytics(req, res) {
     .lean()
 
   // Attach sender email to recent letters
-  const allUserIds   = [...new Set(recentLetters.map(l => l.userId?.toString()).filter(Boolean))]
-  const allUsersFlat = [...emailUsers, ...googleUsers]
   const userEmailMap = {}
   for (const u of allUsersFlat) userEmailMap[u._id.toString()] = u.email
 
@@ -234,12 +270,28 @@ export async function getAdminAnalytics(req, res) {
       totalNotifs,
       unreadNotifs,
       notifByType: notifTypeAgg,
+      // Active / inactive users (within selected period)
+      activeUsers,
+      inactiveUsers,
+      // All-time letter lifecycle funnel
+      letterFunnel: {
+        total:   allTimeLetters,
+        sent:    allTimeSent,
+        opened:  allTimeOpened,
+        replied: totalConversations,
+        claimed: allTimeClaimed,
+      },
+      // Top senders (by letters written, already sorted)
+      topSenders: userStats.slice(0, 5).map(u => ({ name: u.name, email: u.email, count: u.written })),
+      // Top listeners (by conversations handled)
+      topListeners,
       // Conversations
       totalConversations,
       endedConversations,
       endedBySeeker:   endedBySeekerCount,
       endedByListener: endedByListenerCount,
       totalRepliesSent,
+      activeConversations: totalConversations - endedConversations,
       // Signup sources
       sources: sourceAgg,
       // Trends

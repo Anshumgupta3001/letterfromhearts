@@ -19,7 +19,19 @@ import { notFound, errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
 
-app.use(cors({ origin: config.clientOrigin, credentials: true }))
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://letterfromheart.com',
+  'https://www.letterfromheart.com',
+]
+app.use(cors({
+  origin: (origin, cb) => {
+    // allow requests with no origin (curl, mobile apps, server-to-server)
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true)
+    cb(new Error(`CORS: origin ${origin} not allowed`))
+  },
+  credentials: true,
+}))
 
 // Webhook route must be registered BEFORE express.json() to receive raw body for HMAC verification
 app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }), resendWebhookRoutes)
