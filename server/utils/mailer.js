@@ -27,7 +27,7 @@ export function wrapLinksForClickTracking(html, trackingId) {
   })
 }
 
-export function buildEmailHtml(message, trackingId) {
+export function buildEmailHtml(message, trackingId, toEmail = '') {
   const withBreaks = message.replace(/\n/g, '<br/>')
   const withLinks  = wrapLinksForClickTracking(withBreaks, trackingId)
   const pixel      = generateTrackingPixel(trackingId)
@@ -76,6 +76,9 @@ export function buildEmailHtml(message, trackingId) {
             <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
               You received this because someone chose to write to you.
             </p>
+            <div style="margin-top:16px;">
+              <a href="https://letterfromheart.com/signup${toEmail ? `?email=${encodeURIComponent(toEmail)}` : ''}" target="_blank" style="display:inline-block;padding:10px 22px;background:#1C1A17;color:#F7F2EA;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.2px;">Click here to reply 💌</a>
+            </div>
           </td>
         </tr>
       </table>
