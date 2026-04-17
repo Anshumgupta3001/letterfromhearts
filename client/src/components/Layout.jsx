@@ -881,9 +881,10 @@ function Navbar() {
   const {
     navigate, currentPage, authUser, logout, userRole,
     strangerLetters, canReadFeed,
-    notifications: rawNotifications, markNotificationsRead,
+    notifications: rawNotifications, markNotificationsRead, refreshNotifications,
     openLetterPanel,
   } = useApp()
+  const [bellRefreshing, setBellRefreshing] = useState(false)
 
   const notifications = rawNotifications ?? []
   const unreadCount   = notifications.filter(n => !n.isRead).length
@@ -900,6 +901,12 @@ function Navbar() {
     } else {
       setBellOpen(false)
     }
+  }
+
+  async function handleBellRefresh() {
+    if (bellRefreshing) return
+    setBellRefreshing(true)
+    try { await refreshNotifications() } finally { setBellRefreshing(false) }
   }
 
   async function handleNotificationClick(notification) {
@@ -1042,13 +1049,32 @@ function Navbar() {
                 zIndex: 400,
               }}>
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>Notifications</span>
-                  {notifications.length > 0 && (
-                    <span style={{ fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
-                      {unreadCount === 0 ? 'All caught up' : `${unreadCount} new`}
-                    </span>
-                  )}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px 10px 16px', borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>Notifications</span>
+                    {notifications.length > 0 && (
+                      <span style={{ fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+                        {unreadCount === 0 ? 'All caught up' : `${unreadCount} new`}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleBellRefresh}
+                    disabled={bellRefreshing}
+                    title="Refresh notifications"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '4px 10px', borderRadius: 99, border: '1px solid rgba(28,26,23,0.12)',
+                      background: 'transparent', cursor: bellRefreshing ? 'default' : 'pointer',
+                      fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+                      opacity: bellRefreshing ? 0.5 : 1, transition: 'background 0.12s, opacity 0.12s',
+                    }}
+                    onMouseEnter={e => { if (!bellRefreshing) e.currentTarget.style.background = 'rgba(28,26,23,0.05)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <span style={{ display: 'inline-block', transition: 'transform 0.4s', transform: bellRefreshing ? 'rotate(360deg)' : 'none' }}>↻</span>
+                    {bellRefreshing ? 'Refreshing…' : 'Refresh'}
+                  </button>
                 </div>
                 {/* List */}
                 <div style={{ maxHeight: 340, overflowY: 'auto' }}>
