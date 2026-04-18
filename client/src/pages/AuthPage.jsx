@@ -380,7 +380,7 @@ export default function AuthPage() {
 
         {/* Logo */}
         <div className="flex items-center gap-2.5">
-          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 30, height: 30, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/auth-logo.png" alt="Letter from Heart" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
           <div className="font-lora text-[18px] italic font-medium" style={{ color: 'var(--ink)' }}>Letter from Heart</div>
         </div>
 
@@ -429,8 +429,7 @@ export default function AuthPage() {
 
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 40, height: 40, objectFit: 'contain', margin: '0 auto 10px' }} />
-            <h1 className="font-lora text-[24px] font-medium tracking-[-0.5px]" style={{ color: 'var(--ink)' }}>Letter from Heart</h1>
+            <img src="/auth-logo.png" alt="Letter from Heart" style={{ width: 80, height: 'auto', objectFit: 'contain', margin: '0 auto 12px' }} />
             <p className="text-[13px] font-light mt-1" style={{ color: 'var(--ink-muted)' }}>
               {mode === 'login' ? 'Welcome back.' : 'A place for words that matter.'}
             </p>

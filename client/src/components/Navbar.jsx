@@ -250,11 +250,20 @@ export default function Navbar() {
                 )
               })}
               <div className="h-px my-2" style={{ background: 'rgba(28,26,23,0.08)' }} />
+              {/* User identity */}
+              <div className="px-4 py-3 rounded-[10px] mb-1" style={{ background: 'rgba(28,26,23,0.03)', border: '0.5px solid rgba(28,26,23,0.07)' }}>
+                <div className="text-[13px] font-semibold text-ink leading-tight">{authUser?.name || 'User'}</div>
+                <div className="text-[11px] text-ink-muted mt-0.5 font-light truncate">{authUser?.email}</div>
+                <div className="text-[10px] mt-1.5 font-semibold uppercase tracking-wide" style={{ color: roleMeta.color }}>{roleMeta.label}</div>
+              </div>
               <button
                 onClick={() => { logout(); setMobileOpen(false) }}
-                className="flex items-center w-full px-4 py-[11px] rounded-[10px] text-[13px] font-sans text-left cursor-pointer border-none outline-none"
+                className="flex items-center gap-2 w-full px-4 py-[11px] rounded-[10px] text-[13px] font-sans text-left cursor-pointer border-none outline-none"
                 style={{ color: 'var(--tc)' }}
               >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
                 Log out
               </button>
             </div>
@@ -267,6 +276,7 @@ export default function Navbar() {
 
 // ── Avatar + dropdown ─────────────────────────────────────────────────────────
 function AvatarMenu({ authUser, initials, logout }) {
+  const roleMeta = ROLE_META[authUser?.role] || ROLE_META.both
   return (
     <div className="relative group flex-shrink-0">
       <div className="flex items-center gap-1.5 cursor-pointer rounded-full px-1.5 py-1 transition-all duration-200 hover:bg-warm">
@@ -280,19 +290,52 @@ function AvatarMenu({ authUser, initials, logout }) {
           {authUser?.name?.split(' ')[0] || ''}
         </span>
       </div>
+      {/* Dropdown */}
       <div
-        className="absolute right-0 top-full mt-1 rounded-[10px] py-1 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 min-w-[150px]"
-        style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 8px 24px rgba(28,26,23,0.1)' }}
+        className="absolute right-0 top-full mt-1.5 rounded-[12px] invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50"
+        style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 8px 28px rgba(28,26,23,0.13)', minWidth: 210 }}
       >
-        <div className="px-3 py-2 text-[11px] text-ink-muted font-light" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
-          {authUser?.email}
+        {/* Identity block */}
+        <div className="px-4 pt-4 pb-3" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+          <div className="flex items-center gap-3 mb-2.5">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold flex-shrink-0"
+              style={{ background: 'rgba(196,99,58,0.15)', color: 'var(--tc)', border: '1px solid rgba(196,99,58,0.2)' }}
+            >
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold text-ink truncate leading-tight">
+                {authUser?.name || 'User'}
+              </div>
+              <div className="text-[11px] text-ink-muted truncate leading-tight mt-0.5 font-light">
+                {authUser?.email}
+              </div>
+            </div>
+          </div>
+          <span
+            className="inline-flex items-center gap-1.5 text-[9.5px] px-2 py-0.5 rounded-pill font-semibold uppercase tracking-[0.8px]"
+            style={{ background: roleMeta.bg, color: roleMeta.color, border: `0.5px solid ${roleMeta.border}` }}
+          >
+            <span className="w-[4px] h-[4px] rounded-full" style={{ background: roleMeta.color }} />
+            {roleMeta.label}
+          </span>
         </div>
-        <button
-          onClick={logout}
-          className="w-full text-left px-3 py-2 text-[12px] text-ink-soft hover:text-tc hover:bg-warm cursor-pointer bg-transparent border-none font-sans transition-all duration-150"
-        >
-          Log out
-        </button>
+        {/* Actions */}
+        <div className="py-1">
+          <button
+            onClick={logout}
+            className="w-full text-left px-4 py-2.5 text-[12.5px] font-sans cursor-pointer bg-transparent border-none transition-all duration-150 flex items-center gap-2"
+            style={{ color: 'var(--tc)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(196,99,58,0.06)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Log out
+          </button>
+        </div>
       </div>
     </div>
   )

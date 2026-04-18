@@ -7,11 +7,13 @@ const MAX_MESSAGES = 10
 
 // POST /api/replies/message
 // Send a message in a conversation.
-// - Listener: must have claimed the letter; creates conversation on first message.
-// - Seeker (letter owner): can reply once a listener has started the conversation.
+// Supports two letter types:
+//   type:'stranger' — listener must have claimed the letter; seeker replies once started.
+//   type:'sent'     — recipient (matched by toEmail) starts; sender replies once started.
 export async function sendMessage(req, res) {
   const { parentLetterId, content } = req.body
-  const userId = req.user._id
+  const userId    = req.user._id
+  const userEmail = req.user.email?.toLowerCase()
 
   if (!parentLetterId)  return res.status(400).json({ error: 'parentLetterId is required.' })
   if (!content?.trim()) return res.status(400).json({ error: 'Message cannot be empty.' })
@@ -20,20 +22,28 @@ export async function sendMessage(req, res) {
 
   const letter = await Letter.findById(parentLetterId)
   if (!letter) return res.status(404).json({ error: 'Letter not found.' })
-  if (letter.type !== 'stranger')
-    return res.status(400).json({ error: 'Only Caring Stranger letters support conversations.' })
+  if (letter.type !== 'stranger' && letter.type !== 'sent')
+    return res.status(400).json({ error: 'Only Caring Stranger or known letters support conversations.' })
 
   const isLetterOwner = letter.userId.toString() === userId.toString()
 
   let conv
   if (isLetterOwner) {
-    // Seeker replying — find the existing conversation on their letter
+    // Writer replying — find the existing conversation on their letter
     conv = await Reply.findOne({ parentLetterId })
     if (!conv) {
-      return res.status(404).json({ error: 'No conversation started yet. A listener must write first.' })
+      return res.status(404).json({ error: 'No conversation started yet. The other person must write first.' })
     }
+  } else if (letter.type === 'sent') {
+    // Known letter: validate the sender is the actual email recipient
+    if (!userEmail || userEmail !== letter.toEmail?.toLowerCase()) {
+      return res.status(403).json({ error: 'You are not the recipient of this letter.' })
+    }
+    // Find or create conversation for this recipient
+    conv = await Reply.findOne({ parentLetterId, listenerId: userId })
+    if (!conv) conv = new Reply({ parentLetterId, listenerId: userId, messages: [] })
   } else {
-    // Listener sending — verify they claimed the letter
+    // Stranger letter: listener must have claimed it
     const claimed =
       (letter.claimedBy?.userId && letter.claimedBy.userId.toString() === userId.toString()) ||
       (letter.readBy || []).some(id => id.toString() === userId.toString())
@@ -42,7 +52,6 @@ export async function sendMessage(req, res) {
       return res.status(403).json({ error: 'You can only message in letters you have claimed.' })
     }
 
-    // Find or create conversation for this listener
     conv = await Reply.findOne({ parentLetterId, listenerId: userId })
     if (!conv) conv = new Reply({ parentLetterId, listenerId: userId, messages: [] })
   }
@@ -64,30 +73,34 @@ export async function sendMessage(req, res) {
   conv.messages.push({ sender: userId, content: content.trim(), createdAt: new Date() })
   await conv.save()
 
-  // Await notification so it's in DB before response is sent.
-  // reply notifications are NOT deduped — every new message deserves a ping.
-  console.log(`[Notification] reply check — isLetterOwner:${isLetterOwner} isFirstMessage:${isFirstMessage} letterOwner:${letter.userId} sender:${userId}`)
   try {
+    const senderDisplay = userEmail || 'Someone'
     if (isLetterOwner) {
-      // Seeker replied back → notify the listener
+      // Writer replied back → notify the other person (listener/recipient)
       if (conv.listenerId.toString() !== userId.toString()) {
+        const notifMessage = letter.type === 'sent'
+          ? `The letter writer replied to you 💬`
+          : 'The letter writer replied to you 💬'
         await createNotification({
           userId:   conv.listenerId,
           senderId: userId,
           letterId: letter._id,
-          message:  'The letter writer replied to you 💬',
+          message:  notifMessage,
           type:     'reply',
           link:     `/letters/${letter._id}`,
         })
       }
     } else if (isFirstMessage) {
-      // Listener's first message → notify the letter owner (seeker), once per conversation
+      // Recipient / listener's first message → notify the writer
       if (letter.userId.toString() !== userId.toString()) {
+        const notifMessage = letter.type === 'sent'
+          ? `${senderDisplay} replied to your letter 💬`
+          : 'You received a reply to your letter 💬'
         await createNotification({
           userId:   letter.userId,
           senderId: userId,
           letterId: letter._id,
-          message:  'You received a reply to your letter 💬',
+          message:  notifMessage,
           type:     'reply',
           link:     `/letters/${letter._id}`,
         })
@@ -95,35 +108,52 @@ export async function sendMessage(req, res) {
     }
   } catch (err) {
     console.error('[Notification] trigger failed:', err.message)
-    // Notification failure must never block the message response
   }
 
   res.status(201).json({ success: true, data: conv })
 }
 
 // POST /api/replies/end
-// End the conversation. Both the listener and the seeker (letter owner) can close it.
+// End the conversation. Both parties can close it.
+// Works for type:'stranger' and type:'sent' letters.
 export async function endConversation(req, res) {
   const { parentLetterId } = req.body
-  const userId = req.user._id
+  const userId    = req.user._id
+  const userEmail = req.user.email?.toLowerCase()
 
   if (!parentLetterId) return res.status(400).json({ error: 'parentLetterId is required.' })
 
-  // Find the conversation — listener can look up directly; seeker looks up by parentLetterId
-  const letter = await (await import('../models/Letter.js')).default.findById(parentLetterId)
+  const letter = await Letter.findById(parentLetterId)
   if (!letter) return res.status(404).json({ error: 'Letter not found.' })
 
-  const isSeeker = letter.userId.toString() === userId.toString()
+  const isWriter = letter.userId.toString() === userId.toString()
 
-  const conv = isSeeker
-    ? await Reply.findOne({ parentLetterId })          // seeker closes the one conversation
+  // For known letters: also allow recipient to end (they act as 'listener')
+  const isKnownRecipient = !isWriter
+    && letter.type === 'sent'
+    && userEmail
+    && userEmail === letter.toEmail?.toLowerCase()
+
+  if (!isWriter && !isKnownRecipient) {
+    // Stranger letter: listener closes their own conv
+    const conv = await Reply.findOne({ parentLetterId, listenerId: userId })
+    if (!conv) return res.status(404).json({ error: 'Conversation not found.' })
+    if (conv.isEnded) return res.json({ success: true, data: conv })
+    conv.isEnded = true
+    conv.endedBy = 'listener'
+    await conv.save()
+    return res.json({ success: true, data: conv })
+  }
+
+  const conv = isWriter
+    ? await Reply.findOne({ parentLetterId })           // writer sees the one conversation
     : await Reply.findOne({ parentLetterId, listenerId: userId })
 
   if (!conv) return res.status(404).json({ error: 'Conversation not found.' })
-  if (conv.isEnded) return res.json({ success: true, data: conv }) // idempotent
+  if (conv.isEnded) return res.json({ success: true, data: conv })  // idempotent
 
   conv.isEnded = true
-  conv.endedBy = isSeeker ? 'seeker' : 'listener'
+  conv.endedBy = isWriter ? 'seeker' : 'listener'
   await conv.save()
 
   res.json({ success: true, data: conv })

@@ -81,18 +81,44 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
             {date}
           </div>
           {/* Open status badge — only for sent letters */}
-          {isSentLetter && (
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontSize: 10.5, padding: '3px 9px', borderRadius: 20, fontWeight: 500,
-              letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif',
-              background: isOpened ? 'rgba(90,158,122,0.1)' : 'rgba(28,26,23,0.05)',
-              color: isOpened ? 'var(--sage)' : 'var(--ink-muted)',
-              border: `1px solid ${isOpened ? 'rgba(90,158,122,0.25)' : 'rgba(28,26,23,0.1)'}`,
-            }}>
-              {isOpened ? '✓ Opened' : '· Not opened'}
-            </span>
-          )}
+          {isSentLetter && (() => {
+            // Prefer new openedBy-based count; fall back to legacy status field
+            const uniqueOpens     = letter.openCount ?? (isOpened ? 1 : 0)
+            const emailOpens      = letter.emailOpenCount ?? 0
+            const platformOpens   = letter.platformOpenCount ?? 0
+            const hasOpens        = uniqueOpens > 0 || isOpened
+            const showBreakdown   = uniqueOpens > 0 && (emailOpens > 0 || platformOpens > 0)
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 3 }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  fontSize: 10.5, padding: '3px 9px', borderRadius: 20, fontWeight: 500,
+                  letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif',
+                  background: hasOpens ? 'rgba(90,158,122,0.1)' : 'rgba(28,26,23,0.05)',
+                  color: hasOpens ? 'var(--sage)' : 'var(--ink-muted)',
+                  border: `1px solid ${hasOpens ? 'rgba(90,158,122,0.25)' : 'rgba(28,26,23,0.1)'}`,
+                }}>
+                  {hasOpens
+                    ? `👁 Opened by ${uniqueOpens} ${uniqueOpens === 1 ? 'person' : 'people'}`
+                    : '· Not opened'}
+                </span>
+                {showBreakdown && (
+                  <div style={{ display: 'flex', gap: 5, paddingLeft: 2 }}>
+                    {emailOpens > 0 && (
+                      <span style={{ fontSize: 9.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+                        📧 {emailOpens} email
+                      </span>
+                    )}
+                    {platformOpens > 0 && (
+                      <span style={{ fontSize: 9.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+                        📱 {platformOpens} app
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })()}
         </div>
         {/* Only personal letters can be edited/deleted */}
         {isPersonal && onEdit && onDelete && (
@@ -225,6 +251,68 @@ function Tab({ label, count, active, onClick }) {
   )
 }
 
+// ── Received letter card ──────────────────────────────────────────────────────
+function ReceivedLetterCard({ letter, onOpen }) {
+  const [hov, setHov] = useState(false)
+  const date = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+  const senderName  = letter.senderInfo?.name  || '—'
+  const senderEmail = letter.senderInfo?.email || letter.fromEmail || '—'
+  const displaySender = senderName && senderName !== '—' ? senderName : senderEmail
+
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      onClick={() => onOpen(letter)}
+      style={{
+        background: '#fff', borderRadius: 14, border: `1px solid ${BD}`,
+        overflow: 'hidden', position: 'relative', cursor: 'pointer',
+        transform: hov ? 'translateY(-3px)' : 'translateY(0)',
+        boxShadow: hov ? '0 14px 40px rgba(26,18,8,0.09)' : 'none',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+      }}
+    >
+      {/* Left accent — purple for received */}
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--purple), var(--tc))', borderRadius: '4px 0 0 4px' }} />
+
+      <div style={{ padding: '22px 22px 18px 28px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, marginBottom: 10 }}>
+          <div style={{ minWidth: 0 }}>
+            {/* From badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(139,126,200,0.1)', color: 'var(--purple)', border: '1px solid rgba(139,126,200,0.25)', fontFamily: '"DM Sans", sans-serif' }}>
+                📥 Received
+              </span>
+            </div>
+            <h3 style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px', marginBottom: 4 }}>
+              {letter.subject || 'A letter from my heart'}
+            </h3>
+            <div style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ opacity: 0.5 }}>✉</span>
+              <span>From <strong style={{ color: 'var(--ink-soft)' }}>{displaySender}</strong></span>
+            </div>
+          </div>
+        </div>
+        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {letter.message}
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 22px 12px 28px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--ink-muted)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {date}
+        </div>
+        <span style={{ fontSize: 11.5, color: 'var(--purple)', fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>
+          Open & reply →
+        </span>
+      </div>
+    </div>
+  )
+}
+
 // ── Card config per type ──────────────────────────────────────────────────────
 const CARD_CONFIG = {
   personal: {
@@ -253,17 +341,23 @@ export default function MySpacePage() {
     ownStrangerLetters, refreshOwnStrangerLetters,
     strangerLetters, refreshStrangerLetters,
     sentLetters, refreshLetters,
+    receivedLetters, refreshReceivedLetters,
     openLetterPanel,
+    refreshAnalytics,
   } = useApp()
 
-  const [activeTab, setActiveTab]         = useState(mySpaceTab || 'all')
-  const [personal, setPersonal]           = useState(personalLetters)
-  const [stranger, setStranger]           = useState(ownStrangerLetters)
-  const [editingLetter, setEditingLetter] = useState(null)
+  const [activeTab, setActiveTab]           = useState(mySpaceTab || 'all')
+  const [personal, setPersonal]             = useState(personalLetters)
+  const [stranger, setStranger]             = useState(ownStrangerLetters)
+  const [editingLetter, setEditingLetter]   = useState(null)
   const [deletingLetter, setDeletingLetter] = useState(null)
-  const [deleting, setDeleting]           = useState(false)
+  const [deleting, setDeleting]             = useState(false)
 
-  useEffect(() => { refreshPersonalLetters(); refreshOwnStrangerLetters(); refreshLetters(); if (canReadFeed) refreshStrangerLetters() }, []) // eslint-disable-line
+  useEffect(() => {
+    refreshPersonalLetters(); refreshOwnStrangerLetters(); refreshLetters(); refreshReceivedLetters()
+    if (canReadFeed) refreshStrangerLetters()
+    refreshAnalytics()
+  }, []) // eslint-disable-line
   useEffect(() => { setPersonal(personalLetters) }, [personalLetters])
   useEffect(() => { setStranger(ownStrangerLetters) }, [ownStrangerLetters])
 
@@ -271,10 +365,11 @@ export default function MySpacePage() {
 
   // Tabs config
   const TABS = [
-    { id: 'all',      label: 'All',                count: personal.length + stranger.length + sentLetters.length },
-    { id: 'personal', label: 'Personal',            count: personal.length },
-    { id: 'sent',     label: 'Send to Someone I Know',   count: sentLetters.length },
-    ...(canWriteStranger ? [{ id: 'stranger', label: 'Send to a Stranger',  count: stranger.length }] : []),
+    { id: 'all',      label: 'All',                 count: personal.length + stranger.length + sentLetters.length + receivedLetters.length },
+    { id: 'personal', label: 'Personal',             count: personal.length },
+    { id: 'sent',     label: 'Sent to Someone',      count: sentLetters.length },
+    { id: 'received', label: 'Received',             count: receivedLetters.length },
+    ...(canWriteStranger ? [{ id: 'stranger', label: 'Send to a Stranger', count: stranger.length }] : []),
     ...(canReadFeed    ? [{ id: 'read',     label: 'Held by Me',     count: readLetters.length }] : []),
   ]
 
@@ -282,6 +377,7 @@ export default function MySpacePage() {
   const visibleLetters = (() => {
     if (activeTab === 'personal') return personal.map(l => ({ ...l, _cardType: 'personal' }))
     if (activeTab === 'sent')     return sentLetters.map(l => ({ ...l, _cardType: 'sent' }))
+    if (activeTab === 'received') return receivedLetters.map(l => ({ ...l, _cardType: 'received' }))
     if (activeTab === 'stranger') return stranger.map(l => ({ ...l, _cardType: 'stranger' }))
     if (activeTab === 'read')     return readLetters.map(l => ({ ...l, _cardType: 'read' }))
     // all tab
@@ -289,6 +385,7 @@ export default function MySpacePage() {
       ...personal.map(l => ({ ...l, _cardType: 'personal' })),
       ...stranger.map(l => ({ ...l, _cardType: 'stranger' })),
       ...sentLetters.map(l => ({ ...l, _cardType: 'sent' })),
+      ...receivedLetters.map(l => ({ ...l, _cardType: 'received' })),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   })()
 
@@ -365,6 +462,8 @@ export default function MySpacePage() {
           <EmptyState icon="🪞" title="Nothing written yet" subtitle="Write to yourself — your past self, your future self. Even one sentence matters." cta="Write your first letter" onCta={() => navigate('write')} />
         ) : activeTab === 'sent' ? (
           <EmptyState icon="📬" title="No letters sent yet" subtitle="Write a letter to someone you know and send it directly to their inbox." cta="Write a letter" onCta={() => navigate('write')} />
+        ) : activeTab === 'received' ? (
+          <EmptyState icon="📥" title="No letters received yet" subtitle="When someone sends you a letter through Letter from Heart, it will appear here." />
         ) : activeTab === 'stranger' ? (
           <EmptyState icon="🌍" title="No stranger letters yet" subtitle="Share something with the world. Your words might be exactly what someone needs today." cta="Write to a stranger" onCta={() => navigate('write')} />
         ) : activeTab === 'read' ? (
@@ -375,6 +474,15 @@ export default function MySpacePage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {visibleLetters.map(letter => {
+            if (letter._cardType === 'received') {
+              return (
+                <ReceivedLetterCard
+                  key={letter._id}
+                  letter={letter}
+                  onOpen={openLetterPanel}
+                />
+              )
+            }
             const cfg = CARD_CONFIG[letter._cardType] || CARD_CONFIG.personal
             return (
               <LetterCard

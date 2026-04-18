@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import CountUp from 'react-countup'
 import { useApp } from '../context/AppContext'
 
 const BD = '#E0D4BC'
@@ -86,24 +85,47 @@ function WorldLetter({ letter, onClick, isNew }) {
   )
 }
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({ stat, navigate }) {
+// ── Quick-nav option card ─────────────────────────────────────────────────────
+function QuickNavCard({ card }) {
+  const [hov, setHov] = useState(false)
   return (
     <div
-      onClick={() => navigate(stat.page, stat.tab || null)}
-      className="stat-card"
+      onClick={card.onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       style={{
-        flex: 1, padding: '16px 20px', cursor: 'pointer',
-        border: `1px solid ${BD}`,
-        background: 'rgba(255,255,255,0.55)',
-        borderRadius: 14,
-        minWidth: 0,
+        background: hov ? card.accentBg : '#fff',
+        border: `1px solid ${hov ? card.accentBorder : BD}`,
+        borderRadius: 14, padding: '16px 18px',
+        cursor: 'pointer', position: 'relative', overflow: 'hidden',
+        transform: hov ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hov ? '0 8px 24px rgba(28,18,8,0.08)' : '0 1px 4px rgba(28,18,8,0.03)',
+        transition: 'all 0.2s',
       }}
     >
-      <div style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 700, lineHeight: 1, marginBottom: 4, color: stat.color }}>
-        <CountUp end={stat.n} duration={1.4} separator="," enableScrollSpy scrollSpyOnce />
+      {/* Left accent bar */}
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: card.accent, borderRadius: '4px 0 0 4px', opacity: hov ? 1 : 0.4, transition: 'opacity 0.2s' }} />
+      <div style={{ paddingLeft: 6 }}>
+        {/* Icon + count row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
+          <span style={{ fontSize: 18 }}>{card.icon}</span>
+          <span style={{
+            fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600,
+            color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1,
+            flexShrink: 0,
+          }}>
+            {card.count}
+          </span>
+        </div>
+        {/* Label */}
+        <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.3, letterSpacing: '-0.1px', marginBottom: 5 }}>
+          {card.label}
+        </div>
+        {/* Description */}
+        <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.55, margin: 0 }}>
+          {card.desc}
+        </p>
       </div>
-      <div style={{ fontSize: 12, color: 'var(--ink-muted)', letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif' }}>{stat.label}</div>
     </div>
   )
 }
@@ -142,7 +164,8 @@ function EmptySection({ icon, text, cta, onCta }) {
 export default function HomePage() {
   const {
     navigate, authUser, userRole,
-    personalLetters, strangerLetters, sentLetters,
+    personalLetters, strangerLetters, sentLetters, receivedLetters,
+    ownStrangerLetters,
     canWriteStranger, canReadFeed, openLetterPanel,
   } = useApp()
 
@@ -153,19 +176,56 @@ export default function HomePage() {
   const [ctaHov, setCtaHov] = useState(false)
   const [ctaBtnHov, setCtaBtnHov] = useState(false)
 
-  // Seeker: personal + write CTA + connections
-  // Listener: personal + stranger (unread) feed
-  // Both: personal + stranger (others only) + connections
-
   const recentPersonal = personalLetters.slice(0, 4)
   const recentStranger = strangerLetters.filter(l => !l.hasRead).slice(0, 3)
 
-  // Stats depend on role
-  const stats = [
-    { n: personalLetters.length, label: 'personal letters', color: 'var(--tc)',   page: 'myspace'      },
-    ...(canReadFeed ? [{ n: strangerLetters.length, label: 'from the world',   color: 'var(--sage)',  page: 'listenerread'  }] : []),
-    { n: sentLetters.length,     label: 'letters sent',     color: 'var(--gold)', page: 'myspace', tab: 'sent' },
-  ]
+  // Quick-nav option cards shown below the greeting
+  const quickNav = [
+    {
+      icon: '💌',
+      label: 'Sent to Stranger',
+      desc: 'Anonymous letters you shared with the world',
+      count: ownStrangerLetters?.length ?? 0,
+      accent: 'var(--sage)',
+      accentBg: 'rgba(122,158,142,0.06)',
+      accentBorder: 'rgba(122,158,142,0.2)',
+      onClick: () => navigate('myspace', 'stranger'),
+      show: canWriteStranger,
+    },
+    {
+      icon: '🫂',
+      label: 'Sent to Someone You Know',
+      desc: 'Letters delivered straight to someone\'s inbox',
+      count: sentLetters?.length ?? 0,
+      accent: 'var(--gold)',
+      accentBg: 'rgba(196,160,58,0.06)',
+      accentBorder: 'rgba(196,160,58,0.2)',
+      onClick: () => navigate('myspace', 'sent'),
+      show: true,
+    },
+    {
+      icon: '🌍',
+      label: 'Letters from the World',
+      desc: 'Strangers writing openly, waiting to be heard',
+      count: strangerLetters?.length ?? 0,
+      accent: 'var(--purple)',
+      accentBg: 'rgba(139,126,200,0.06)',
+      accentBorder: 'rgba(139,126,200,0.2)',
+      onClick: () => navigate('listenerread'),
+      show: canReadFeed,
+    },
+    {
+      icon: '📥',
+      label: 'Letters Received',
+      desc: 'Messages sent to you by people you know',
+      count: receivedLetters?.length ?? 0,
+      accent: 'var(--tc)',
+      accentBg: 'rgba(196,99,58,0.06)',
+      accentBorder: 'rgba(196,99,58,0.2)',
+      onClick: () => navigate('myspace', 'received'),
+      show: true,
+    },
+  ].filter(c => c.show)
 
   return (
     <main className="page-enter" style={{ position: 'relative' }}>
@@ -188,10 +248,10 @@ export default function HomePage() {
           you like to <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>express</em> today?
         </h1>
 
-        {/* ── Stats ─────────────────────────────────────────────────── */}
-        <div className="animate-fade-up" style={{ display: 'flex', gap: 10, marginBottom: 32, animationDelay: '0.22s', flexWrap: 'wrap' }}>
-          {stats.map((s) => (
-            <StatCard key={s.label} stat={s} navigate={navigate} />
+        {/* ── Quick-nav option cards ─────────────────────────────────── */}
+        <div className="animate-fade-up grid grid-cols-2 lg:grid-cols-4" style={{ gap: 10, marginBottom: 32, animationDelay: '0.22s' }}>
+          {quickNav.map(card => (
+            <QuickNavCard key={card.label} card={card} />
           ))}
         </div>
 

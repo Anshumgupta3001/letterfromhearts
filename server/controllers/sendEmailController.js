@@ -1,9 +1,12 @@
 import nodemailer from 'nodemailer'
 import EmailAccount from '../models/EmailAccount.js'
 import Letter from '../models/Letter.js'
+import User from '../models/User.js'
+import GoogleUser from '../models/GoogleUser.js'
 import config from '../config/index.js'
 import { decrypt } from './emailAccountController.js'
 import { checkContentSafety } from '../utils/moderation.js'
+import { createNotification } from './notificationController.js'
 import {
   generateTrackingId,
   buildEmailHtml,
@@ -124,6 +127,25 @@ export async function sendEmail(req, res) {
   if (resendEmailId) letterData.resendEmailId = resendEmailId
 
   const letter = await Letter.create(letterData)
+
+  // ── Notify the recipient if they have a registered account ───────────────
+  try {
+    const recipientEmail = to.trim().toLowerCase()
+    const recipientUser  = await User.findOne({ email: recipientEmail }, '_id').lean()
+      || await GoogleUser.findOne({ email: recipientEmail }, '_id').lean()
+    if (recipientUser) {
+      await createNotification({
+        userId:   recipientUser._id,
+        senderId: userId,
+        letterId: letter._id,
+        message:  `Someone sent you a letter 💌`,
+        type:     'delivery',
+        link:     `/myspace`,
+      })
+    }
+  } catch (err) {
+    console.error('[Notification] recipient notify failed:', err.message)
+  }
 
   res.json({ success: true, letterId: letter._id })
 }

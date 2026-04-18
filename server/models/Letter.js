@@ -25,6 +25,14 @@ const letterSchema = new mongoose.Schema(
       claimedAt: { type: Date },
     },
     readCount:  { type: Number, default: 0 },
+    // Unified open tracking — one entry per unique user; sources tracks HOW they opened
+    openedBy: [
+      {
+        userId:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        sources:  { type: [String], default: [] },   // 'email' | 'platform'
+        openedAt: { type: Date, default: Date.now },
+      },
+    ],
     // Mood tag saved with letter
     mood:         { type: String, default: '' },
     // Resend delivery tracking — only for system-sent letters

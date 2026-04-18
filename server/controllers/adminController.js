@@ -35,7 +35,7 @@ export async function getAdminAnalytics(req, res) {
     GoogleUser.countDocuments(base),
     Letter.countDocuments(base),
     Letter.countDocuments({ ...base, type: 'sent', status: { $ne: 'scheduled' } }),
-    Letter.countDocuments({ ...base, type: 'sent', $or: [{ status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
+    Letter.countDocuments({ ...base, type: 'sent', $or: [{ 'openedBy.0': { $exists: true } }, { status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
     Letter.countDocuments({ ...base, status: 'scheduled' }),
     Letter.countDocuments({ ...base, type: 'personal' }),
     Letter.countDocuments({ ...base, type: 'stranger' }),
@@ -143,13 +143,19 @@ export async function getAdminAnalytics(req, res) {
     allTimeSent,
     allTimeOpened,
     allTimeClaimed,
+    allTimeEmailOpens,
+    allTimePlatformOpens,
     topListenersAgg,
   ] = await Promise.all([
     Letter.distinct('userId', { createdAt: { $gte: since } }),
     Letter.countDocuments(),
     Letter.countDocuments({ type: 'sent', status: { $ne: 'scheduled' } }),
-    Letter.countDocuments({ type: 'sent', $or: [{ status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
-    Letter.countDocuments({ type: 'stranger', $or: [{ isRead: true }, { isClaimed: true }] }),
+    Letter.countDocuments({ type: 'sent', $or: [{ 'openedBy.0': { $exists: true } }, { status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
+    Letter.countDocuments({ type: 'stranger', $or: [{ isRead: true }, { isClaimed: true } ] }),
+    // Letters opened via email pixel (new openedBy format)
+    Letter.countDocuments({ 'openedBy.sources': 'email' }),
+    // Letters opened via platform (new openedBy format)
+    Letter.countDocuments({ 'openedBy.sources': 'platform' }),
     Reply.aggregate([
       { $group: { _id: '$listenerId', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
@@ -166,7 +172,7 @@ export async function getAdminAnalytics(req, res) {
       _id:       '$userId',
       written:   { $sum: 1 },
       sent:      { $sum: { $cond: [{ $and: [{ $eq: ['$type', 'sent'] }, { $ne: ['$status', 'scheduled'] }] }, 1, 0] } },
-      opened:    { $sum: { $cond: [{ $or: [{ $in: ['$status', ['opened', 'clicked']] }, { $gt: ['$clickCount', 0] }] }, 1, 0] } },
+      opened:    { $sum: { $cond: [{ $or: [{ $gt: [{ $size: { $ifNull: ['$openedBy', []] } }, 0] }, { $in: ['$status', ['opened', 'clicked']] }, { $gt: ['$clickCount', 0] }] }, 1, 0] } },
       scheduled: { $sum: { $cond: [{ $eq: ['$status', 'scheduled'] }, 1, 0] } },
       personal:  { $sum: { $cond: [{ $eq: ['$type', 'personal'] }, 1, 0] } },
       stranger:  { $sum: { $cond: [{ $eq: ['$type', 'stranger'] }, 1, 0] } },
@@ -280,6 +286,11 @@ export async function getAdminAnalytics(req, res) {
         opened:  allTimeOpened,
         replied: totalConversations,
         claimed: allTimeClaimed,
+      },
+      // Open source breakdown
+      openSources: {
+        email:    allTimeEmailOpens,
+        platform: allTimePlatformOpens,
       },
       // Top senders (by letters written, already sorted)
       topSenders: userStats.slice(0, 5).map(u => ({ name: u.name, email: u.email, count: u.written })),

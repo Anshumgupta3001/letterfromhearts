@@ -452,6 +452,9 @@ function useAnalyticsData() {
   const scheduled       = analytics?.totalScheduled  ?? 0
   const repliesReceived = analytics?.repliesReceived ?? 0
   const hasSent         = sent > 0
+  const heardCount  = analytics?.heardLettersCount       ?? 0
+  const repliedOut  = analytics?.repliesSentCount         ?? 0
+  const convsClosed = analytics?.conversationsClosedCount ?? 0
 
   const heartline = (() => {
     if (opened > 0)  return 'Your words reached someone 💌'
@@ -460,7 +463,7 @@ function useAnalyticsData() {
     return 'Start writing. Someone is waiting 💛'
   })()
 
-  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, repliesReceived, hasSent, heartline }
+  return { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, repliesReceived, hasSent, heartline, heardCount, repliedOut, convsClosed }
 }
 
 // ── Mobile-only compact analytics strip ──────────────────────────────────────
@@ -539,7 +542,7 @@ function MobileAnalyticsStrip() {
 
 // ── Home-only sidebar ─────────────────────────────────────────────────────────
 function HomeSidebar() {
-  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, repliesReceived, hasSent, heartline } = useAnalyticsData()
+  const { navigate, canReadFeed, strangerLetters, analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing, written, sent, opened, personal, stranger, heard, openRate, scheduled, repliesReceived, hasSent, heartline, heardCount, repliedOut, convsClosed } = useAnalyticsData()
   const { authUser, userRole, logout } = useApp()
 
   // Hide user card when viewport is narrow (includes zoom — innerWidth shrinks with CSS zoom)
@@ -687,6 +690,53 @@ function HomeSidebar() {
         </div>
       )}
 
+      {/* ── Connections Activity ── */}
+      <div>
+        <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 8 }}>
+          Connections Activity
+        </div>
+
+        {/* Your Sent Letters */}
+        <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)', borderRadius: 12, padding: '13px 14px', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
+            📨 Your Sent Letters
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {[
+              { label: 'Sent',             value: sent,             color: 'var(--ink)'    },
+              { label: 'Opened',           value: opened,           color: 'var(--sage)'   },
+              { label: 'Replies Received', value: repliesReceived,  color: 'var(--tc)'     },
+            ].map(({ label, value, color }) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>{label}</span>
+                <span style={{ fontFamily: '"Lora", serif', fontSize: 14, fontWeight: 500, color, letterSpacing: '-0.3px' }}>{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Strangers You Heard — only visible to listeners */}
+        {canReadFeed && (
+          <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(122,158,142,0.2)', borderRadius: 12, padding: '13px 14px' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
+              👂 Strangers You Heard
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {[
+                { label: 'Heard',                 value: heardCount,  color: 'var(--purple)'   },
+                { label: 'Replies Sent',           value: repliedOut,  color: 'var(--sage)'     },
+                { label: 'Conversations Closed',   value: convsClosed, color: 'var(--ink-muted)'},
+              ].map(({ label, value, color }) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>{label}</span>
+                  <span style={{ fontFamily: '"Lora", serif', fontSize: 14, fontWeight: 500, color, letterSpacing: '-0.3px' }}>{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ── Connection card ── */}
       {(heard > 0 || canReadFeed) && (
         <div style={{
@@ -817,7 +867,7 @@ function MobileDrawer({ open, onClose, navItems, currentPage, onNavigate, authUs
       }}>
         <div style={{ padding: '18px 18px 16px', borderBottom: '0.5px solid rgba(28,26,23,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
+            <img src="/brand-icon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 16, color: 'var(--ink)' }}>Letter from Heart</span>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(28,26,23,0.05)', border: 'none', cursor: 'pointer', width: 26, height: 26, borderRadius: 6, color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
@@ -974,7 +1024,7 @@ function Navbar() {
             marginRight: 28,
           }}
         >
-          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/brand-icon.png" alt="Letter from Heart" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
           <span style={{ fontFamily: '"Lora", serif', fontSize: 17, fontStyle: 'italic', color: 'var(--ink)', whiteSpace: 'nowrap' }}>
             Letter from Heart
           </span>

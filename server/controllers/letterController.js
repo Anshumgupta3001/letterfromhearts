@@ -1,7 +1,26 @@
-import Letter from '../models/Letter.js'
-import Reply  from '../models/Reply.js'
+import Letter     from '../models/Letter.js'
+import Reply      from '../models/Reply.js'
+import User       from '../models/User.js'
+import GoogleUser from '../models/GoogleUser.js'
 import { checkContentSafety } from '../utils/moderation.js'
 import { createNotification } from './notificationController.js'
+
+// ── Helper: compute open stats from openedBy array ────────────────────────────
+function openStats(openedBy = []) {
+  return {
+    openCount:         openedBy.length,
+    emailOpenCount:    openedBy.filter(o => o.sources?.includes('email')).length,
+    platformOpenCount: openedBy.filter(o => o.sources?.includes('platform')).length,
+  }
+}
+
+// ── Helper: is a letter "opened" by any means (new or legacy format) ──────────
+function isOpenedLegacy(letter) {
+  return (
+    (letter.status && ['opened', 'clicked'].includes(letter.status)) ||
+    (letter.clickCount > 0)
+  )
+}
 
 // GET /api/letters?type=personal|sent|stranger  — current user's letters, filtered by type
 export async function getLetters(req, res) {
@@ -23,11 +42,18 @@ export async function getLetters(req, res) {
     const data = letters.map(l => ({
       ...l.toObject(),
       replyCount: countMap[l._id.toString()] || 0,
+      ...openStats(l.openedBy),
     }))
     return res.json({ success: true, data })
   }
 
-  res.json({ success: true, data: letters })
+  // For sent letters include open stats so the card can show them
+  const data = letters.map(l => ({
+    ...l.toObject(),
+    ...openStats(l.openedBy),
+  }))
+
+  res.json({ success: true, data })
 }
 
 // GET /api/letters/stranger-feed  — community feed for listeners/both
@@ -94,21 +120,75 @@ export async function getStrangerFeed(req, res) {
   res.json({ success: true, data })
 }
 
+// GET /api/letters/received — letters sent TO the current user (type:sent, toEmail === user email)
+export async function getReceivedLetters(req, res) {
+  const userEmail = req.user.email?.toLowerCase()
+  if (!userEmail) return res.json({ success: true, data: [] })
+
+  const letters = await Letter.find({
+    toEmail: userEmail,
+    type:    'sent',
+    status:  { $ne: 'scheduled' },
+  }).sort({ createdAt: -1 }).lean()
+
+  if (letters.length === 0) return res.json({ success: true, data: [] })
+
+  // Enrich each letter with the sender's name + email
+  const senderIds = [...new Set(letters.map(l => l.userId?.toString()).filter(Boolean))]
+  const [emailUsers, googleUsers] = await Promise.all([
+    User.find({ _id: { $in: senderIds } }, 'name email').lean(),
+    GoogleUser.find({ _id: { $in: senderIds } }, 'name email').lean(),
+  ])
+  const senderMap = {}
+  for (const u of [...emailUsers, ...googleUsers]) senderMap[u._id.toString()] = { name: u.name, email: u.email }
+
+  const data = letters.map(l => ({
+    ...l,
+    isRecipient: true,
+    senderInfo:  senderMap[l.userId?.toString()] || { name: '—', email: l.fromEmail || '—' },
+    ...openStats(l.openedBy),
+  }))
+
+  res.json({ success: true, data })
+}
+
 // GET /api/letters/:id
 // Owner can always access. A listener who claimed a stranger letter can also access it.
+// The recipient of a known (type:sent) letter can also access it.
 export async function getLetterById(req, res) {
-  const userId = req.user._id
+  const userId    = req.user._id
+  const userEmail = req.user.email?.toLowerCase()
+
   const letter = await Letter.findOne({
     _id: req.params.id,
     $or: [
-      { userId },                             // owner
-      { 'claimedBy.userId': userId },         // listener who claimed it (new field)
-      { readBy: userId },                     // listener who claimed it (legacy field)
+      { userId },                                    // owner
+      { 'claimedBy.userId': userId },                // listener who claimed it (new field)
+      { readBy: userId },                            // listener who claimed it (legacy field)
+      ...(userEmail ? [{ toEmail: userEmail, type: 'sent' }] : []),  // recipient of known letter
     ],
-  }).select('-claimedBy -readBy')             // never expose claim metadata
+  }).select('-claimedBy -readBy')                    // never expose claim metadata
 
   if (!letter) return res.status(404).json({ error: 'Letter not found.' })
-  res.json({ success: true, data: letter })
+
+  // Add isRecipient flag for the recipient of a known letter
+  const isOwner   = letter.userId.toString() === userId.toString()
+  const letterObj = letter.toObject()
+
+  // Attach open stats for the owner so they can see engagement
+  if (isOwner) {
+    Object.assign(letterObj, openStats(letter.openedBy))
+  }
+
+  if (!isOwner && letter.type === 'sent' && userEmail && letter.toEmail === userEmail) {
+    letterObj.isRecipient = true
+    // Enrich with sender info (name) for the recipient's view
+    const sender = await User.findById(letter.userId, 'name email').lean()
+      || await GoogleUser.findById(letter.userId, 'name email').lean()
+    letterObj.senderInfo = sender ? { name: sender.name, email: sender.email } : { name: '—', email: letter.fromEmail || '—' }
+  }
+
+  res.json({ success: true, data: letterObj })
 }
 
 // POST /api/letters  — save a personal or stranger letter
@@ -149,7 +229,68 @@ export async function createLetter(req, res) {
   res.status(201).json({ success: true, data: letter })
 }
 
-// POST /api/letters/:id/read  — one-time global claim
+// POST /api/letters/:id/open  — platform open tracking (auth required)
+// Updates openedBy with source:'platform' for the authenticated user.
+// Fires a notification to the letter owner on first open only.
+export async function markLetterOpen(req, res) {
+  const userId    = req.user._id
+  const userEmail = req.user.email?.toLowerCase()
+
+  const letter = await Letter.findOne({
+    _id: req.params.id,
+    $or: [
+      { 'claimedBy.userId': userId },
+      { readBy: userId },
+      ...(userEmail ? [{ toEmail: userEmail, type: 'sent' }] : []),
+    ],
+  })
+
+  if (!letter) return res.status(404).json({ error: 'Letter not found.' })
+
+  const isOwner = letter.userId.toString() === userId.toString()
+  if (isOwner) return res.json({ success: true }) // owners opening their own letter don't count
+
+  const existing = letter.openedBy?.find(
+    o => o.userId.toString() === userId.toString()
+  )
+  const isFirstOpen = !existing
+
+  if (!existing) {
+    letter.openedBy.push({ userId, sources: ['platform'], openedAt: new Date() })
+  } else if (!existing.sources.includes('platform')) {
+    existing.sources.push('platform')
+  } else {
+    // Already recorded — nothing to do
+    return res.json({ success: true })
+  }
+
+  // Keep legacy status field updated
+  if (letter.status === 'sent') letter.status = 'opened'
+  if (!letter.openedAt) letter.openedAt = new Date()
+
+  await letter.save()
+
+  // Notify letter owner on first platform open only (not for stranger — claim handles it)
+  if (isFirstOpen && letter.type === 'sent') {
+    try {
+      await createNotification({
+        userId:   letter.userId,
+        senderId: userId,
+        letterId: letter._id,
+        message:  'Your letter was opened 👁',
+        type:     'claim',
+        link:     `/letters/${letter._id}`,
+        dedup:    true,
+      })
+    } catch (err) {
+      console.error('[Notification] platform open notify failed:', err.message)
+    }
+  }
+
+  res.json({ success: true })
+}
+
+// POST /api/letters/:id/read  — one-time global claim (stranger letters)
 // First listener to open claims the letter; it disappears from everyone else's feed.
 // The claiming listener can always reopen it.
 export async function markLetterRead(req, res) {
@@ -186,6 +327,13 @@ export async function markLetterRead(req, res) {
   letter.isClaimed  = true
   letter.claimedBy  = { userId, claimedAt: now }
   letter.readCount  = (letter.readCount || 0) + 1
+
+  // Also record in openedBy (platform open — first time only)
+  const alreadyInOpenedBy = letter.openedBy?.some(o => o.userId.toString() === userId.toString())
+  if (!alreadyInOpenedBy) {
+    letter.openedBy.push({ userId, sources: ['platform'], openedAt: now })
+  }
+
   await letter.save()
 
   // Notify the letter owner that someone opened their letter.
@@ -235,33 +383,35 @@ export async function updateLetter(req, res) {
   res.json({ success: true, data: letter })
 }
 
-// GET /api/letters/:id/replies  — letter owner fetches all replies to their stranger letter
+// GET /api/letters/:id/replies  — fetch replies for a stranger or known (sent) letter
 export async function getLetterReplies(req, res) {
-  const userId = req.user._id
+  const userId    = req.user._id
+  const userEmail = req.user.email?.toLowerCase()
 
-  // Allow access to both the letter owner (seeker) and the listener who has the conversation
+  // Allow owner, stranger-claimer, or known-letter recipient
   const letter = await Letter.findOne({
     _id: req.params.id,
     $or: [
       { userId },
       { 'claimedBy.userId': userId },
       { readBy: userId },
+      ...(userEmail ? [{ toEmail: userEmail, type: 'sent' }] : []),
     ],
   })
   if (!letter) return res.status(404).json({ error: 'Letter not found.' })
-  if (letter.type !== 'stranger')
-    return res.status(400).json({ error: 'Replies are only available for Caring Stranger letters.' })
+  if (letter.type !== 'stranger' && letter.type !== 'sent')
+    return res.status(400).json({ error: 'Replies are only available for Caring Stranger and known letters.' })
 
   const isOwner = letter.userId.toString() === userId.toString()
 
   if (isOwner) {
-    // Seeker: return all conversations on their letter, each with its messages + isEnded
+    // Letter writer: return all conversations on their letter
     const conversations = await Reply.find({ parentLetterId: letter._id })
       .sort({ createdAt: 1 })
       .lean()
     return res.json({ success: true, data: conversations })
   } else {
-    // Listener: return only their own conversation
+    // Listener / known recipient: return only their own conversation
     const conv = await Reply.findOne({ parentLetterId: letter._id, listenerId: userId }).lean()
     return res.json({ success: true, data: conv ? [conv] : [] })
   }
@@ -290,8 +440,16 @@ export async function getAnalytics(req, res) {
     Letter.countDocuments(base),
     // Exclude letters still waiting to be delivered (status:'scheduled')
     Letter.countDocuments({ ...base, type: 'sent', status: { $ne: 'scheduled' } }),
-    // "Opened" = opened OR clicked
-    Letter.countDocuments({ ...base, type: 'sent', $or: [{ status: { $in: ['opened', 'clicked'] } }, { clickCount: { $gt: 0 } }] }),
+    // "Opened" = at least one entry in openedBy (new) OR legacy status
+    Letter.countDocuments({
+      ...base,
+      type: 'sent',
+      $or: [
+        { 'openedBy.0': { $exists: true } },
+        { status: { $in: ['opened', 'clicked'] } },
+        { clickCount: { $gt: 0 } },
+      ],
+    }),
     Letter.countDocuments({ ...base, type: 'personal' }),
     Letter.countDocuments({ ...base, type: 'stranger' }),
     // Stranger letters this user WROTE that were claimed by a listener
@@ -302,26 +460,64 @@ export async function getAnalytics(req, res) {
 
   const openRate = totalSent > 0 ? Math.round((totalOpened / totalSent) * 100) : 0
 
-  // Count replies received on this user's stranger letters (separate from the parallel block
-  // because it depends on knowing the user's stranger letter IDs first)
-  const myStrangerIds   = await Letter.distinct('_id', { userId, type: 'stranger' })
+  // Source breakdown — how many of the user's sent letters were opened via email vs platform
+  const sentLetterIds = await Letter.distinct('_id', { ...base, type: 'sent' })
+  let emailOpens = 0, platformOpens = 0
+  if (sentLetterIds.length > 0) {
+    const [emailAgg, platformAgg] = await Promise.all([
+      Letter.countDocuments({ _id: { $in: sentLetterIds }, 'openedBy.sources': 'email' }),
+      Letter.countDocuments({ _id: { $in: sentLetterIds }, 'openedBy.sources': 'platform' }),
+    ])
+    emailOpens    = emailAgg
+    platformOpens = platformAgg
+  }
+
+  // Count replies received on this user's stranger letters
+  const myStrangerIds = await Letter.distinct('_id', { userId, type: 'stranger' })
   const repliesReceived = myStrangerIds.length > 0
     ? await Reply.countDocuments({ parentLetterId: { $in: myStrangerIds } })
     : 0
+
+  // ── Listener-side metrics ─────────────────────────────────────────────────
+  // heardLettersCount: stranger letters this user has claimed as a listener
+  // repliesSentCount: messages this user authored in conversations where they are the listener
+  // conversationsClosedCount: conversations where this user (as listener) closed them
+  const [
+    heardLettersCount,
+    conversationsClosedCount,
+    repliesSentAgg,
+  ] = await Promise.all([
+    Letter.countDocuments({ $or: [{ 'claimedBy.userId': userId }, { readBy: userId }] }),
+    Reply.countDocuments({ listenerId: userId, isEnded: true }),
+    Reply.aggregate([
+      { $match: { listenerId: userId } },
+      { $unwind: '$messages' },
+      { $match: { 'messages.sender': userId } },
+      { $count: 'total' },
+    ]),
+  ])
+  const repliesSentCount = repliesSentAgg[0]?.total || 0
 
   res.json({
     success: true,
     data: {
       days,
+      // Sender metrics
       totalWritten,
       totalSent,
       totalOpened,
+      emailOpens,
+      platformOpens,
       totalPersonal,
       totalStranger,
       claimedLetters,
       totalScheduled,
       openRate,
       repliesReceived,
+      // Listener metrics
+      heardLettersCount,
+      repliesSentCount,
+      conversationsClosedCount,
     },
   })
 }

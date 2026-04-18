@@ -46,10 +46,10 @@ export function buildEmailHtml(message, trackingId, toEmail = '') {
         <tr>
           <td style="padding:0 0 20px 0;text-align:center;">
             <img
-              src="https://letterfromheart.com/favicon.png"
+              src="https://letterfromheart.com/brand-icon.png"
               alt="Letter from Heart"
-              width="44"
-              height="44"
+              width="56"
+              height="56"
               style="display:block;margin:0 auto 8px;object-fit:contain;border:0;outline:none;"
             />
             <p style="margin:0;font-family:Georgia,serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#9c8e80;">Letter from Heart</p>
