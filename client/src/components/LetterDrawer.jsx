@@ -14,9 +14,10 @@ const MOOD_META = {
 }
 
 const TYPE_META = {
-  personal: { label: 'Personal',        color: 'var(--tc)',   bg: 'rgba(196,99,58,0.08)',   border: 'rgba(196,99,58,0.2)'   },
-  stranger: { label: 'Caring Stranger', color: 'var(--sage)', bg: 'rgba(122,158,142,0.08)', border: 'rgba(122,158,142,0.2)' },
-  sent:     { label: 'Sent Letter',     color: 'var(--gold)', bg: 'rgba(201,168,76,0.08)',  border: 'rgba(201,168,76,0.2)'  },
+  personal: { label: 'Personal',        color: 'var(--tc)',     bg: 'rgba(196,99,58,0.08)',   border: 'rgba(196,99,58,0.2)'   },
+  stranger: { label: 'Caring Stranger', color: 'var(--sage)',   bg: 'rgba(122,158,142,0.08)', border: 'rgba(122,158,142,0.2)' },
+  sent:     { label: 'Sent Letter',     color: 'var(--gold)',   bg: 'rgba(201,168,76,0.08)',  border: 'rgba(201,168,76,0.2)'  },
+  received: { label: 'Received Letter', color: 'var(--purple)', bg: 'rgba(139,126,200,0.08)', border: 'rgba(139,126,200,0.2)' },
 }
 
 function formatTime(d) {
@@ -101,7 +102,9 @@ export default function LetterDrawer() {
   const { letterPanel, closeLetterPanel, authUser, refreshNotifications } = useApp()
   const { open, letter } = letterPanel
 
-  const meta     = letter ? (TYPE_META[letter.type] || TYPE_META.personal) : TYPE_META.personal
+  // For received letters, use the 'received' meta style
+  const metaKey  = letter ? (letter.isRecipient ? 'received' : letter.type) : 'personal'
+  const meta     = TYPE_META[metaKey] || TYPE_META.personal
   const moodMeta = letter?.mood ? (MOOD_META[letter.mood] || null) : null
   const date     = letter
     ? new Date(letter.createdAt).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -111,8 +114,11 @@ export default function LetterDrawer() {
   const letterOwnerId  = letter?.userId?._id?.toString() ?? letter?.userId?.toString() ?? ''
   const viewerUserId   = authUser?._id?.toString() ?? ''
   const isOwner        = !!letterOwnerId && !!viewerUserId && letterOwnerId === viewerUserId
-  const isListenerView = letter?.type === 'stranger' && letter?.hasRead === true && !isOwner
-  const isSeekerView   = letter?.type === 'stranger' && isOwner
+  const isListenerView   = letter?.type === 'stranger' && letter?.hasRead === true && !isOwner
+  const isSeekerView     = letter?.type === 'stranger' && isOwner
+  // Known-contact conversation: recipient or sender of a type:'sent' letter
+  const isKnownRecipient = letter?.type === 'sent' && letter?.isRecipient === true && !isOwner
+  const isKnownSender    = letter?.type === 'sent' && isOwner
 
   // ── Conversation state ────────────────────────────────────────────────────
   // conv = { messages: [], isEnded: bool } or null
@@ -183,11 +189,16 @@ export default function LetterDrawer() {
 
     if (!open || !letter) return
 
-    if (isListenerView) {
+    // Track platform open — fire-and-forget, no UI dependency
+    if (isListenerView || isKnownRecipient) {
+      apiFetch(`/api/letters/${letter._id}/open`, { method: 'POST' }).catch(() => {})
+    }
+
+    if (isListenerView || isKnownRecipient) {
       setConvLoading(true)
       fetchListenerConv(letter._id).finally(() => setConvLoading(false))
     }
-    if (isSeekerView) {
+    if (isSeekerView || isKnownSender) {
       setSeekerConvsLoading(true)
       fetchSeekerConvs(letter._id).finally(() => setSeekerConvsLoading(false))
     }
@@ -197,11 +208,11 @@ export default function LetterDrawer() {
   useEffect(() => {
     if (!open || !letter) return
     const id = setInterval(() => {
-      if (isListenerView) fetchListenerConv(letter._id)
-      if (isSeekerView)   fetchSeekerConvs(letter._id)
+      if (isListenerView || isKnownRecipient) fetchListenerConv(letter._id)
+      if (isSeekerView   || isKnownSender)    fetchSeekerConvs(letter._id)
     }, 30_000)
     return () => clearInterval(id)
-  }, [open, letter?._id, isListenerView, isSeekerView, fetchListenerConv, fetchSeekerConvs]) // eslint-disable-line
+  }, [open, letter?._id, isListenerView, isSeekerView, isKnownRecipient, isKnownSender, fetchListenerConv, fetchSeekerConvs]) // eslint-disable-line
 
   // ── Send message ──────────────────────────────────────────────────────────
   async function handleSend() {
@@ -418,6 +429,23 @@ export default function LetterDrawer() {
                 position: 'relative', overflow: 'hidden',
               }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: `linear-gradient(180deg, ${meta.color}, var(--gold))`, borderRadius: '0 0 0 16px' }} />
+                {/* "From" banner for recipients */}
+                {isKnownRecipient && letter.senderInfo && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20,
+                    padding: '10px 14px', borderRadius: 10,
+                    background: 'rgba(139,126,200,0.06)', border: '1px solid rgba(139,126,200,0.18)',
+                  }}>
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>✉</span>
+                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.4 }}>
+                      From <strong style={{ color: 'var(--ink)' }}>
+                        {letter.senderInfo.name && letter.senderInfo.name !== '—'
+                          ? `${letter.senderInfo.name} (${letter.senderInfo.email})`
+                          : letter.senderInfo.email}
+                      </strong>
+                    </div>
+                  </div>
+                )}
                 <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)', textAlign: 'right', marginBottom: 28 }}>{date}</div>
                 <h2 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 6 }}>
                   {letter.subject}
@@ -435,9 +463,10 @@ export default function LetterDrawer() {
               </div>
 
               {/* ════════════════════════════════════════════════════════
-                  LISTENER: Chat conversation
+                  LISTENER: Chat conversation  (stranger letters)
+                  KNOWN RECIPIENT: Chat conversation (sent letters)
               ════════════════════════════════════════════════════════ */}
-              {isListenerView && (
+              {(isListenerView || isKnownRecipient) && (
                 <div style={{ marginTop: 24 }}>
                   {convLoading ? (
                     <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>
@@ -465,15 +494,15 @@ export default function LetterDrawer() {
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-                              <span style={{ fontSize: 15 }}>{isEnded ? '🔒' : '💌'}</span>
-                              <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, color: isEnded ? 'var(--ink-muted)' : 'var(--tc)', letterSpacing: '-0.1px' }}>
-                                {isEnded ? 'Conversation closed' : 'A quiet conversation'}
+                              <span style={{ fontSize: 15 }}>{isEnded ? '🔒' : (isKnownRecipient ? '💬' : '💌')}</span>
+                              <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, color: isEnded ? 'var(--ink-muted)' : (isKnownRecipient ? 'var(--purple)' : 'var(--tc)'), letterSpacing: '-0.1px' }}>
+                                {isEnded ? 'Conversation closed' : (isKnownRecipient ? 'Reply to this letter' : 'A quiet conversation')}
                               </span>
                             </div>
                             <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)', paddingLeft: 22, lineHeight: 1.5 }}>
                               {isEnded
                                 ? 'This space has been sealed with care.'
-                                : 'Take your time. Read slowly.'}
+                                : (isKnownRecipient ? "Write back — they'll see your reply in the app." : 'Take your time. Read slowly.')}
                             </div>
                           </div>
                           {/* Message progress dots */}
@@ -534,7 +563,7 @@ export default function LetterDrawer() {
                               ? <>
                                   This conversation has been closed with care
                                   {conv?.endedBy === 'seeker' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the letter writer</span></>}
-                                  {conv?.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the listener</span></>}
+                                  {conv?.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>{isKnownRecipient ? 'you' : 'the listener'}</span></>}
                                   .
                                 </>
                               : 'This conversation has reached its natural end.'}
@@ -689,17 +718,20 @@ export default function LetterDrawer() {
               )}
 
               {/* ════════════════════════════════════════════════════════
-                  SEEKER: View all conversations on their letter
+                  SEEKER: View all conversations on their stranger letter
+                  KNOWN SENDER: View reply conversation on their sent letter
               ════════════════════════════════════════════════════════ */}
-              {isSeekerView && (
+              {(isSeekerView || isKnownSender) && (
                 <div style={{ marginTop: 24 }}>
                   {/* Section label */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                     <div style={{ flex: 1, height: 1, background: 'rgba(28,26,23,0.08)' }} />
                     <span style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', flexShrink: 0 }}>
-                      {seekerConvs.length > 0
-                        ? `${seekerConvs.length} listener${seekerConvs.length > 1 ? 's' : ''} reached out`
-                        : 'Replies from listeners'}
+                      {isKnownSender
+                        ? (seekerConvs.length > 0 ? 'Recipient replied' : 'Waiting for a reply')
+                        : (seekerConvs.length > 0
+                            ? `${seekerConvs.length} listener${seekerConvs.length > 1 ? 's' : ''} reached out`
+                            : 'Replies from listeners')}
                     </span>
                     <div style={{ flex: 1, height: 1, background: 'rgba(28,26,23,0.08)' }} />
                   </div>
@@ -710,10 +742,11 @@ export default function LetterDrawer() {
                     </div>
                   ) : seekerConvs.length === 0 ? (
                     <div style={{ padding: '28px 20px', borderRadius: 14, textAlign: 'center', background: 'rgba(28,26,23,0.025)', border: '1px dashed rgba(28,26,23,0.1)' }}>
-                      <div style={{ fontSize: 24, marginBottom: 10, opacity: 0.4 }}>🌿</div>
+                      <div style={{ fontSize: 24, marginBottom: 10, opacity: 0.4 }}>{isKnownSender ? '📬' : '🌿'}</div>
                       <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7 }}>
-                        No one has replied yet.<br />
-                        <span style={{ fontSize: 12, opacity: 0.8 }}>Someone out there may still be reading.</span>
+                        {isKnownSender
+                          ? <>Your letter was delivered.<br /><span style={{ fontSize: 12, opacity: 0.8 }}>The recipient hasn't replied yet.</span></>
+                          : <>No one has replied yet.<br /><span style={{ fontSize: 12, opacity: 0.8 }}>Someone out there may still be reading.</span></>}
                       </div>
                     </div>
                   ) : (
@@ -747,9 +780,9 @@ export default function LetterDrawer() {
                             }}>
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-                                  <span style={{ fontSize: 14 }}>{cEnded ? '🔒' : '🌿'}</span>
-                                  <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 600, color: cEnded ? 'var(--ink-muted)' : 'var(--sage)' }}>
-                                    Listener {ci + 1}
+                                  <span style={{ fontSize: 14 }}>{cEnded ? '🔒' : (isKnownSender ? '💬' : '🌿')}</span>
+                                  <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 600, color: cEnded ? 'var(--ink-muted)' : (isKnownSender ? 'var(--purple)' : 'var(--sage)') }}>
+                                    {isKnownSender ? 'Their reply' : `Listener ${ci + 1}`}
                                   </span>
                                 </div>
                                 <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-muted)', paddingLeft: 21 }}>
@@ -757,10 +790,10 @@ export default function LetterDrawer() {
                                     ? <>
                                         Closed with care
                                         {c.endedBy === 'seeker' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>you</span></>}
-                                        {c.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the listener</span></>}
+                                        {c.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>{isKnownSender ? 'the recipient' : 'the listener'}</span></>}
                                         .
                                       </>
-                                    : 'A stranger took the time to reach out.'}
+                                    : (isKnownSender ? 'The recipient took the time to write back.' : 'A stranger took the time to reach out.')}
                                 </div>
                               </div>
                               {!cEnded && (
@@ -800,7 +833,7 @@ export default function LetterDrawer() {
                                     ? <>
                                         This conversation was closed with care
                                         {c.endedBy === 'seeker' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>you</span></>}
-                                        {c.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>the listener</span></>}
+                                        {c.endedBy === 'listener' && <> by <span style={{ fontStyle: 'normal', fontWeight: 600, color: 'var(--ink)' }}>{isKnownSender ? 'the recipient' : 'the listener'}</span></>}
                                         .
                                       </>
                                     : 'This conversation has reached its natural end.'}

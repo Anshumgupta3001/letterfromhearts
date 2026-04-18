@@ -533,14 +533,56 @@ export default function AdminDashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: 12 }}>
                 <StatCard icon="✍️" label="Letters Created"  accent={C.tc}
                   value={d.totalLetters} desc={`Avg ${avgLetters} per registered user`} />
-                <StatCard icon="📨" label="Emails Sent"      accent={C.gold}   iconBg={`${C.gold}15`}
-                  value={d.sentLetters} desc={`${sendRate}% of letters were emailed out`} />
-                <StatCard icon="💌" label="Emails Opened"    accent={C.sage}
-                  value={d.openedLetters} desc={`${openRate}% open rate of sent emails`} />
-                <StatCard icon="🫂" label="Personal Letters" accent="#4A4640"  iconBg="rgba(74,70,64,0.09)"
-                  value={d.personalLetters} desc="Saved to journal — not emailed" />
+                <StatCard icon="📨" label="Letters Sent"     accent={C.gold}   iconBg={`${C.gold}15`}
+                  value={d.sentLetters} desc={`${sendRate}% of all written letters were emailed`} />
+                <StatCard icon="👁"  label="Unique Opens"    accent={C.sage}
+                  value={d.openedLetters} desc={`${openRate}% open rate · per unique recipient`} />
+                <StatCard icon="💬" label="Replies Received" accent={C.purple} iconBg={`${C.purple}15`}
+                  value={d.totalRepliesSent} desc="Messages exchanged across all conversations" />
               </div>
             </section>
+
+            {/* Open source breakdown */}
+            {((d.openSources?.email ?? 0) > 0 || (d.openSources?.platform ?? 0) > 0) && (
+              <section>
+                <SectionHeading sub="How recipients opened letters — email pixel vs in-app view">Open Source Breakdown</SectionHeading>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 24 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openSources?.email ?? 0}</span>
+                      <span style={{ fontSize: 12, color: C.muted }}>letters</span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📧 Opened via Email</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>Tracked by pixel when email client loaded the image</div>
+                    <div style={{ marginTop: 10, height: 5, background: `${C.gold}20`, borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct(d.openSources?.email ?? 0, d.openedLetters || 1)}%`, height: '100%', background: C.gold, borderRadius: 99 }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openSources?.platform ?? 0}</span>
+                      <span style={{ fontSize: 12, color: C.muted }}>letters</span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📱 Opened via App</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>Tracked when recipient opened letter in the platform</div>
+                    <div style={{ marginTop: 10, height: 5, background: `${C.purple}20`, borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct(d.openSources?.platform ?? 0, d.openedLetters || 1)}%`, height: '100%', background: C.purple, borderRadius: 99 }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openedLetters ?? 0}</span>
+                      <span style={{ fontSize: 12, color: C.muted }}>letters</span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>👁 Unique Opens (Total)</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>One entry per person regardless of how they opened</div>
+                    <div style={{ marginTop: 10, height: 5, background: `${C.sage}20`, borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct(d.openedLetters ?? 0, d.sentLetters || 1)}%`, height: '100%', background: C.sage, borderRadius: 99 }} />
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
 
             <section>
               <SectionHeading sub="How well are letters being sent, read, and claimed?">Engagement Rates</SectionHeading>

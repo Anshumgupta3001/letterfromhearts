@@ -212,6 +212,22 @@ export function AppProvider({ children }) {
     if (!authLoading && authUser) refreshOwnStrangerLetters()
   }, [authLoading, authUser, refreshOwnStrangerLetters])
 
+  // ── Received letters (letters sent TO the current user by known contacts) ─────
+  const [receivedLetters, setReceivedLetters] = useState([])
+
+  const refreshReceivedLetters = useCallback(async () => {
+    if (!getToken()) return
+    try {
+      const res  = await apiFetch('/api/letters/received')
+      const json = await res.json()
+      if (json.success) setReceivedLetters(json.data)
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    if (!authLoading && authUser) refreshReceivedLetters()
+  }, [authLoading, authUser, refreshReceivedLetters])
+
   // ── Caring Stranger feed (community feed for listeners) ───────────────────────
   const [strangerLetters, setStrangerLetters] = useState([])
 
@@ -317,6 +333,8 @@ export function AppProvider({ children }) {
         personalLetters, refreshPersonalLetters,
         // own stranger letters
         ownStrangerLetters, refreshOwnStrangerLetters,
+        // received letters (known contacts)
+        receivedLetters, refreshReceivedLetters,
         // caring stranger feed
         strangerLetters, refreshStrangerLetters,
         // notifications

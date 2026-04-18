@@ -118,8 +118,13 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
         <div className="px-6 py-5">
           {sent ? (
             /* ── Success state ────────────────────────────────────────── */
-            <div className="text-center py-4">
-              <div className="text-[40px] mb-3 animate-float-up">{scheduledFor ? '⏳' : '💌'}</div>
+            <div className="flex flex-col items-center justify-center text-center py-6">
+              <img
+                src="/auth-logo.png"
+                alt="Letter from Heart"
+                className="w-20 md:w-28 h-auto mb-5"
+                style={{ objectFit: 'contain', animation: 'fadeScaleIn 0.4s cubic-bezier(0.16,1,0.3,1) both' }}
+              />
               <div className="font-lora text-[22px] font-medium text-ink mb-2">
                 {scheduledFor ? 'Letter scheduled!' : 'Letter sent!'}
               </div>
@@ -131,14 +136,14 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                   <div className="text-[12px] font-medium mb-1" style={{ color: 'var(--tc)' }}>
                     {formatScheduled(scheduledFor)}
                   </div>
-                  <div className="text-[11px] text-ink-muted font-light mb-5">
+                  <div className="text-[11px] text-ink-muted font-light mb-6">
                     via {effectiveSender}
                   </div>
                 </>
               ) : (
                 <>
                   <div className="text-[13px] text-ink-muted font-light mb-1">Delivered to <strong>{to}</strong></div>
-                  <div className="text-[12px] text-ink-muted font-light mb-5">
+                  <div className="text-[11px] text-ink-muted font-light mb-6">
                     via {effectiveSender}
                   </div>
                 </>
