@@ -93,6 +93,94 @@ export function buildEmailText(message) {
   return `${message}\n\n---\nSent via Letter from Heart — a quiet space for words that matter.\nhttps://letterfromheart.com`
 }
 
+// ── Notification reminder email ───────────────────────────────────────────────
+
+const NOTIFICATION_MESSAGES = {
+  reply:    'Someone replied to your letter 💬',
+  open:     'Someone opened your letter 💌',
+  claim:    'A listener picked up your letter 🤍',
+  delivery: 'Your letter was delivered successfully ✉️',
+  general:  'You have a new update on Letter from Heart',
+  system:   'A message from Letter from Heart',
+}
+
+export function buildNotificationEmail({ message, type, link }) {
+  const headline = NOTIFICATION_MESSAGES[type] || NOTIFICATION_MESSAGES.general
+  const ctaUrl   = link
+    ? `https://letterfromheart.com${link.startsWith('/') ? '' : '/'}${link}`
+    : 'https://letterfromheart.com'
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${headline}</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:'DM Sans',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f0e8;padding:40px 0;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+
+        <!-- Logo -->
+        <tr>
+          <td style="padding:0 0 24px 0;text-align:center;">
+            <img
+              src="https://letterfromheart.com/brand-icon.png"
+              alt="Letter from Heart"
+              width="56" height="56"
+              style="display:block;margin:0 auto 8px;object-fit:contain;border:0;outline:none;"
+            />
+            <p style="margin:0;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9c8e80;">Letter from Heart</p>
+          </td>
+        </tr>
+
+        <!-- Card -->
+        <tr>
+          <td style="background:#ffffff;border-radius:16px;padding:36px 40px;box-shadow:0 4px 24px rgba(28,26,23,0.07);border:1px solid rgba(28,26,23,0.06);">
+
+            <h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:20px;font-weight:600;color:#1c1a17;line-height:1.3;">
+              ${headline}
+            </h2>
+
+            <div style="height:1px;background:linear-gradient(to right,transparent,rgba(196,99,58,0.2),transparent);margin:16px 0 20px;"></div>
+
+            <p style="margin:0 0 28px;font-family:Georgia,serif;font-size:15px;color:#4a4540;line-height:1.7;">
+              ${message}
+            </p>
+
+            <div style="text-align:center;">
+              <a href="${ctaUrl}" target="_blank"
+                style="display:inline-block;padding:12px 28px;background:#c4633a;color:#ffffff;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;font-weight:600;letter-spacing:0.3px;">
+                View in app →
+              </a>
+            </div>
+
+            <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.08),transparent);margin:28px 0 20px;"></div>
+
+            <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
+              You're receiving this because you haven't seen this notification yet.<br/>
+              Visit <a href="https://letterfromheart.com" style="color:#b0a89c;">letterfromheart.com</a> to manage your preferences.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 0;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
+              Letter from Heart · A quiet space for words that matter.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
 // ── System SMTP transporter ───────────────────────────────────────────────────
 
 export function createSystemTransporter() {

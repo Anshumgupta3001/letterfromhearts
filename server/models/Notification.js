@@ -7,8 +7,9 @@ const notificationSchema = new mongoose.Schema(
     letterId: { type: mongoose.Schema.Types.ObjectId, default: null },
     message:  { type: String, required: true },
     type:     { type: String, default: 'general' }, // general | reply | claim | delivery | system
-    isRead:   { type: Boolean, default: false, index: true },
-    link:     { type: String, default: '' },
+    isRead:    { type: Boolean, default: false, index: true },
+    link:      { type: String, default: '' },
+    emailSent: { type: Boolean, default: false, index: true },
   },
   { timestamps: true }
 )

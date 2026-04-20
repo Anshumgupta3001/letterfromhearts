@@ -867,7 +867,7 @@ function MobileDrawer({ open, onClose, navItems, currentPage, onNavigate, authUs
       }}>
         <div style={{ padding: '18px 18px 16px', borderBottom: '0.5px solid rgba(28,26,23,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <img src="/brand-icon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
+            <img src="/favicon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 16, color: 'var(--ink)' }}>Letter from Heart</span>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(28,26,23,0.05)', border: 'none', cursor: 'pointer', width: 26, height: 26, borderRadius: 6, color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
@@ -1024,7 +1024,7 @@ function Navbar() {
             marginRight: 28,
           }}
         >
-          <img src="/brand-icon.png" alt="Letter from Heart" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
           <span style={{ fontFamily: '"Lora", serif', fontSize: 17, fontStyle: 'italic', color: 'var(--ink)', whiteSpace: 'nowrap' }}>
             Letter from Heart
           </span>

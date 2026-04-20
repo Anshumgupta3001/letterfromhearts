@@ -26,6 +26,8 @@ export default {
   redisPort:     Number(process.env.REDIS_PORT) || 6379,
   redisUsername: process.env.REDIS_USERNAME || '',
   redisPassword: process.env.REDIS_PASSWORD || '',
+  // Notification email reminder (delay in minutes before emailing unread notification)
+  notificationEmailDelay: Number(process.env.NOTIFICATION_EMAIL_DELAY) || 10,
   // Google OAuth (Passport)
   googleClientId:     process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
