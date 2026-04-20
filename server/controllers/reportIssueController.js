@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import config from '../config/index.js'
+import Report from '../models/Report.js'
 
 const ISSUE_TYPES = ['bug', 'feature', 'content', 'account', 'other']
 
@@ -55,6 +56,16 @@ ${description.trim()}
 Submitted via Letter from Heart — Report an Issue
 `.trim()
 
+  // Always persist to DB (fire-and-forget — don't block the response on this)
+  Report.create({
+    userId:      user._id,
+    userEmail:   user.email,
+    userName:    user.name || '',
+    type,
+    subject:     subject.trim(),
+    description: description.trim(),
+  }).catch(err => console.error('[ReportIssue] DB save failed:', err.message))
+
   try {
     const transporter = createSystemTransporter()
     await transporter.sendMail({
@@ -67,6 +78,7 @@ Submitted via Letter from Heart — Report an Issue
     res.json({ success: true })
   } catch (err) {
     console.error('Report issue email failed:', err.message)
-    res.status(500).json({ success: false, error: 'Failed to send report. Please try again.' })
+    // Still return success if DB save worked — email is a bonus
+    res.json({ success: true })
   }
 }

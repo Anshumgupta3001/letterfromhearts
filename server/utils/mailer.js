@@ -7,6 +7,51 @@ import nodemailer  from 'nodemailer'
 import { Resend }  from 'resend'
 import config      from '../config/index.js'
 
+// ── Shared brand constants ────────────────────────────────────────────────────
+
+const BRAND_LOGO = `
+  <tr>
+    <td style="padding:0 0 28px 0;text-align:center;">
+      <img
+        src="https://letterfromheart.com/auth-logo.png"
+        alt="Letter from Heart"
+        width="120"
+        style="display:block;margin:0 auto;border:0;outline:none;max-width:120px;height:auto;"
+      />
+    </td>
+  </tr>`
+
+const BRAND_FOOTER = `
+  <tr>
+    <td style="padding:20px 0;text-align:center;">
+      <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
+        Letter from Heart · A quiet space for words that matter.
+      </p>
+    </td>
+  </tr>`
+
+function emailShell(title, bodyRows) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${title}</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:'DM Sans',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f0e8;padding:40px 0;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+        ${BRAND_LOGO}
+        ${bodyRows}
+        ${BRAND_FOOTER}
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
 // ── Tracking helpers ──────────────────────────────────────────────────────────
 
 export function generateTrackingId(userId) {
@@ -27,66 +72,45 @@ export function wrapLinksForClickTracking(html, trackingId) {
   })
 }
 
+// ── Letter delivery email ─────────────────────────────────────────────────────
+
 export function buildEmailHtml(message, trackingId, toEmail = '') {
   const withBreaks = message.replace(/\n/g, '<br/>')
   const withLinks  = wrapLinksForClickTracking(withBreaks, trackingId)
   const pixel      = generateTrackingPixel(trackingId)
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A letter for you</title>
-</head>
-<body style="margin:0;padding:0;background:#f5f0e8;font-family:'DM Sans',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f0e8;padding:40px 0;">
-    <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
-        <tr>
-          <td style="padding:0 0 20px 0;text-align:center;">
-            <img
-              src="https://letterfromheart.com/brand-icon.png"
-              alt="Letter from Heart"
-              width="56"
-              height="56"
-              style="display:block;margin:0 auto 8px;object-fit:contain;border:0;outline:none;"
-            />
-            <p style="margin:0;font-family:Georgia,serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#9c8e80;">Letter from Heart</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="background:#ffffff;border-radius:16px;padding:40px 44px;box-shadow:0 4px 24px rgba(28,26,23,0.07);border:1px solid rgba(28,26,23,0.06);">
-            <p style="margin:0 0 28px;font-family:Georgia,serif;font-size:15px;font-style:italic;color:#8c8478;line-height:1.6;">
-              Someone took a quiet moment to write this for you.
-            </p>
-            <div style="height:1px;background:linear-gradient(to right,transparent,rgba(196,99,58,0.2),transparent);margin-bottom:28px;"></div>
-            <div style="font-family:Georgia,serif;font-size:16px;line-height:2;color:#2c2a27;">
-              ${withLinks}
-            </div>
-            <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.1),transparent);margin:32px 0;"></div>
-            <p style="margin:0;font-size:12px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
-              This letter was written with care and sent through Letter from Heart —<br/>
-              a quiet space for words that matter.
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:20px 0;text-align:center;">
-            <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
-              You received this because someone chose to write to you.
-            </p>
-            <div style="margin-top:16px;">
-              <a href="https://letterfromheart.com/signup${toEmail ? `?email=${encodeURIComponent(toEmail)}` : ''}" target="_blank" style="display:inline-block;padding:10px 22px;background:#1C1A17;color:#F7F2EA;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.2px;">Click here to reply 💌</a>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-  ${pixel}
-</body>
-</html>`
+  const body = `
+    <tr>
+      <td style="background:#ffffff;border-radius:16px;padding:40px 44px;box-shadow:0 4px 24px rgba(28,26,23,0.07);border:1px solid rgba(28,26,23,0.06);">
+        <p style="margin:0 0 28px;font-family:Georgia,serif;font-size:15px;font-style:italic;color:#8c8478;line-height:1.6;">
+          Someone took a quiet moment to write this for you.
+        </p>
+        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(196,99,58,0.2),transparent);margin-bottom:28px;"></div>
+        <div style="font-family:Georgia,serif;font-size:16px;line-height:2;color:#2c2a27;">
+          ${withLinks}
+        </div>
+        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.1),transparent);margin:32px 0;"></div>
+        <p style="margin:0;font-size:12px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
+          This letter was written with care and sent through Letter from Heart —<br/>
+          a quiet space for words that matter.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:20px 0;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
+          You received this because someone chose to write to you.
+        </p>
+        <div style="margin-top:16px;">
+          <a href="https://letterfromheart.com/signup${toEmail ? `?email=${encodeURIComponent(toEmail)}` : ''}" target="_blank"
+            style="display:inline-block;padding:10px 22px;background:#1C1A17;color:#F7F2EA;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.2px;">
+            Click here to reply 💌
+          </a>
+        </div>
+      </td>
+    </tr>`
+
+  return emailShell('A letter for you', body) + `\n${pixel}`
 }
 
 export function buildEmailText(message) {
@@ -110,75 +134,31 @@ export function buildNotificationEmail({ message, type, link }) {
     ? `https://letterfromheart.com${link.startsWith('/') ? '' : '/'}${link}`
     : 'https://letterfromheart.com'
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${headline}</title>
-</head>
-<body style="margin:0;padding:0;background:#f5f0e8;font-family:'DM Sans',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f0e8;padding:40px 0;">
-    <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+  const body = `
+    <tr>
+      <td style="background:#ffffff;border-radius:16px;padding:36px 40px;box-shadow:0 4px 24px rgba(28,26,23,0.07);border:1px solid rgba(28,26,23,0.06);">
+        <h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:20px;font-weight:600;color:#1c1a17;line-height:1.3;">
+          ${headline}
+        </h2>
+        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(196,99,58,0.2),transparent);margin:16px 0 20px;"></div>
+        <p style="margin:0 0 28px;font-family:Georgia,serif;font-size:15px;color:#4a4540;line-height:1.7;">
+          ${message}
+        </p>
+        <div style="text-align:center;">
+          <a href="${ctaUrl}" target="_blank"
+            style="display:inline-block;padding:12px 28px;background:#c4633a;color:#ffffff;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;font-weight:600;letter-spacing:0.3px;">
+            View in app →
+          </a>
+        </div>
+        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.08),transparent);margin:28px 0 20px;"></div>
+        <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
+          You're receiving this because you haven't seen this notification yet.<br/>
+          Visit <a href="https://letterfromheart.com" style="color:#b0a89c;">letterfromheart.com</a> to manage your preferences.
+        </p>
+      </td>
+    </tr>`
 
-        <!-- Logo -->
-        <tr>
-          <td style="padding:0 0 24px 0;text-align:center;">
-            <img
-              src="https://letterfromheart.com/brand-icon.png"
-              alt="Letter from Heart"
-              width="56" height="56"
-              style="display:block;margin:0 auto 8px;object-fit:contain;border:0;outline:none;"
-            />
-            <p style="margin:0;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9c8e80;">Letter from Heart</p>
-          </td>
-        </tr>
-
-        <!-- Card -->
-        <tr>
-          <td style="background:#ffffff;border-radius:16px;padding:36px 40px;box-shadow:0 4px 24px rgba(28,26,23,0.07);border:1px solid rgba(28,26,23,0.06);">
-
-            <h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:20px;font-weight:600;color:#1c1a17;line-height:1.3;">
-              ${headline}
-            </h2>
-
-            <div style="height:1px;background:linear-gradient(to right,transparent,rgba(196,99,58,0.2),transparent);margin:16px 0 20px;"></div>
-
-            <p style="margin:0 0 28px;font-family:Georgia,serif;font-size:15px;color:#4a4540;line-height:1.7;">
-              ${message}
-            </p>
-
-            <div style="text-align:center;">
-              <a href="${ctaUrl}" target="_blank"
-                style="display:inline-block;padding:12px 28px;background:#c4633a;color:#ffffff;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;font-weight:600;letter-spacing:0.3px;">
-                View in app →
-              </a>
-            </div>
-
-            <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.08),transparent);margin:28px 0 20px;"></div>
-
-            <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
-              You're receiving this because you haven't seen this notification yet.<br/>
-              Visit <a href="https://letterfromheart.com" style="color:#b0a89c;">letterfromheart.com</a> to manage your preferences.
-            </p>
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style="padding:20px 0;text-align:center;">
-            <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
-              Letter from Heart · A quiet space for words that matter.
-            </p>
-          </td>
-        </tr>
-
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`
+  return emailShell(headline, body)
 }
 
 // ── System SMTP transporter ───────────────────────────────────────────────────
