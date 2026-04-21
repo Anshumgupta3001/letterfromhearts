@@ -245,6 +245,9 @@ function ReportDrawer({ open, onClose }) {
               >
                 {loading ? 'Sending…' : 'Send Report'}
               </button>
+              <p style={{ margin: '10px 0 0', fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', fontStyle: 'italic', opacity: 0.75 }}>
+                🔒 Your report is confidential and securely processed.
+              </p>
             </form>
           )}
         </div>
@@ -817,10 +820,14 @@ function HomeSidebar() {
           </div>
 
           {/* Logout */}
+          <p style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', opacity: 0.6, letterSpacing: '0.2px' }}>
+            🔒 Private &amp; Secure
+          </p>
+
           <button
             onClick={logout}
             style={{
-              marginTop: 12, width: '100%', padding: '7px 10px', borderRadius: 8, fontSize: 12,
+              marginTop: 8, width: '100%', padding: '7px 10px', borderRadius: 8, fontSize: 12,
               fontFamily: '"DM Sans", sans-serif', fontWeight: 400,
               background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)',
               color: 'var(--ink-muted)', cursor: 'pointer', transition: 'all 0.15s',

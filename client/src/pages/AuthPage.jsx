@@ -632,6 +632,10 @@ export default function AuthPage() {
                   : (mode === 'login' ? 'Log In →' : 'Create Account →')}
               </button>
 
+              <p className="text-center text-[11px] font-light mt-2" style={{ color: 'var(--ink-muted)' }}>
+                {mode === 'signup' ? '🔒 Your information is private and securely protected.' : '🔐 Secure login. Your data is protected.'}
+              </p>
+
             </form>
 
             {/* ── OR divider ── */}

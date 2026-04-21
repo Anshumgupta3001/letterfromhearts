@@ -58,7 +58,6 @@ export default function ConnectionsPage() {
   const [deleting, setDeleting]        = useState(false)
   const [toast, setToast]              = useState(null)
   const [emailFrom, setEmailFrom]      = useState('')
-  const [systemEmail, setSystemEmail]  = useState('')
 
   function showToast(msg, type = 'success') { setToast({ msg, type }) }
 
@@ -70,7 +69,6 @@ export default function ConnectionsPage() {
       .then(j => {
         if (j.success) {
           if (j.emailFrom)   setEmailFrom(j.emailFrom)
-          if (j.systemEmail) setSystemEmail(j.systemEmail)
         }
       })
       .catch(() => {})
@@ -203,19 +201,6 @@ export default function ConnectionsPage() {
               </div>
             </div>
 
-            {/* System / support email note */}
-            {systemEmail && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: 'rgba(245,240,232,0.7)', border: `1px solid ${FT}` }}>
-                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, color: 'var(--ink-muted)' }}>
-                  <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M10 9v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <circle cx="10" cy="6.5" r="0.75" fill="currentColor"/>
-                </svg>
-                <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.5 }}>
-                  Admin contact: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{systemEmail}</span>
-                </span>
-              </div>
-            )}
           </section>
 
           {/* ── User connected accounts ────────────────────────────── */}

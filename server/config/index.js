@@ -32,4 +32,6 @@ export default {
   googleClientId:     process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
   googleCallbackUrl:  process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback',
+  // reCAPTCHA (optional — set key to enforce on signup/login)
+  recaptchaSecretKey: process.env.RECAPTCHA_SECRET_KEY || '',
 }

@@ -20,6 +20,17 @@ const googleUserSchema = new mongoose.Schema(
       trim:    true,
     },
 
+    username: {
+      type:      String,
+      required:  true,
+      unique:    true,
+      lowercase: true,
+      trim:      true,
+      minlength: 3,
+      maxlength: 20,
+      match:     [/^[a-z0-9_]+$/, 'Username may only contain letters, numbers, and underscores.'],
+    },
+
     email: {
       type:      String,
       required:  true,
