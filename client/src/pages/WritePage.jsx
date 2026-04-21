@@ -272,8 +272,13 @@ function Step3({ onBack, onSend, mood, sal, setSal, body, setBody, mode, saving,
             onChange={handleBodyChange}
           />
 
+          {/* Safe space note */}
+          <p style={{ margin: '0 0 20px', fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', fontStyle: 'italic', opacity: 0.7 }}>
+            💛 This is a safe space. Your message is private and handled with care.
+          </p>
+
           {/* Sign-off */}
-          <div style={{ marginTop: 24 }}>
+          <div style={{ marginTop: 4 }}>
             <input
               style={{
                 fontFamily: 'Lora, serif', fontSize: 15, fontStyle: 'italic',

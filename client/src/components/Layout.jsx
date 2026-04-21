@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import CountUp from 'react-countup'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 import { MdReportProblem } from 'react-icons/md'
@@ -246,6 +245,9 @@ function ReportDrawer({ open, onClose }) {
               >
                 {loading ? 'Sending…' : 'Send Report'}
               </button>
+              <p style={{ margin: '10px 0 0', fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', fontStyle: 'italic', opacity: 0.75 }}>
+                🔒 Your report is confidential and securely processed.
+              </p>
             </form>
           )}
         </div>
@@ -570,7 +572,7 @@ function HomeSidebar() {
         }} />
       )}
       <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>
-        <CountUp end={value} duration={1.2} separator="," enableScrollSpy scrollSpyOnce />
+        {value.toLocaleString()}
       </div>
       <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 400, marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>
         {label}
@@ -664,11 +666,11 @@ function HomeSidebar() {
                 Open rate
               </div>
               <div style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 500, letterSpacing: '-1px', color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>
-                <CountUp end={openRate} duration={1.2} suffix="%" enableScrollSpy scrollSpyOnce />
+                {openRate}%
               </div>
             </div>
             <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', textAlign: 'right', lineHeight: 1.5, paddingBottom: 2, flexShrink: 0 }}>
-              <CountUp end={opened} duration={1.2} enableScrollSpy scrollSpyOnce /> of <CountUp end={sent} duration={1.2} enableScrollSpy scrollSpyOnce /><br />letters seen
+              {opened} of {sent}<br />letters seen
             </div>
           </div>
           {/* Progress bar */}
@@ -750,7 +752,7 @@ function HomeSidebar() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}><CountUp end={heard} duration={1.2} enableScrollSpy scrollSpyOnce /></div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}>{heard}</div>
               <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Strangers heard you</div>
             </div>
             {canReadFeed && (
@@ -758,7 +760,7 @@ function HomeSidebar() {
                 style={{ cursor: 'pointer', minWidth: 0 }}
                 onClick={() => navigate('listenerread')}
               >
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}><CountUp end={strangerLetters?.length || 0} duration={1.2} enableScrollSpy scrollSpyOnce /></div>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
                 <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Waiting to be read</div>
               </div>
             )}
@@ -767,7 +769,7 @@ function HomeSidebar() {
                 style={{ cursor: 'pointer', minWidth: 0 }}
                 onClick={() => navigate('myspace', 'stranger')}
               >
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--purple)', lineHeight: 1 }}><CountUp end={repliesReceived} duration={1.2} enableScrollSpy scrollSpyOnce /></div>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 500, color: 'var(--purple)', lineHeight: 1 }}>{repliesReceived}</div>
                 <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 3, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3, overflowWrap: 'break-word' }}>Replies received</div>
               </div>
             )}
@@ -818,10 +820,14 @@ function HomeSidebar() {
           </div>
 
           {/* Logout */}
+          <p style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 10, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', opacity: 0.6, letterSpacing: '0.2px' }}>
+            🔒 Private &amp; Secure
+          </p>
+
           <button
             onClick={logout}
             style={{
-              marginTop: 12, width: '100%', padding: '7px 10px', borderRadius: 8, fontSize: 12,
+              marginTop: 8, width: '100%', padding: '7px 10px', borderRadius: 8, fontSize: 12,
               fontFamily: '"DM Sans", sans-serif', fontWeight: 400,
               background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)',
               color: 'var(--ink-muted)', cursor: 'pointer', transition: 'all 0.15s',

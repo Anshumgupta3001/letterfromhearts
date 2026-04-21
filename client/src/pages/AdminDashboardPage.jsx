@@ -273,6 +273,7 @@ const TABS = [
   { id: 'letters',       icon: '📬', label: 'Letters',       desc: 'Recent activity & moods' },
   { id: 'notifications', icon: '🔔', label: 'Notifications', desc: 'Platform notifications' },
   { id: 'trends',        icon: '📉', label: 'Trends',        desc: 'Daily activity charts' },
+  { id: 'reports',       icon: '🚨', label: 'Reports',       desc: 'User reports & moderation' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -290,6 +291,15 @@ export default function AdminDashboardPage() {
   const [search,    setSearch]    = useState('')
   const [page,      setPage]      = useState(1)
 
+  // ── Reports tab state ─────────────────────────────────────────────────────
+  const [reports,        setReports]        = useState([])
+  const [reportsTotal,   setReportsTotal]   = useState(0)
+  const [reportsLoading, setReportsLoading] = useState(false)
+  const [reportsFilter,  setReportsFilter]  = useState('all')   // all | pending | resolved
+  const [reportsSearch,  setReportsSearch]  = useState('')
+  const [reportsPage,    setReportsPage]    = useState(1)
+  const [resolvingId,    setResolvingId]    = useState(null)
+
   const fetchData = useCallback(async (k, d) => {
     setLoading(true)
     setError('')
@@ -305,6 +315,37 @@ export default function AdminDashboardPage() {
       setLoading(false)
     }
   }, [])
+
+  const fetchReports = useCallback(async (adminKey, filter, search, pg) => {
+    setReportsLoading(true)
+    try {
+      const params = new URLSearchParams({ key: adminKey, status: filter, page: pg, limit: 50 })
+      if (search.trim()) params.set('search', search.trim())
+      const res  = await fetch(`${API}/api/reports?${params}`)
+      const json = await res.json()
+      if (!res.ok) return
+      setReports(json.data || [])
+      setReportsTotal(json.total || 0)
+    } catch { /* silently fail */ }
+    finally { setReportsLoading(false) }
+  }, [])
+
+  const resolveReport = useCallback(async (reportId, newStatus) => {
+    setResolvingId(reportId)
+    try {
+      const res = await fetch(`${API}/api/reports/${reportId}/status?key=${encodeURIComponent(key)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        setReports(prev => prev.map(r =>
+          r._id === reportId ? { ...r, status: newStatus, resolvedAt: newStatus === 'resolved' ? new Date().toISOString() : null } : r
+        ))
+      }
+    } catch { /* silently fail */ }
+    finally { setResolvingId(null) }
+  }, [key])
 
   // Must be before early returns — Rules of Hooks
   const filteredUsers = useMemo(() => {
@@ -936,6 +977,112 @@ export default function AdminDashboardPage() {
         {/* ═══════════════════════════════════════════════════════════════════
             TAB: TRENDS
         ══════════════════════════════════════════════════════════════════════ */}
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: REPORTS
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'reports' && (() => {
+          // Fetch on first render of this tab or when filter/search/page changes
+          if (!reportsLoading && reports.length === 0 && reportsTotal === 0) {
+            fetchReports(key, reportsFilter, reportsSearch, reportsPage)
+          }
+          const pendingCount  = reports.filter(r => r.status === 'pending').length
+          const resolvedCount = reports.filter(r => r.status === 'resolved').length
+
+          return (
+            <section>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>🚨 Reports Management</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{reportsTotal} total reports</div>
+                </div>
+                {/* CSV download */}
+                <a
+                  href={`${API}/api/reports/export?key=${encodeURIComponent(key)}&status=${reportsFilter}`}
+                  download
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: C.sage, color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 600, textDecoration: 'none', fontFamily: '"DM Sans",sans-serif' }}
+                >
+                  ⬇ Download CSV
+                </a>
+              </div>
+
+              {/* Filters + search */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+                {['all', 'pending', 'resolved'].map(f => (
+                  <button key={f} onClick={() => { setReportsFilter(f); setReportsPage(1); fetchReports(key, f, reportsSearch, 1) }}
+                    style={{ padding: '5px 14px', borderRadius: 20, border: `1px solid ${reportsFilter === f ? C.tc : C.border}`, background: reportsFilter === f ? C.tc : C.white, color: reportsFilter === f ? '#fff' : C.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>
+                    {f} {f === 'pending' ? `(${pendingCount})` : f === 'resolved' ? `(${resolvedCount})` : `(${reportsTotal})`}
+                  </button>
+                ))}
+                <input
+                  placeholder="Search email, subject…"
+                  value={reportsSearch}
+                  onChange={e => setReportsSearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { setReportsPage(1); fetchReports(key, reportsFilter, reportsSearch, 1) } }}
+                  style={{ padding: '6px 12px', border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, outline: 'none', width: 220, fontFamily: '"DM Sans",sans-serif', color: C.ink }}
+                />
+                <button onClick={() => { setReportsPage(1); fetchReports(key, reportsFilter, reportsSearch, 1) }}
+                  style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.paper, fontSize: 12, cursor: 'pointer', color: C.muted }}>
+                  Search
+                </button>
+              </div>
+
+              {reportsLoading ? (
+                <div style={{ textAlign: 'center', padding: 48, color: C.muted, fontStyle: 'italic' }}>Loading reports…</div>
+              ) : reports.length === 0 ? (
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+                  No reports found.
+                </div>
+              ) : (
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
+                  {/* Table header */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 0.8fr 1.5fr 0.8fr 0.8fr 1fr', gap: 8, padding: '10px 16px', background: C.paper, borderBottom: `1px solid ${C.border}`, fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>
+                    <span>Reporter</span><span>Email</span><span>Type</span><span>Subject</span><span>Status</span><span>Date</span><span>Action</span>
+                  </div>
+
+                  {reports.map((r, i) => {
+                    const isLast    = i === reports.length - 1
+                    const isPending = r.status === 'pending'
+                    const busy      = resolvingId === r._id
+                    return (
+                      <div key={r._id} style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 0.8fr 1.5fr 0.8fr 0.8fr 1fr', gap: 8, padding: '12px 16px', borderBottom: isLast ? 'none' : `1px solid ${C.border}`, alignItems: 'center', fontSize: 12.5 }}>
+                        <span style={{ fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.userName || '—'}</span>
+                        <span style={{ color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5 }}>{r.userEmail}</span>
+                        <span style={{ textTransform: 'capitalize', color: C.ink, fontSize: 11.5 }}>{r.type}</span>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 500, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.subject}</div>
+                          {r.description && <div style={{ fontSize: 11, color: C.muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.description}</div>}
+                        </div>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 10.5, fontWeight: 600, background: isPending ? 'rgba(196,99,58,0.1)' : 'rgba(107,158,138,0.12)', color: isPending ? C.tc : C.sage }}>
+                          {isPending ? '⏳ Pending' : '✅ Resolved'}
+                        </span>
+                        <span style={{ fontSize: 11, color: C.muted }}>{fmtDate(r.createdAt)}</span>
+                        <button
+                          disabled={busy}
+                          onClick={() => resolveReport(r._id, isPending ? 'resolved' : 'pending')}
+                          style={{ padding: '5px 10px', borderRadius: 7, border: `1px solid ${isPending ? C.sage : C.border}`, background: isPending ? 'rgba(107,158,138,0.08)' : C.paper, color: isPending ? C.sage : C.muted, fontSize: 11, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.5 : 1, whiteSpace: 'nowrap' }}
+                        >
+                          {busy ? '…' : isPending ? '✅ Resolve' : '↩ Reopen'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {reportsTotal > 50 && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
+                  <button disabled={reportsPage === 1} onClick={() => { const p = reportsPage - 1; setReportsPage(p); fetchReports(key, reportsFilter, reportsSearch, p) }}
+                    style={{ padding: '5px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 12, color: C.muted }}>← Prev</button>
+                  <span style={{ fontSize: 12, color: C.muted, alignSelf: 'center' }}>Page {reportsPage} of {Math.ceil(reportsTotal / 50)}</span>
+                  <button disabled={reportsPage >= Math.ceil(reportsTotal / 50)} onClick={() => { const p = reportsPage + 1; setReportsPage(p); fetchReports(key, reportsFilter, reportsSearch, p) }}
+                    style={{ padding: '5px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 12, color: C.muted }}>Next →</button>
+                </div>
+              )}
+            </section>
+          )
+        })()}
+
         {activeTab === 'trends' && (
           <section>
             <SectionHeading sub={`Daily activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Daily Trends</SectionHeading>

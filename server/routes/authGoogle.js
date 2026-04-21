@@ -17,6 +17,26 @@ import admin      from '../config/firebaseAdmin.js'   // legacy Firebase routes
 
 const router = Router()
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function generateUniqueUsername(name) {
+  const base = (name || 'user')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .slice(0, 14) || 'user'
+
+  // Try up to 10 candidates before falling back to a longer random suffix
+  for (let i = 0; i < 10; i++) {
+    const suffix   = Math.random().toString(36).slice(2, 6)
+    const candidate = `${base}_${suffix}`
+    const exists   = await GoogleUser.findOne({ username: candidate })
+    if (!exists) return candidate
+  }
+  return `user_${Date.now().toString(36)}`
+}
+
 // ── Helper: sign a JWT for a GoogleUser ──────────────────────────────────────
 function signGoogleJwt(userId) {
   return jwt.sign({ id: userId, provider: 'google' }, config.jwtSecret, { expiresIn: '7d' })
@@ -99,10 +119,12 @@ router.get(
       }
 
       // Create new user WITHOUT a role — the frontend modal will collect it
+      const username = await generateUniqueUsername(name)
       googleUser = await GoogleUser.create({
         uid:    googleId,
         name:   name   || 'Google User',
         email,
+        username,
         avatar: avatar || '',
         // role intentionally omitted — null until user selects one
       })
@@ -144,7 +166,8 @@ router.post('/google-signup', async (req, res) => {
       return res.status(409).json({ error: 'An account with this Google account already exists. Please log in.' })
     }
 
-    const googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), avatar: avatar || '', role })
+    const usernameForNew = await generateUniqueUsername(name)
+    const googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), username: usernameForNew, avatar: avatar || '', role })
     const token = signGoogleJwt(googleUser._id.toString())
     return res.status(201).json({ success: true, token, user: googleUser.toSafeObject() })
   } catch (err) {
@@ -209,7 +232,8 @@ router.post('/google', async (req, res) => {
         googleUser.name   = name   || googleUser.name
         await googleUser.save()
       } else {
-        googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), avatar: avatar || '' })
+        const usernameForLegacy = await generateUniqueUsername(name)
+        googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), username: usernameForLegacy, avatar: avatar || '' })
       }
     } else {
       googleUser.name   = name   || googleUser.name

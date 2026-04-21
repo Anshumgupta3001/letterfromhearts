@@ -6,12 +6,113 @@ import { apiFetch } from '../utils/api'
 const BD = '#E0D4BC'
 const FT = '#F2EBE0'
 
+// ── Report Letter Modal ───────────────────────────────────────────────────────
+function ReportLetterModal({ letterId, onClose }) {
+  const [desc,      setDesc]      = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [done,       setDone]      = useState(false)
+  const [err,        setErr]       = useState('')
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!desc.trim()) { setErr('Please describe the issue.'); return }
+    setSubmitting(true)
+    setErr('')
+    try {
+      const res = await apiFetch('/api/reports', {
+        method: 'POST',
+        body: JSON.stringify({
+          type:        'content',
+          subject:     'Inappropriate letter content',
+          description: desc.trim(),
+          letterId,
+        }),
+      })
+      if (res.ok) { setDone(true) }
+      else        { const j = await res.json(); setErr(j.error || 'Could not submit report.') }
+    } catch { setErr('Network error. Please try again.') }
+    finally   { setSubmitting(false) }
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(28,26,23,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 9999, padding: 16,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff', borderRadius: 16, padding: '28px 28px 24px',
+          width: '100%', maxWidth: 400,
+          boxShadow: '0 16px 48px rgba(28,26,23,0.16)',
+          border: '1px solid rgba(28,26,23,0.08)',
+        }}
+      >
+        {done ? (
+          <div style={{ textAlign: 'center', padding: '12px 0' }}>
+            <div style={{ fontSize: 28, marginBottom: 12 }}>✅</div>
+            <div style={{ fontFamily: '"Lora",serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
+              Report received
+            </div>
+            <p style={{ fontFamily: '"Lora",serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
+              Thank you for helping keep this a safe space. We'll review it shortly.
+            </p>
+            <button
+              onClick={onClose}
+              style={{ marginTop: 20, padding: '9px 24px', borderRadius: 8, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans",sans-serif', fontSize: 13, fontWeight: 500 }}
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div style={{ fontFamily: '"Lora",serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>
+              🚩 Report this letter
+            </div>
+            <p style={{ fontFamily: '"Lora",serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.6, marginBottom: 16 }}>
+              Let us know if this letter contains harmful, abusive, or inappropriate content.
+            </p>
+            <textarea
+              value={desc}
+              onChange={e => { setDesc(e.target.value); setErr('') }}
+              placeholder="Describe what's wrong…"
+              rows={4}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 9, fontSize: 13,
+                border: err ? '1.5px solid var(--tc)' : '1px solid rgba(28,26,23,0.14)',
+                outline: 'none', resize: 'vertical', fontFamily: '"DM Sans",sans-serif',
+                color: 'var(--ink)', lineHeight: 1.6, boxSizing: 'border-box',
+              }}
+            />
+            {err && <div style={{ fontSize: 12, color: 'var(--tc)', marginTop: 6 }}>{err}</div>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+              <button type="button" onClick={onClose}
+                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(28,26,23,0.14)', background: 'transparent', fontSize: 12.5, cursor: 'pointer', color: 'var(--ink-muted)', fontFamily: '"DM Sans",sans-serif' }}>
+                Cancel
+              </button>
+              <button type="submit" disabled={submitting}
+                style={{ padding: '8px 20px', borderRadius: 8, background: '#B85450', color: '#fff', border: 'none', fontSize: 12.5, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.6 : 1, fontFamily: '"DM Sans",sans-serif' }}>
+                {submitting ? 'Sending…' : 'Submit Report'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Letter card ───────────────────────────────────────────────────────────────
 function LetterCard({ letter, onMarkRead, onOpen }) {
   const [marking,   setMarking]   = useState(false)
   const [readError, setReadError] = useState('')
   const [hov,       setHov]       = useState(false)
   const [btnHov,    setBtnHov]    = useState(false)
+  const [reporting,  setReporting] = useState(false)
 
   const date = new Date(letter.createdAt).toLocaleDateString('en-IN', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -158,11 +259,20 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
         padding: '10px 20px 10px 24px',
         borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)',
       }}>
-        <div style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"Lora", serif', fontStyle: 'italic' }}>
-          {isHeld
-            ? 'This letter is held by you'
-            : 'The first person to open holds it forever'}
-        </div>
+        <button
+          onClick={() => setReporting(true)}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 500,
+            cursor: 'pointer', fontFamily: '"DM Sans", sans-serif',
+            border: '1px solid transparent', color: 'var(--ink-muted)',
+            background: 'transparent', transition: 'all 0.14s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#B85450'; e.currentTarget.style.borderColor = 'rgba(184,84,80,0.2)'; e.currentTarget.style.background = 'rgba(184,84,80,0.05)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent' }}
+        >
+          🚩 Report
+        </button>
 
         <button
           onClick={handleOpen}
@@ -192,6 +302,8 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
           ) : isHeld ? 'Read again →' : 'Open & hold →'}
         </button>
       </div>
+
+      {reporting && <ReportLetterModal letterId={letter._id} onClose={() => setReporting(false)} />}
     </div>
   )
 }
