@@ -2,7 +2,6 @@ import nodemailer from 'nodemailer'
 import EmailAccount from '../models/EmailAccount.js'
 import Letter from '../models/Letter.js'
 import User from '../models/User.js'
-import GoogleUser from '../models/GoogleUser.js'
 import config from '../config/index.js'
 import { decrypt } from './emailAccountController.js'
 import { checkContentSafety } from '../utils/moderation.js'
@@ -132,7 +131,6 @@ export async function sendEmail(req, res) {
   try {
     const recipientEmail = to.trim().toLowerCase()
     const recipientUser  = await User.findOne({ email: recipientEmail }, '_id').lean()
-      || await GoogleUser.findOne({ email: recipientEmail }, '_id').lean()
     if (recipientUser) {
       await createNotification({
         userId:   recipientUser._id,

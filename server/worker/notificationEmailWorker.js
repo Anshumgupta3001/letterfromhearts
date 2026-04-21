@@ -12,8 +12,7 @@ dotenv.config()
 import { connectDB }     from '../config/db.js'
 import config            from '../config/index.js'
 import Notification      from '../models/Notification.js'
-import User              from '../models/User.js'
-import GoogleUser        from '../models/GoogleUser.js'
+import User from '../models/User.js'
 import { buildNotificationEmail, sendViaResend } from '../utils/mailer.js'
 
 await connectDB()
@@ -26,16 +25,10 @@ console.log(`📬 Notification email worker started`)
 console.log(`   Delay  : ${config.notificationEmailDelay} min`)
 console.log(`   Polling: every ${POLL_MS / 1000}s\n`)
 
-// ── Resolve email for any user (email/password OR Google OAuth) ───────────────
+// ── Resolve email for any user (single User collection for all providers) ────
 async function resolveUser(userId) {
-  // Try standard User first
   const user = await User.findById(userId).select('email name').lean()
   if (user?.email) return { email: user.email, name: user.name }
-
-  // Fall back to GoogleUser (OAuth accounts are stored here)
-  const googleUser = await GoogleUser.findById(userId).select('email name').lean()
-  if (googleUser?.email) return { email: googleUser.email, name: googleUser.name }
-
   return null
 }
 
@@ -82,7 +75,7 @@ async function processBatch() {
       continue
     }
 
-    // Resolve email — checks User then GoogleUser
+    // Resolve user email
     let user
     try {
       user = await resolveUser(userId)

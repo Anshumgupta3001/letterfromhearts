@@ -1,6 +1,6 @@
 // Google OAuth routes
 //
-// Passport redirect flow (primary — no Firebase needed):
+// Passport redirect flow (primary):
 //   GET  /api/auth/google          → redirect to Google OAuth consent screen
 //   GET  /api/auth/google/callback → handle OAuth callback, issue JWT, redirect to frontend
 //
@@ -11,9 +11,9 @@
 import { Router } from 'express'
 import jwt        from 'jsonwebtoken'
 import passport   from '../config/passport.js'
-import GoogleUser from '../models/GoogleUser.js'
+import User       from '../models/User.js'
 import config     from '../config/index.js'
-import admin      from '../config/firebaseAdmin.js'   // legacy Firebase routes
+import admin      from '../config/firebaseAdmin.js'
 
 const router = Router()
 
@@ -27,22 +27,19 @@ async function generateUniqueUsername(name) {
     .replace(/^_|_$/g, '')
     .slice(0, 14) || 'user'
 
-  // Try up to 10 candidates before falling back to a longer random suffix
   for (let i = 0; i < 10; i++) {
-    const suffix   = Math.random().toString(36).slice(2, 6)
+    const suffix    = Math.random().toString(36).slice(2, 6)
     const candidate = `${base}_${suffix}`
-    const exists   = await GoogleUser.findOne({ username: candidate })
+    const exists    = await User.findOne({ username: candidate })
     if (!exists) return candidate
   }
   return `user_${Date.now().toString(36)}`
 }
 
-// ── Helper: sign a JWT for a GoogleUser ──────────────────────────────────────
 function signGoogleJwt(userId) {
   return jwt.sign({ id: userId, provider: 'google' }, config.jwtSecret, { expiresIn: '7d' })
 }
 
-// ── Helper: encode mode in OAuth state param ──────────────────────────────────
 function encodeState(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')
 }
@@ -51,7 +48,6 @@ function decodeState(str) {
 }
 
 // ── GET /api/auth/google ──────────────────────────────────────────────────────
-// Initiates Google OAuth. Accepts ?mode=signup|login (default: login).
 router.get('/google', (req, res, next) => {
   if (!config.googleClientId || !config.googleClientSecret) {
     return res.status(503).json({
@@ -71,7 +67,6 @@ router.get('/google', (req, res, next) => {
 })
 
 // ── GET /api/auth/google/callback ─────────────────────────────────────────────
-// Google redirects here after the user grants (or denies) permission.
 router.get(
   '/google/callback',
   (req, res, next) => {
@@ -82,54 +77,51 @@ router.get(
   },
   async (req, res) => {
     try {
-      const { googleId, name, email, avatar } = req.user   // set by Passport strategy
+      const { googleId, name, email, avatar } = req.user
       const { mode } = decodeState(req.query.state || '')
 
       if (!email) {
         return res.redirect(`${config.clientOrigin}/?google_error=no_email`)
       }
 
-      // ── Find existing GoogleUser by uid or email ─────────────────────────
-      let googleUser = await GoogleUser.findOne({ uid: googleId })
-      if (!googleUser) googleUser = await GoogleUser.findOne({ email })
+      // Find existing user by Google UID or email
+      let user = await User.findOne({ uid: googleId, authProvider: 'google' })
+      if (!user) user = await User.findOne({ email, authProvider: 'google' })
 
-      // ── Login mode: existing users only ──────────────────────────────────
+      // ── Login mode ────────────────────────────────────────────────────────
       if (mode === 'login') {
-        if (!googleUser) {
+        if (!user) {
           return res.redirect(`${config.clientOrigin}/?google_error=no_account`)
         }
-        // Refresh profile data from Google
-        googleUser.name   = name   || googleUser.name
-        googleUser.avatar = avatar || googleUser.avatar
-        if (googleUser.uid !== googleId) googleUser.uid = googleId
-        await googleUser.save()
+        user.name   = name   || user.name
+        user.avatar = avatar || user.avatar
+        if (user.uid !== googleId) user.uid = googleId
+        await user.save()
 
-        const token = signGoogleJwt(googleUser._id.toString())
-        // If this user never set a role, treat them the same as a new signup
-        const needsRole = !googleUser.role
+        const token     = signGoogleJwt(user._id.toString())
+        const needsRole = !user.role
         return res.redirect(
           `${config.clientOrigin}/?google_token=${token}${needsRole ? '&google_new=true' : ''}`
         )
       }
 
       // ── Signup mode ───────────────────────────────────────────────────────
-      if (googleUser) {
-        // Account already exists — redirect with error
+      if (user) {
         return res.redirect(`${config.clientOrigin}/?google_error=already_exists`)
       }
 
-      // Create new user WITHOUT a role — the frontend modal will collect it
       const username = await generateUniqueUsername(name)
-      googleUser = await GoogleUser.create({
-        uid:    googleId,
-        name:   name   || 'Google User',
-        email,
+      user = await User.create({
+        uid:          googleId,
+        name:         name || 'Google User',
         username,
-        avatar: avatar || '',
-        // role intentionally omitted — null until user selects one
+        email,
+        avatar:       avatar || '',
+        authProvider: 'google',
+        // role intentionally omitted — frontend modal collects it
       })
 
-      const token = signGoogleJwt(googleUser._id.toString())
+      const token = signGoogleJwt(user._id.toString())
       return res.redirect(`${config.clientOrigin}/?google_token=${token}&google_new=true`)
 
     } catch (err) {
@@ -140,7 +132,6 @@ router.get(
 )
 
 // ── POST /api/auth/google-signup (Firebase flow — legacy) ─────────────────────
-// Kept for backward compat. Requires Firebase Admin (serviceAccountKey.json).
 router.post('/google-signup', async (req, res) => {
   try {
     const { idToken, role } = req.body
@@ -161,15 +152,22 @@ router.post('/google-signup', async (req, res) => {
     const { uid, name, email, picture: avatar } = decoded
     if (!email) return res.status(400).json({ error: 'Google account must have an email address.' })
 
-    const existing = await GoogleUser.findOne({ $or: [{ uid }, { email: email.toLowerCase() }] })
+    const existing = await User.findOne({
+      authProvider: 'google',
+      $or: [{ uid }, { email: email.toLowerCase() }],
+    })
     if (existing) {
       return res.status(409).json({ error: 'An account with this Google account already exists. Please log in.' })
     }
 
-    const usernameForNew = await generateUniqueUsername(name)
-    const googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), username: usernameForNew, avatar: avatar || '', role })
-    const token = signGoogleJwt(googleUser._id.toString())
-    return res.status(201).json({ success: true, token, user: googleUser.toSafeObject() })
+    const username = await generateUniqueUsername(name)
+    const user     = await User.create({
+      uid, name: name || 'Google User', username,
+      email: email.toLowerCase(), avatar: avatar || '',
+      authProvider: 'google', role,
+    })
+    const token = signGoogleJwt(user._id.toString())
+    return res.status(201).json({ success: true, token, user: user.toSafeObject() })
   } catch (err) {
     console.error('[google-signup]', err)
     return res.status(500).json({ error: 'Server error during Google sign-up.' })
@@ -190,17 +188,17 @@ router.post('/google-login', async (req, res) => {
     catch { return res.status(401).json({ error: 'Invalid or expired Google token.' }) }
 
     const { uid, name, email, picture: avatar } = decoded
-    let googleUser = await GoogleUser.findOne({ uid })
-    if (!googleUser && email) googleUser = await GoogleUser.findOne({ email: email.toLowerCase() })
-    if (!googleUser) return res.status(404).json({ error: 'No account found. Please sign up first.' })
+    let user = await User.findOne({ uid, authProvider: 'google' })
+    if (!user && email) user = await User.findOne({ email: email.toLowerCase(), authProvider: 'google' })
+    if (!user) return res.status(404).json({ error: 'No account found. Please sign up first.' })
 
-    googleUser.name   = name   || googleUser.name
-    googleUser.avatar = avatar || googleUser.avatar
-    if (uid !== googleUser.uid) googleUser.uid = uid
-    await googleUser.save()
+    user.name   = name   || user.name
+    user.avatar = avatar || user.avatar
+    if (uid !== user.uid) user.uid = uid
+    await user.save()
 
-    const token = signGoogleJwt(googleUser._id.toString())
-    return res.status(200).json({ success: true, token, user: googleUser.toSafeObject() })
+    const token = signGoogleJwt(user._id.toString())
+    return res.status(200).json({ success: true, token, user: user.toSafeObject() })
   } catch (err) {
     console.error('[google-login]', err)
     return res.status(500).json({ error: 'Server error during Google login.' })
@@ -223,26 +221,30 @@ router.post('/google', async (req, res) => {
     const { uid, name, email, picture: avatar } = decoded
     if (!email) return res.status(400).json({ error: 'Google account must have an email address.' })
 
-    let googleUser = await GoogleUser.findOne({ uid })
-    if (!googleUser) {
-      googleUser = await GoogleUser.findOne({ email: email.toLowerCase() })
-      if (googleUser) {
-        googleUser.uid    = uid
-        googleUser.avatar = avatar || googleUser.avatar
-        googleUser.name   = name   || googleUser.name
-        await googleUser.save()
+    let user = await User.findOne({ uid, authProvider: 'google' })
+    if (!user) {
+      user = await User.findOne({ email: email.toLowerCase(), authProvider: 'google' })
+      if (user) {
+        user.uid    = uid
+        user.avatar = avatar || user.avatar
+        user.name   = name   || user.name
+        await user.save()
       } else {
-        const usernameForLegacy = await generateUniqueUsername(name)
-        googleUser = await GoogleUser.create({ uid, name: name || 'Google User', email: email.toLowerCase(), username: usernameForLegacy, avatar: avatar || '' })
+        const username = await generateUniqueUsername(name)
+        user = await User.create({
+          uid, name: name || 'Google User', username,
+          email: email.toLowerCase(), avatar: avatar || '',
+          authProvider: 'google',
+        })
       }
     } else {
-      googleUser.name   = name   || googleUser.name
-      googleUser.avatar = avatar || googleUser.avatar
-      await googleUser.save()
+      user.name   = name   || user.name
+      user.avatar = avatar || user.avatar
+      await user.save()
     }
 
-    const token = signGoogleJwt(googleUser._id.toString())
-    return res.status(200).json({ success: true, token, user: googleUser.toSafeObject() })
+    const token = signGoogleJwt(user._id.toString())
+    return res.status(200).json({ success: true, token, user: user.toSafeObject() })
   } catch (err) {
     console.error('[authGoogle]', err)
     return res.status(500).json({ error: 'Server error during Google authentication.' })

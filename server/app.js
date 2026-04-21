@@ -2,10 +2,10 @@ import express        from 'express'
 import cors           from 'cors'
 import morgan         from 'morgan'
 import helmet         from 'helmet'
-import rateLimit      from 'express-rate-limit'
 import mongoSanitize  from 'express-mongo-sanitize'
 import config         from './config/index.js'
 import passport       from './config/passport.js'
+import { globalLimiter, reportLimiter } from './middlewares/rateLimiters.js'
 import authRoutes          from './routes/authRoutes.js'
 import authGoogleRoutes    from './routes/authGoogle.js'
 import emailAccountRoutes  from './routes/emailAccountRoutes.js'
@@ -19,8 +19,8 @@ import replyRoutes         from './routes/replyRoutes.js'
 import resendWebhookRoutes from './routes/resendWebhookRoutes.js'
 import notificationRoutes  from './routes/notificationRoutes.js'
 import reportRoutes        from './routes/reportRoutes.js'
-import { notFound, errorHandler }    from './middlewares/errorHandler.js'
-import { guardMaliciousInput }       from './middlewares/sanitize.js'
+import { notFound, errorHandler } from './middlewares/errorHandler.js'
+import { guardMaliciousInput }    from './middlewares/sanitize.js'
 
 const app = express()
 
@@ -42,35 +42,7 @@ app.use(cors({
   credentials: true,
 }))
 
-// ── Rate limiters ─────────────────────────────────────────────────────────────
-
-// Global: 200 req / 15 min per IP
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max:      200,
-  standardHeaders: true,
-  legacyHeaders:   false,
-  message: { error: 'Too many requests. Please try again later.' },
-})
-
-// Auth: 10 req / 15 min — covers signup, login, Google OAuth
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max:      10,
-  standardHeaders: true,
-  legacyHeaders:   false,
-  message: { error: 'Too many authentication attempts. Please wait before trying again.' },
-})
-
-// Reports (user-facing submit): 20 req / 15 min
-const reportLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max:      20,
-  standardHeaders: true,
-  legacyHeaders:   false,
-  message: { error: 'Too many report submissions. Please slow down.' },
-})
-
+// ── Global rate limiter ───────────────────────────────────────────────────────
 app.use(globalLimiter)
 
 // ── Webhook — raw body BEFORE json parser (HMAC verification requirement) ─────
@@ -95,8 +67,10 @@ app.get('/api/health', (_req, res) => {
   res.json({ success: true, message: 'Letter from Heart API 💌', env: config.nodeEnv })
 })
 
-app.use('/api/auth',          authLimiter, authRoutes)
-app.use('/api/auth',          authLimiter, authGoogleRoutes)
+// authLimiter is applied per-route inside authRoutes (POST /signup, POST /login only)
+// authGoogleRoutes has no extra limiter — OAuth redirects must flow freely
+app.use('/api/auth',          authRoutes)
+app.use('/api/auth',          authGoogleRoutes)
 app.use('/api/email-accounts',            emailAccountRoutes)
 app.use('/api/send-email',                sendEmailRoutes)
 app.use('/api/letters',                   letterRoutes)
