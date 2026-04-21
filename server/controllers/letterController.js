@@ -1,7 +1,6 @@
 import Letter     from '../models/Letter.js'
 import Reply      from '../models/Reply.js'
 import User       from '../models/User.js'
-import GoogleUser from '../models/GoogleUser.js'
 import { checkContentSafety } from '../utils/moderation.js'
 import { createNotification } from './notificationController.js'
 
@@ -135,12 +134,9 @@ export async function getReceivedLetters(req, res) {
 
   // Enrich each letter with the sender's name + email
   const senderIds = [...new Set(letters.map(l => l.userId?.toString()).filter(Boolean))]
-  const [emailUsers, googleUsers] = await Promise.all([
-    User.find({ _id: { $in: senderIds } }, 'name email').lean(),
-    GoogleUser.find({ _id: { $in: senderIds } }, 'name email').lean(),
-  ])
+  const senderUsers = await User.find({ _id: { $in: senderIds } }, 'name email').lean()
   const senderMap = {}
-  for (const u of [...emailUsers, ...googleUsers]) senderMap[u._id.toString()] = { name: u.name, email: u.email }
+  for (const u of senderUsers) senderMap[u._id.toString()] = { name: u.name, email: u.email }
 
   const data = letters.map(l => ({
     ...l,
@@ -184,7 +180,6 @@ export async function getLetterById(req, res) {
     letterObj.isRecipient = true
     // Enrich with sender info (name) for the recipient's view
     const sender = await User.findById(letter.userId, 'name email').lean()
-      || await GoogleUser.findById(letter.userId, 'name email').lean()
     letterObj.senderInfo = sender ? { name: sender.name, email: sender.email } : { name: '—', email: letter.fromEmail || '—' }
   }
 

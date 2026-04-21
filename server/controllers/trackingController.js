@@ -1,6 +1,5 @@
 import Letter     from '../models/Letter.js'
 import User       from '../models/User.js'
-import GoogleUser from '../models/GoogleUser.js'
 
 // 1×1 transparent GIF — 35 bytes
 const TRANSPARENT_GIF = Buffer.from(
@@ -26,7 +25,6 @@ export async function trackOpen(req, res) {
         let recipientId = null
         if (recipientEmail) {
           const user = await User.findOne({ email: recipientEmail }, '_id').lean()
-            || await GoogleUser.findOne({ email: recipientEmail }, '_id').lean()
           if (user) recipientId = user._id
         }
 
