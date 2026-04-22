@@ -112,8 +112,6 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
   const [readError, setReadError] = useState('')
   const [hov,       setHov]       = useState(false)
   const [btnHov,    setBtnHov]    = useState(false)
-  const [reporting,  setReporting] = useState(false)
-
   const date = new Date(letter.createdAt).toLocaleDateString('en-IN', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
@@ -255,25 +253,10 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
 
       {/* Card footer */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
         padding: '10px 20px 10px 24px',
         borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)',
       }}>
-        <button
-          onClick={() => setReporting(true)}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 500,
-            cursor: 'pointer', fontFamily: '"DM Sans", sans-serif',
-            border: '1px solid transparent', color: 'var(--ink-muted)',
-            background: 'transparent', transition: 'all 0.14s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#B85450'; e.currentTarget.style.borderColor = 'rgba(184,84,80,0.2)'; e.currentTarget.style.background = 'rgba(184,84,80,0.05)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent' }}
-        >
-          🚩 Report
-        </button>
-
         <button
           onClick={handleOpen}
           disabled={marking}
@@ -303,7 +286,6 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
         </button>
       </div>
 
-      {reporting && <ReportLetterModal letterId={letter._id} onClose={() => setReporting(false)} />}
     </div>
   )
 }
