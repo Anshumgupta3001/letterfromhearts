@@ -118,7 +118,7 @@ function QuickNavCard({ card }) {
           </span>
         </div>
         {/* Label */}
-        <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.3, letterSpacing: '-0.1px', marginBottom: 5 }}>
+        <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 500, color: 'var(--ink-soft)', lineHeight: 1.3, letterSpacing: '-0.1px', marginBottom: 5 }}>
           {card.label}
         </div>
         {/* Description */}
@@ -242,7 +242,7 @@ export default function HomePage() {
 
         <h1
           className="animate-fade-up"
-          style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2.5vw, 26px)', fontWeight: 700, lineHeight: 1.2, color: 'var(--ink)', marginBottom: 20, letterSpacing: '-0.3px', animationDelay: '0.08s' }}
+          style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 400, lineHeight: 1.45, color: 'var(--ink)', marginBottom: 20, letterSpacing: '-0.1px', animationDelay: '0.08s' }}
         >
           <em style={{ color: 'var(--tc)', fontStyle: 'italic' }}>{firstName},</em> what would<br />
           you like to <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>express</em> today?
@@ -281,7 +281,7 @@ export default function HomePage() {
             <span style={{ position: 'absolute', right: 24, top: 16, fontSize: 22, color: 'rgba(196,99,58,0.07)', pointerEvents: 'none', userSelect: 'none' }}>✦</span>
             <div style={{ paddingLeft: 8 }}>
               <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--tc)', marginBottom: 8, fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>Begin Writing</div>
-              <div style={{ fontFamily: '"Lora", serif', fontSize: 19, color: 'var(--ink)', fontWeight: 700, lineHeight: 1.25 }}>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(16px, 2vw, 21px)', color: 'var(--ink)', fontWeight: 400, lineHeight: 1.45, letterSpacing: '-0.1px' }}>
                 Pour your heart<br />into a <em style={{ fontStyle: 'italic', color: 'var(--tc)' }}>new letter</em>
               </div>
               <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', marginTop: 7, lineHeight: 1.65 }}>

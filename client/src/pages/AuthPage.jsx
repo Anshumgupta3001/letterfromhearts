@@ -380,7 +380,7 @@ export default function AuthPage() {
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <img src="/auth-logo.png" alt="Letter from Heart" style={{ width: 52, height: 52, objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 1px 3px rgba(28,26,23,0.12))' }} />
+          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, borderRadius: 8, filter: 'drop-shadow(0 1px 3px rgba(28,26,23,0.12))' }} />
           <div className="font-lora text-[20px] italic font-medium" style={{ color: 'var(--ink)' }}>Letter from Heart</div>
         </div>
 
@@ -429,7 +429,7 @@ export default function AuthPage() {
 
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <img src="/auth-logo.png" alt="Letter from Heart" style={{ width: 112, height: 'auto', objectFit: 'contain', margin: '0 auto 14px', filter: 'drop-shadow(0 2px 6px rgba(28,26,23,0.12))' }} />
+            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 48, height: 48, objectFit: 'contain', margin: '0 auto 14px', borderRadius: 10, filter: 'drop-shadow(0 2px 6px rgba(28,26,23,0.12))' }} />
             <p className="text-[13px] font-light mt-1" style={{ color: 'var(--ink-muted)' }}>
               {mode === 'login' ? 'Welcome back.' : 'A place for words that matter.'}
             </p>
