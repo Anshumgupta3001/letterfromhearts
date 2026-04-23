@@ -236,7 +236,7 @@ function Tab({ label, count, active, onClick }) {
         border: `1px solid ${active ? 'rgba(196,99,58,0.35)' : 'rgba(28,26,23,0.1)'}`,
         background: active ? 'rgba(196,99,58,0.06)' : 'var(--paper)',
         color: active ? 'var(--tc)' : 'var(--ink-soft)',
-        fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: active ? 600 : 400,
+        fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: active ? 500 : 400,
         cursor: 'pointer', transition: 'all 0.18s',
         boxShadow: active ? '0 2px 10px rgba(196,99,58,0.1)' : 'none',
       }}
