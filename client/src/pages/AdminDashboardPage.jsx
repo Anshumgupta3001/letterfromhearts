@@ -434,7 +434,7 @@ export default function AdminDashboardPage() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <input
               type="password" placeholder="Enter access key" value={key}
-              onChange={e => { setKey(e.target.value); setError('') }}
+              onChange={e => { setKey(e.target.value.trim()); setError('') }}
               autoFocus
               style={{
                 padding: '12px 16px', borderRadius: 12, fontSize: 14,
