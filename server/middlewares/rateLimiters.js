@@ -17,7 +17,17 @@ export const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts. Please wait before trying again.' },
 })
 
-export const reportLimiter = rateLimit({
+// GET /api/reports — admin dashboard polling; generous limit
+export const reportReadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      300,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { error: 'Too many requests. Please try again later.' },
+})
+
+// POST /api/reports — user submissions; strict to prevent spam
+export const reportWriteLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max:      20,
   standardHeaders: true,

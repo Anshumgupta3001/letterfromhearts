@@ -264,3 +264,49 @@ export async function getAdminAnalytics(req, res) {
     },
   })
 }
+
+// GET /api/admin/letters?key=xxx&page=1&limit=50&search=xxx&type=xxx
+export async function getAdminLetters(req, res) {
+  const page  = Math.max(1, parseInt(req.query.page)  || 1)
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50))
+  const skip  = (page - 1) * limit
+  const search = (req.query.search || '').trim()
+  const type   = req.query.type || ''
+
+  const filter = {}
+  if (type && ['sent', 'personal', 'stranger'].includes(type)) filter.type = type
+
+  // Text search across subject and message
+  if (search) {
+    filter.$or = [
+      { subject:  { $regex: search, $options: 'i' } },
+      { message:  { $regex: search, $options: 'i' } },
+      { toEmail:  { $regex: search, $options: 'i' } },
+      { fromEmail:{ $regex: search, $options: 'i' } },
+    ]
+  }
+
+  const [letters, total] = await Promise.all([
+    Letter.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select('userId fromEmail toEmail subject message type status createdAt trackingId openedAt clickCount')
+      .lean(),
+    Letter.countDocuments(filter),
+  ])
+
+  // Resolve sender names in one query
+  const userIds = [...new Set(letters.map(l => l.userId?.toString()).filter(Boolean))]
+  const users   = await User.find({ _id: { $in: userIds } }, 'name email').lean()
+  const userMap = {}
+  for (const u of users) userMap[u._id.toString()] = { name: u.name || '—', email: u.email }
+
+  const out = letters.map(l => ({
+    ...l,
+    senderName:  userMap[l.userId?.toString()]?.name  || '—',
+    senderEmail: userMap[l.userId?.toString()]?.email || l.fromEmail || '—',
+  }))
+
+  res.json({ success: true, data: out, total, page, pages: Math.ceil(total / limit) })
+}

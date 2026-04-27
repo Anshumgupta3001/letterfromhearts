@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema(
     otp:      { type: String, default: '1111' },
 
     // Google OAuth fields (populated only for authProvider: 'google')
-    uid:          { type: String, default: null, trim: true },
+    // No default — field must be absent for email users so the sparse index skips them
+    uid:          { type: String, trim: true },
     avatar:       { type: String, default: '' },
     authProvider: { type: String, enum: ['email', 'google'], default: 'email' },
 

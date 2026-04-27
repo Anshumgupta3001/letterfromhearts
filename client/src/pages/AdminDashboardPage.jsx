@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -291,6 +291,15 @@ export default function AdminDashboardPage() {
   const [search,    setSearch]    = useState('')
   const [page,      setPage]      = useState(1)
 
+  // ── Letters tab state ─────────────────────────────────────────────────────
+  const [allLetters,      setAllLetters]      = useState([])
+  const [lettersTotal,    setLettersTotal]    = useState(0)
+  const [lettersLoading,  setLettersLoading]  = useState(false)
+  const [lettersSearch,   setLettersSearch]   = useState('')
+  const [lettersType,     setLettersType]     = useState('all')
+  const [lettersPage,     setLettersPage]     = useState(1)
+  const [viewingLetter,   setViewingLetter]   = useState(null)
+
   // ── Reports tab state ─────────────────────────────────────────────────────
   const [reports,        setReports]        = useState([])
   const [reportsTotal,   setReportsTotal]   = useState(0)
@@ -299,6 +308,7 @@ export default function AdminDashboardPage() {
   const [reportsSearch,  setReportsSearch]  = useState('')
   const [reportsPage,    setReportsPage]    = useState(1)
   const [resolvingId,    setResolvingId]    = useState(null)
+  const reportsInitialized = useRef(false)
 
   const fetchData = useCallback(async (k, d) => {
     setLoading(true)
@@ -328,6 +338,21 @@ export default function AdminDashboardPage() {
       setReportsTotal(json.total || 0)
     } catch { /* silently fail */ }
     finally { setReportsLoading(false) }
+  }, [])
+
+  const fetchLetters = useCallback(async (adminKey, search, type, pg) => {
+    setLettersLoading(true)
+    try {
+      const params = new URLSearchParams({ key: adminKey, page: pg, limit: 50 })
+      if (search.trim()) params.set('search', search.trim())
+      if (type !== 'all') params.set('type', type)
+      const res  = await fetch(`${API}/api/admin/letters?${params}`)
+      const json = await res.json()
+      if (!res.ok) return
+      setAllLetters(json.data || [])
+      setLettersTotal(json.total || 0)
+    } catch { /* silently fail */ }
+    finally { setLettersLoading(false) }
   }, [])
 
   const resolveReport = useCallback(async (reportId, newStatus) => {
@@ -383,6 +408,18 @@ export default function AdminDashboardPage() {
     setSearch(val)
     setPage(1)
   }
+
+  function handleLettersTabOpen() {
+    setActiveTab('letters')
+    if (allLetters.length === 0) fetchLetters(key, lettersSearch, lettersType, 1)
+  }
+
+  // Fetch reports exactly once when the reports tab first becomes active
+  useEffect(() => {
+    if (activeTab !== 'reports' || reportsInitialized.current) return
+    reportsInitialized.current = true
+    fetchReports(key, reportsFilter, reportsSearch, reportsPage)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Lock screen ──────────────────────────────────────────────────────────────
   if (!unlocked) {
@@ -498,7 +535,7 @@ export default function AdminDashboardPage() {
       {/* ── Tab strip ── */}
       <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, display: 'flex', overflowX: 'auto', scrollbarWidth: 'none' }}>
         {TABS.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+          <button key={tab.id} onClick={() => tab.id === 'letters' ? handleLettersTabOpen() : setActiveTab(tab.id)} style={{
             padding: '12px 20px', fontSize: 13, border: 'none', whiteSpace: 'nowrap',
             background: activeTab === tab.id ? C.white : 'transparent',
             fontFamily: '"DM Sans",sans-serif', cursor: 'pointer',
@@ -838,6 +875,7 @@ export default function AdminDashboardPage() {
         ══════════════════════════════════════════════════════════════════════ */}
         {activeTab === 'letters' && (
           <>
+            {/* ── Mood Distribution ── */}
             <section>
               <SectionHeading sub="Mood distribution across all letters ever written">Mood Distribution</SectionHeading>
               <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
@@ -858,47 +896,148 @@ export default function AdminDashboardPage() {
               </div>
             </section>
 
+            {/* ── All Letters (searchable, paginated) ── */}
             <section>
-              <SectionHeading sub="Most recent 20 letters sent across all users">Recent Letters</SectionHeading>
+              <SectionHeading sub={`All letters in the system — ${fmt(lettersTotal)} total`}>All Letters</SectionHeading>
+
+              {/* Search + filter toolbar */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                <input
+                  value={lettersSearch}
+                  onChange={e => setLettersSearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { setLettersPage(1); fetchLetters(key, lettersSearch, lettersType, 1) } }}
+                  placeholder="Search subject, message, email…"
+                  style={{ flex: 1, minWidth: 220, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', outline: 'none', background: C.white }}
+                />
+                <select
+                  value={lettersType}
+                  onChange={e => { setLettersType(e.target.value); setLettersPage(1); fetchLetters(key, lettersSearch, e.target.value, 1) }}
+                  style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', background: C.white, cursor: 'pointer' }}
+                >
+                  <option value="all">All types</option>
+                  <option value="sent">Sent</option>
+                  <option value="personal">Personal</option>
+                  <option value="stranger">Stranger</option>
+                </select>
+                <button
+                  onClick={() => { setLettersPage(1); fetchLetters(key, lettersSearch, lettersType, 1) }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans",sans-serif' }}
+                >Search</button>
+              </div>
+
               <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                    <thead>
-                      <tr>
-                        <TH>Sender</TH>
-                        <TH>Subject</TH>
-                        <TH>Type</TH>
-                        <TH>Status</TH>
-                        <TH>Recipient</TH>
-                        <TH>Date &amp; Time</TH>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(d.recentLetters || []).length === 0 ? (
+                {lettersLoading ? (
+                  <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13 }}>Loading…</div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
                         <tr>
-                          <td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
-                            No letters found.
-                          </td>
+                          <TH>Sender</TH>
+                          <TH>Subject / Preview</TH>
+                          <TH>Type</TH>
+                          <TH>Status</TH>
+                          <TH>Recipient</TH>
+                          <TH>Date</TH>
+                          <TH>View</TH>
                         </tr>
-                      ) : (d.recentLetters || []).map((l, i) => (
-                        <tr key={i}
-                          style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
-                          onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
-                        >
-                          <TD small muted maxW={180} nowrap>{l.senderEmail}</TD>
-                          <TD bold maxW={220} nowrap>{l.subject || <span style={{ color: C.muted, fontWeight: 400 }}>No subject</span>}</TD>
-                          <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#4A4640'} /></td>
-                          <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#4A4640'} /></td>
-                          <TD small muted maxW={180} nowrap>{l.toEmail || '—'}</TD>
-                          <TD small muted nowrap>{fmtDateTime(l.createdAt)}</TD>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {allLetters.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
+                              No letters found.
+                            </td>
+                          </tr>
+                        ) : allLetters.map((l, i) => (
+                          <tr key={l._id || i}
+                            style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
+                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                          >
+                            <td style={{ padding: '10px 12px', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <div style={{ fontWeight: 500, color: C.ink, fontSize: 12.5 }}>{l.senderName}</div>
+                              <div style={{ fontSize: 11, color: C.muted }}>{l.senderEmail}</div>
+                            </td>
+                            <td style={{ padding: '10px 12px', maxWidth: 260 }}>
+                              <div style={{ fontWeight: 500, color: C.ink, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {l.subject || <span style={{ color: C.muted, fontWeight: 400 }}>No subject</span>}
+                              </div>
+                              <div style={{ fontSize: 11, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 240 }}>
+                                {(l.message || '').replace(/<[^>]+>/g, '').slice(0, 80)}…
+                              </div>
+                            </td>
+                            <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#4A4640'} /></td>
+                            <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#4A4640'} /></td>
+                            <TD small muted maxW={160} nowrap>{l.toEmail || '—'}</TD>
+                            <TD small muted nowrap>{fmtDateTime(l.createdAt)}</TD>
+                            <td style={{ padding: '10px 12px' }}>
+                              <button
+                                onClick={() => setViewingLetter(l)}
+                                style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(196,99,58,0.08)', color: C.tc, border: `1px solid rgba(196,99,58,0.2)`, fontFamily: '"DM Sans",sans-serif', fontWeight: 500 }}
+                              >View</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Pagination */}
+              {lettersTotal > 50 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 12.5, color: C.muted }}>
+                  <span>Showing {((lettersPage - 1) * 50) + 1}–{Math.min(lettersPage * 50, lettersTotal)} of {fmt(lettersTotal)}</span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button disabled={lettersPage === 1} onClick={() => { const p = lettersPage - 1; setLettersPage(p); fetchLetters(key, lettersSearch, lettersType, p) }}
+                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage === 1 ? 'default' : 'pointer', opacity: lettersPage === 1 ? 0.4 : 1, fontFamily: '"DM Sans",sans-serif', fontSize: 12 }}>← Prev</button>
+                    <button disabled={lettersPage >= Math.ceil(lettersTotal / 50)} onClick={() => { const p = lettersPage + 1; setLettersPage(p); fetchLetters(key, lettersSearch, lettersType, p) }}
+                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage >= Math.ceil(lettersTotal / 50) ? 'default' : 'pointer', opacity: lettersPage >= Math.ceil(lettersTotal / 50) ? 0.4 : 1, fontFamily: '"DM Sans",sans-serif', fontSize: 12 }}>Next →</button>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* ── Full Letter Modal ── */}
+            {viewingLetter && (
+              <div
+                onClick={() => setViewingLetter(null)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(28,26,23,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+              >
+                <div
+                  onClick={e => e.stopPropagation()}
+                  style={{ background: C.paper, borderRadius: 18, width: '100%', maxWidth: 620, maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 72px rgba(28,26,23,0.22)', overflow: 'hidden' }}
+                >
+                  {/* Modal header */}
+                  <div style={{ padding: '18px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexShrink: 0 }}>
+                    <div>
+                      <div style={{ fontFamily: '"Lora",serif', fontSize: 16, fontWeight: 600, color: C.ink }}>
+                        {viewingLetter.subject || 'No subject'}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>
+                        From <strong style={{ color: C.ink }}>{viewingLetter.senderName}</strong> ({viewingLetter.senderEmail})
+                        {viewingLetter.toEmail ? <> → {viewingLetter.toEmail}</> : null}
+                        {' · '}{fmtDateTime(viewingLetter.createdAt)}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                      <Badge label={viewingLetter.type} color={STATUS_COLOR[viewingLetter.type] || '#4A4640'} />
+                      <Badge label={viewingLetter.status} color={STATUS_COLOR[viewingLetter.status] || '#4A4640'} />
+                      <button onClick={() => setViewingLetter(null)}
+                        style={{ width: 28, height: 28, borderRadius: '50%', border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 14, color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                    </div>
+                  </div>
+                  {/* Letter body */}
+                  <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+                    <div
+                      style={{ fontFamily: '"Lora",serif', fontSize: 14.5, lineHeight: 1.85, color: C.ink, whiteSpace: 'pre-wrap' }}
+                      dangerouslySetInnerHTML={{ __html: viewingLetter.message || '<em>No content.</em>' }}
+                    />
+                  </div>
                 </div>
               </div>
-            </section>
+            )}
           </>
         )}
 
@@ -981,10 +1120,6 @@ export default function AdminDashboardPage() {
             TAB: REPORTS
         ══════════════════════════════════════════════════════════════════════ */}
         {activeTab === 'reports' && (() => {
-          // Fetch on first render of this tab or when filter/search/page changes
-          if (!reportsLoading && reports.length === 0 && reportsTotal === 0) {
-            fetchReports(key, reportsFilter, reportsSearch, reportsPage)
-          }
           const pendingCount  = reports.filter(r => r.status === 'pending').length
           const resolvedCount = reports.filter(r => r.status === 'resolved').length
 
