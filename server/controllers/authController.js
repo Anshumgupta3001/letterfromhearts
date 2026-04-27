@@ -33,22 +33,41 @@ async function generateUniqueUsername(name) {
 
 // POST /api/auth/signup
 export async function signup(req, res) {
-  try {
-    const { name, email, password, role, source, otherSource } = req.body
+  const { name, email, password, role, source, otherSource } = req.body
 
-    if (!name?.trim())  return res.status(400).json({ error: 'Name is required.' })
-    if (!email?.trim()) return res.status(400).json({ error: 'Email is required.' })
-    if (!password)      return res.status(400).json({ error: 'Password is required.' })
+  console.log('[Auth] Signup attempt —', { email, name, role, source, hasPassword: !!password })
+
+  try {
+    if (!name?.trim()) {
+      console.warn('[Auth] Signup failed: missing name — IP:', req.ip)
+      return res.status(400).json({ error: 'Name is required.' })
+    }
+    if (!email?.trim()) {
+      console.warn('[Auth] Signup failed: missing email — IP:', req.ip)
+      return res.status(400).json({ error: 'Email is required.' })
+    }
+    if (!password) {
+      console.warn('[Auth] Signup failed: missing password — email:', email)
+      return res.status(400).json({ error: 'Password is required.' })
+    }
 
     const pwErr = validatePassword(password)
-    if (pwErr) return res.status(400).json({ error: pwErr })
+    if (pwErr) {
+      console.warn('[Auth] Signup failed: weak password — email:', email, '—', pwErr)
+      return res.status(400).json({ error: pwErr })
+    }
 
     if (!role || !VALID_ROLES.includes(role)) {
+      console.warn('[Auth] Signup failed: invalid role — email:', email, '— role:', role)
       return res.status(400).json({ error: 'Account type is required.' })
     }
 
-    if (!source?.trim()) return res.status(400).json({ error: 'Please tell us where you heard about us.' })
+    if (!source?.trim()) {
+      console.warn('[Auth] Signup failed: missing source — email:', email)
+      return res.status(400).json({ error: 'Please tell us where you heard about us.' })
+    }
     if (source === 'Other' && !otherSource?.trim()) {
+      console.warn('[Auth] Signup failed: missing otherSource — email:', email)
       return res.status(400).json({ error: 'Please specify where you heard about us.' })
     }
 
@@ -56,20 +75,29 @@ export async function signup(req, res) {
     const heardFrom   = source === 'Other' ? otherSource.trim() : source.trim()
 
     const emailExists = await User.findOne({ email: normalEmail })
-    if (emailExists) return res.status(409).json({ error: 'An account with this email already exists.' })
+    if (emailExists) {
+      console.warn('[Auth] Signup failed: duplicate email —', normalEmail)
+      return res.status(409).json({ error: 'An account with this email already exists.' })
+    }
 
     const username = await generateUniqueUsername(name.trim())
     const user     = await User.create({ name: name.trim(), email: normalEmail, username, password, role, heardFrom })
     const token    = signToken(user._id)
 
-    console.log('[Auth] New signup —', normalEmail, '— username:', username)
+    console.log('[Auth] ✅ Signup success —', normalEmail, '— username:', username, '— role:', role)
     res.status(201).json({ success: true, token, user: user.toSafeObject() })
 
   } catch (err) {
     if (err.code === 11000) {
       const field = Object.keys(err.keyPattern || {})[0]
-      const msg   = field === 'email' ? 'An account with this email already exists.' : 'Signup failed. Please try again.'
+      console.error('[Auth] Signup duplicate key —', field, ':', err.keyValue, '— email:', email)
+      const msg = field === 'email' ? 'An account with this email already exists.' : 'Signup failed. Please try again.'
       return res.status(409).json({ error: msg })
+    }
+    if (err.name === 'ValidationError') {
+      console.error('[Auth] Signup validation error — email:', email, '—', JSON.stringify(err.errors))
+    } else {
+      console.error('[Auth] Signup unexpected error — email:', email, '—', err.message)
     }
     throw err
   }

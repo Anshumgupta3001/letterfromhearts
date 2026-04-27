@@ -5,7 +5,7 @@ import helmet         from 'helmet'
 import mongoSanitize  from 'express-mongo-sanitize'
 import config         from './config/index.js'
 import passport       from './config/passport.js'
-import { globalLimiter, reportLimiter } from './middlewares/rateLimiters.js'
+import { globalLimiter, reportReadLimiter, reportWriteLimiter } from './middlewares/rateLimiters.js'
 import authRoutes          from './routes/authRoutes.js'
 import authGoogleRoutes    from './routes/authGoogle.js'
 import emailAccountRoutes  from './routes/emailAccountRoutes.js'
@@ -80,7 +80,9 @@ app.use('/api/schedule-email',            scheduleEmailRoutes)
 app.use('/api/admin',                     adminRoutes)
 app.use('/api/replies',                   replyRoutes)
 app.use('/api/notifications',             notificationRoutes)
-app.use('/api/reports',       reportLimiter, reportRoutes)
+app.get('/api/reports',       reportReadLimiter,  (req, res, next) => next())  // read — generous
+app.post('/api/reports',      reportWriteLimiter, (req, res, next) => next())  // write — strict
+app.use('/api/reports',       reportRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
