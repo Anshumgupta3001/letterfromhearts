@@ -30,8 +30,7 @@ app.use(helmet())
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://letterfromheart.com',
-  'https://www.letterfromheart.com',
+  'https://my.letterfromheart.com',
 ]
 app.use(cors({
   origin: (origin, cb) => {

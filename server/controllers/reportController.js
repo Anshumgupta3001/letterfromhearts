@@ -98,7 +98,7 @@ export async function updateReportStatus(req, res) {
           type:    'system',
           link:    '',
         }),
-        text: `${notifMessage}\n\nVisit https://letterfromheart.com to see your updates.`,
+        text: `${notifMessage}\n\nVisit https://my.letterfromheart.com to see your updates.`,
       }).catch(err => console.error('[Report] Resolution email failed:', err.message))
     }
   }
