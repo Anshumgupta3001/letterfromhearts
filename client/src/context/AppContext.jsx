@@ -17,6 +17,14 @@ export function AppProvider({ children }) {
     setToken(token)
     localStorage.setItem('lfh_user', JSON.stringify(user))
     setAuthUser(user)
+    // If user clicked an email reply CTA, send them straight to received letters
+    const replyId = new URLSearchParams(window.location.search).get('reply') || pendingReplyLetterId
+    if (replyId) {
+      setCurrentPage('myspace')
+      setMySpaceTab('received')
+      setPendingReplyLetterId('')
+      window.history.replaceState({}, '', '/')
+    }
   }
 
   function logout() {
@@ -37,6 +45,11 @@ export function AppProvider({ children }) {
   // Verify token on mount — also handles Google OAuth redirect callback
   const [googleAuthError, setGoogleAuthError] = useState('')
 
+  // ?reply=<letterId> — set by email CTA so we navigate to received letters after auth
+  const [pendingReplyLetterId, setPendingReplyLetterId] = useState(() =>
+    new URLSearchParams(window.location.search).get('reply') || ''
+  )
+
   useEffect(() => {
     async function init() {
       // ── 1. Check for Google OAuth callback params in URL ─────────────────
@@ -44,6 +57,9 @@ export function AppProvider({ children }) {
       const googleToken = params.get('google_token')
       const googleNew   = params.get('google_new') === 'true'
       const googleError = params.get('google_error')
+      const replyId     = params.get('reply') || ''
+
+      if (replyId) setPendingReplyLetterId(replyId)
 
       if (googleError) {
         const msgs = {
@@ -76,6 +92,12 @@ export function AppProvider({ children }) {
           // Show role setup modal if this is a Google user who never set a role
           if (!json.user.role && json.user.authProvider === 'google') {
             setPendingRoleSetup(true)
+          }
+          // If came from email reply link, land on received letters tab
+          if (replyId) {
+            setCurrentPage('myspace')
+            setMySpaceTab('received')
+            window.history.replaceState({}, '', '/')
           }
         } else {
           removeToken()
@@ -311,6 +333,7 @@ export function AppProvider({ children }) {
         authUser, authLoading, login, logout, updateAuthUser,
         pendingRoleSetup, setPendingRoleSetup,
         googleAuthError, setGoogleAuthError,
+        pendingReplyLetterId,
         // role / email mode helpers
         userRole, userEmailMode, canWrite, canWriteStranger, canReadFeed,
         // nav

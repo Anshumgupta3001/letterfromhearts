@@ -28,8 +28,8 @@ console.log('📬 Email worker started — waiting for jobs…')
 emailQueue.process(async (job) => {
   const { letterId, userId, useSystem, fromEmailAddress, to, subject, message, trackingId, replyTo } = job.data
 
-  // Build HTML + plain-text (tracking pixel baked in)
-  const html = buildEmailHtml(message, trackingId, to)
+  // Build HTML + plain-text (tracking pixel baked in, letterId for smart CTA)
+  const html = buildEmailHtml(message, trackingId, to, letterId || '')
   const text = buildEmailText(message)
 
   const subjectLine = subject || 'A letter from my heart 💌'

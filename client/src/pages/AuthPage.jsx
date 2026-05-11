@@ -278,11 +278,20 @@ function FloatingCard({ style, children }) {
 function getEmailFromUrl() {
   return new URLSearchParams(window.location.search).get('email') || ''
 }
+function getReplyFromUrl() {
+  return new URLSearchParams(window.location.search).get('reply') || ''
+}
 
 export default function AuthPage() {
   const { login } = useApp()
   const emailFromUrl = getEmailFromUrl()
-  const [mode, setMode] = useState(() => emailFromUrl ? 'signup' : 'login')
+  const replyFromUrl = getReplyFromUrl()
+  // ?reply → existing user logging in to read their letter; show login first
+  // ?email (no reply) → new user signing up via email invite
+  const [mode, setMode] = useState(() => {
+    if (replyFromUrl) return 'login'
+    return emailFromUrl ? 'signup' : 'login'
+  })
 
   const [name,            setName]            = useState('')
   const [email,           setEmail]           = useState(() => emailFromUrl)
@@ -455,7 +464,7 @@ export default function AuthPage() {
             </div>
 
             {/* Email-link contextual banner */}
-            {emailFromUrl && mode === 'signup' && (
+            {(replyFromUrl || (emailFromUrl && mode === 'signup')) && (
               <div className="mb-5" style={{
                 padding: '11px 14px',
                 borderRadius: 12,
@@ -467,7 +476,9 @@ export default function AuthPage() {
               }}>
                 <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>💌</span>
                 <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>
-                  Someone wrote you a letter. Create an account to read it and reply.
+                  {replyFromUrl
+                    ? 'Someone sent you a letter. Sign in to read it — or create an account if you\'re new.'
+                    : 'Someone wrote you a letter. Create an account to read it and reply.'}
                 </p>
               </div>
             )}

@@ -13,7 +13,7 @@ const BRAND_LOGO = `
   <tr>
     <td style="padding:0 0 28px 0;text-align:center;">
       <img
-        src="https://letterfromheart.com/auth-logo.png"
+        src="${config.clientOrigin}/auth-logo.png"
         alt="Letter from Heart"
         width="120"
         style="display:block;margin:0 auto;border:0;outline:none;max-width:120px;height:auto;"
@@ -78,10 +78,23 @@ export function wrapLinksForClickTracking(html, trackingId) {
 
 // ── Letter delivery email ─────────────────────────────────────────────────────
 
-export function buildEmailHtml(message, trackingId, toEmail = '') {
+// Build the CTA URL for the "reply" button in letter emails.
+// - Existing users land on /?reply=<letterId> → AppContext navigates to received letters
+// - New users land on /?reply=<letterId>&email=<email> → AuthPage pre-fills email, shows
+//   signup, and after auth AppContext reads ?reply and navigates to the letter
+function buildReplyUrl(toEmail, letterId) {
+  const base = config.clientOrigin
+  const params = new URLSearchParams()
+  if (letterId) params.set('reply', letterId.toString())
+  if (toEmail)  params.set('email', toEmail)
+  return `${base}/?${params.toString()}`
+}
+
+export function buildEmailHtml(message, trackingId, toEmail = '', letterId = '') {
   const withBreaks = message.replace(/\n/g, '<br/>')
   const withLinks  = wrapLinksForClickTracking(withBreaks, trackingId)
   const pixel      = generateTrackingPixel(trackingId)
+  const replyUrl   = buildReplyUrl(toEmail, letterId)
 
   const body = `
     <tr>
@@ -126,11 +139,14 @@ export function buildEmailHtml(message, trackingId, toEmail = '') {
           You received this because someone chose to write to you.
         </p>
         <div style="margin-top:16px;">
-          <a href="https://letterfromheart.com/signup${toEmail ? `?email=${encodeURIComponent(toEmail)}` : ''}" target="_blank"
+          <a href="${replyUrl}" target="_blank"
             style="display:inline-block;padding:10px 22px;background:#1C1A17;color:#F7F2EA;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.2px;">
             Click here to reply 💌
           </a>
         </div>
+        <p style="margin:8px 0 0;font-size:10px;color:#c8c0b4;font-family:Helvetica,Arial,sans-serif;">
+          Already have an account? You'll be taken straight to the letter.
+        </p>
       </td>
     </tr>`
 
@@ -138,7 +154,7 @@ export function buildEmailHtml(message, trackingId, toEmail = '') {
 }
 
 export function buildEmailText(message) {
-  return `${message}\n\n---\nSent securely via Letter from Heart. Your privacy is respected.\nhttps://letterfromheart.com`
+  return `${message}\n\n---\nSent securely via Letter from Heart. Your privacy is respected.\n${config.clientOrigin}`
 }
 
 // ── Notification reminder email ───────────────────────────────────────────────
@@ -154,9 +170,9 @@ const NOTIFICATION_MESSAGES = {
 
 export function buildNotificationEmail({ message, type, link }) {
   const headline = NOTIFICATION_MESSAGES[type] || NOTIFICATION_MESSAGES.general
-  const ctaUrl   = link
-    ? `https://letterfromheart.com${link.startsWith('/') ? '' : '/'}${link}`
-    : 'https://letterfromheart.com'
+  const ctaUrl = link
+    ? `${config.clientOrigin}${link.startsWith('/') ? '' : '/'}${link}`
+    : config.clientOrigin
 
   const body = `
     <tr>
@@ -182,7 +198,7 @@ export function buildNotificationEmail({ message, type, link }) {
         <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.08),transparent);margin:28px 0 20px;"></div>
         <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
           You're receiving this because you haven't seen this notification yet.<br/>
-          Visit <a href="https://letterfromheart.com" style="color:#b0a89c;">letterfromheart.com</a> to manage your preferences.
+          Visit <a href="${config.clientOrigin}" style="color:#b0a89c;">my.letterfromheart.com</a> to manage your preferences.
         </p>
       </td>
     </tr>`
