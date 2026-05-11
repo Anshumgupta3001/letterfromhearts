@@ -434,15 +434,28 @@ export default function LetterDrawer() {
                   {letter.subject || 'A letter from my heart'}
                 </h2>
 
-                {/* Recipient metadata — only for sent letters */}
+                {/* With: — shown for known-contact letters on both sides */}
                 {letter.type === 'sent' && letter.toEmail && (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>To:</span>
+                    <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>With:</span>
                     <span style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, wordBreak: 'break-all' }}>
                       {letter.toEmail}
                     </span>
                   </div>
                 )}
+                {isKnownRecipient && (() => {
+                  const sName  = letter.senderInfo?.name
+                  const sEmail = letter.senderInfo?.email || letter.fromEmail
+                  const label  = sName && sName !== '—' ? sName : sEmail || null
+                  return label ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>With:</span>
+                      <span style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, wordBreak: 'break-all' }}>
+                        {label}
+                      </span>
+                    </div>
+                  ) : null
+                })()}
 
                 <div style={{ height: 1, background: 'linear-gradient(90deg, rgba(28,26,23,0.12), transparent)', margin: '20px 0 28px' }} />
                 <div style={{ fontFamily: 'Lora, serif', fontSize: 'clamp(14px, 1.8vw, 15.5px)', lineHeight: 2.05, color: 'var(--ink-soft)', whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'break-word', maxWidth: '100%' }}>

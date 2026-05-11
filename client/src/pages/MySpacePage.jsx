@@ -70,10 +70,10 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
           {letter.message || '(No content)'}
         </p>
 
-        {/* To: — only shown on sent letters so users know the recipient without opening */}
+        {/* With: — only shown on sent letters so users know the recipient without opening */}
         {letter.type === 'sent' && letter.toEmail && (
           <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            To: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{letter.toEmail}</span>
+            With: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{letter.toEmail}</span>
           </p>
         )}
       </div>
@@ -262,6 +262,13 @@ function Tab({ label, count, active, onClick }) {
 function ReceivedLetterCard({ letter, onOpen }) {
   const [hov, setHov] = useState(false)
   const date = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  // "With" context — shown only to the recipient (private, not public).
+  // senderInfo.name is the sender's display name; fall back to email.
+  const senderName  = letter.senderInfo?.name
+  const senderEmail = letter.senderInfo?.email || letter.fromEmail
+  const withLabel   = senderName && senderName !== '—' ? senderName : senderEmail || null
+
   return (
     <div
       onMouseEnter={() => setHov(true)}
@@ -295,6 +302,11 @@ function ReceivedLetterCard({ letter, onOpen }) {
         <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           {letter.message || '(No content)'}
         </p>
+        {withLabel && (
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            With: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{withLabel}</span>
+          </p>
+        )}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 22px 12px 28px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>

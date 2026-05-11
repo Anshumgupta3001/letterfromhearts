@@ -251,14 +251,11 @@ export function buildEmailHtml(message, trackingId, toEmail = '', letterId = '')
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
 
-          <!-- Tagline + salutation -->
+          <!-- Tagline -->
           <tr>
             <td style="padding:0 0 20px 0;">
-              <p style="margin:0 0 6px;font-family:${SCRIPT};font-size:21px;color:${C.accent};line-height:1.4;">
-                Someone took a quiet moment to write this for you.
-              </p>
               <p style="margin:0;font-family:${SCRIPT};font-size:27px;font-weight:bold;color:${C.ink};line-height:1.3;">
-                Dear reader,
+                Someone took a quiet moment to write this for you.
               </p>
             </td>
           </tr>
