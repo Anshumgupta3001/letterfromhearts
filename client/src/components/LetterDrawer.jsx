@@ -429,30 +429,24 @@ export default function LetterDrawer() {
                 position: 'relative', overflow: 'hidden',
               }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: `linear-gradient(180deg, ${meta.color}, var(--gold))`, borderRadius: '0 0 0 16px' }} />
-                {/* "From" banner for recipients */}
-                {isKnownRecipient && letter.senderInfo && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20,
-                    padding: '10px 14px', borderRadius: 10,
-                    background: 'rgba(139,126,200,0.06)', border: '1px solid rgba(139,126,200,0.18)',
-                  }}>
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>✉</span>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.4 }}>
-                      From <strong style={{ color: 'var(--ink)' }}>
-                        {letter.senderInfo.name && letter.senderInfo.name !== '—'
-                          ? `${letter.senderInfo.name} (${letter.senderInfo.email})`
-                          : letter.senderInfo.email}
-                      </strong>
-                    </div>
+                <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)', textAlign: 'right', marginBottom: 28 }}>{date}</div>
+                <h2 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 6, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                  {letter.subject || 'A letter from my heart'}
+                </h2>
+
+                {/* Recipient metadata — only for sent letters */}
+                {letter.type === 'sent' && letter.toEmail && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>To:</span>
+                    <span style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, wordBreak: 'break-all' }}>
+                      {letter.toEmail}
+                    </span>
                   </div>
                 )}
-                <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)', textAlign: 'right', marginBottom: 28 }}>{date}</div>
-                <h2 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 6 }}>
-                  {letter.subject}
-                </h2>
+
                 <div style={{ height: 1, background: 'linear-gradient(90deg, rgba(28,26,23,0.12), transparent)', margin: '20px 0 28px' }} />
-                <div style={{ fontFamily: 'Lora, serif', fontSize: 'clamp(14px, 1.8vw, 15.5px)', lineHeight: 2.05, color: 'var(--ink-soft)', whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                  {letter.message}
+                <div style={{ fontFamily: 'Lora, serif', fontSize: 'clamp(14px, 1.8vw, 15.5px)', lineHeight: 2.05, color: 'var(--ink-soft)', whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'break-word', maxWidth: '100%' }}>
+                  {letter.message || '(No content)'}
                 </div>
                 <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(28,26,23,0.07)', textAlign: 'center' }}>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '9px 20px', borderRadius: 40, background: 'rgba(28,26,23,0.03)', border: '1px solid rgba(28,26,23,0.08)' }}>

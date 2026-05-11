@@ -106,16 +106,16 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="relative rounded-[14px] w-full max-w-[480px] mx-4 animate-fade-up"
-        style={{ background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 24px 64px rgba(28,26,23,0.25)', overflow: 'hidden' }}
+        className="relative rounded-[14px] w-full max-w-[480px] mx-4 animate-fade-up flex flex-col"
+        style={{ background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 24px 64px rgba(28,26,23,0.25)', maxHeight: 'calc(100dvh - 32px)', overflow: 'hidden' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
           <span className="font-lora text-[18px] font-medium text-ink">Send your letter</span>
           <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer bg-transparent border-none text-[18px]">×</button>
         </div>
 
-        <div className="px-6 py-5">
+        <div className="px-6 py-5 overflow-y-auto">
           {sent ? (
             /* ── Success state ────────────────────────────────────────── */
             <div className="flex flex-col items-center justify-center text-center py-6">

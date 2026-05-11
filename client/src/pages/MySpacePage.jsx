@@ -39,8 +39,8 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
         onClick={() => onOpen(letter)}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, marginBottom: 12 }}>
-          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
-            {letter.subject}
+          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+            {letter.subject || 'A letter from my heart'}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: tagBg, color: tagColor, border: `1px solid ${tagBorder}` }}>
@@ -66,9 +66,16 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
           </div>
         </div>
 
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {letter.message}
+        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          {letter.message || '(No content)'}
         </p>
+
+        {/* To: — only shown on sent letters so users know the recipient without opening */}
+        {letter.type === 'sent' && letter.toEmail && (
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            To: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{letter.toEmail}</span>
+          </p>
+        )}
       </div>
 
       {/* Footer */}
@@ -255,10 +262,6 @@ function Tab({ label, count, active, onClick }) {
 function ReceivedLetterCard({ letter, onOpen }) {
   const [hov, setHov] = useState(false)
   const date = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-  const senderName  = letter.senderInfo?.name  || '—'
-  const senderEmail = letter.senderInfo?.email || letter.fromEmail || '—'
-  const displaySender = senderName && senderName !== '—' ? senderName : senderEmail
-
   return (
     <div
       onMouseEnter={() => setHov(true)}
@@ -281,20 +284,16 @@ function ReceivedLetterCard({ letter, onOpen }) {
             {/* From badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(139,126,200,0.1)', color: 'var(--purple)', border: '1px solid rgba(139,126,200,0.25)', fontFamily: '"DM Sans", sans-serif' }}>
-                📥 Received
+                📥 For You
               </span>
             </div>
             <h3 style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px', marginBottom: 4 }}>
               {letter.subject || 'A letter from my heart'}
             </h3>
-            <div style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ opacity: 0.5 }}>✉</span>
-              <span>From <strong style={{ color: 'var(--ink-soft)' }}>{displaySender}</strong></span>
-            </div>
           </div>
         </div>
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {letter.message}
+        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          {letter.message || '(No content)'}
         </p>
       </div>
 
@@ -368,7 +367,7 @@ export default function MySpacePage() {
     { id: 'all',      label: 'All',                 count: personal.length + stranger.length + sentLetters.length + receivedLetters.length },
     { id: 'personal', label: 'Personal',             count: personal.length },
     { id: 'sent',     label: 'Sent to Someone',      count: sentLetters.length },
-    { id: 'received', label: 'Received',             count: receivedLetters.length },
+    { id: 'received', label: 'For You',               count: receivedLetters.length },
     ...(canWriteStranger ? [{ id: 'stranger', label: 'Send to a Stranger', count: stranger.length }] : []),
     ...(canReadFeed    ? [{ id: 'read',     label: 'Held by Me',     count: readLetters.length }] : []),
   ]
@@ -463,7 +462,7 @@ export default function MySpacePage() {
         ) : activeTab === 'sent' ? (
           <EmptyState icon="📬" title="No letters sent yet" subtitle="Write a letter to someone you know and send it directly to their inbox." cta="Write a letter" onCta={() => navigate('write')} />
         ) : activeTab === 'received' ? (
-          <EmptyState icon="📥" title="No letters received yet" subtitle="When someone sends you a letter through Letter from Heart, it will appear here." />
+          <EmptyState icon="📥" title="Nothing for you yet" subtitle="When someone sends you a letter through Letter from Heart, it will appear here." />
         ) : activeTab === 'stranger' ? (
           <EmptyState icon="🌍" title="No stranger letters yet" subtitle="Share something with the world. Your words might be exactly what someone needs today." cta="Write to a stranger" onCta={() => navigate('write')} />
         ) : activeTab === 'read' ? (

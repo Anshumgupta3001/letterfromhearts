@@ -1,59 +1,76 @@
 /**
  * Shared email-building and transport utilities.
- * Used by both sendEmailController (instant send) and emailWorker (scheduled send).
+ *
+ * All templates are email-client-safe:
+ *  - Table-based layout (Outlook compatible)
+ *  - Fully inline styles (no external CSS blocks)
+ *  - No animations, clip-path, SVG textures, or complex gradients
+ *  - Simple border/background instead of box-shadow
+ *  - Dancing Script loaded via @import with Georgia serif fallback
+ *  - Responsive via max-width + fluid widths
  */
-import crypto      from 'crypto'
-import nodemailer  from 'nodemailer'
-import { Resend }  from 'resend'
-import config      from '../config/index.js'
+import crypto     from 'crypto'
+import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
+import config     from '../config/index.js'
 
-// ── Shared brand constants ────────────────────────────────────────────────────
+// ── Brand palette ─────────────────────────────────────────────────────────────
+const C = {
+  bg:        '#f5f0e8',
+  paper:     '#faf7f2',
+  border:    '#e4ddd3',
+  accentBorder: '#e8c9b3',
+  ink:       '#2c2a27',
+  inkSoft:   '#4a4540',
+  inkMuted:  '#8c8478',
+  accent:    '#c4633a',
+  accentDark:'#a84e2a',
+  cream:     '#f7f2ea',
+  sage:      '#7a9e8e',
+  white:     '#ffffff',
+}
 
-const BRAND_LOGO = `
-  <tr>
-    <td style="padding:0 0 28px 0;text-align:center;">
-      <img
-        src="${config.clientOrigin}/auth-logo.png"
-        alt="Letter from Heart"
-        width="120"
-        style="display:block;margin:0 auto;border:0;outline:none;max-width:120px;height:auto;"
-      />
-    </td>
-  </tr>`
+// ── Fonts ─────────────────────────────────────────────────────────────────────
+// Dancing Script degrades to Georgia in Outlook; @import works in Gmail/Apple Mail
+const FONT_IMPORT = `<style>@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&display=swap');</style>`
+const SCRIPT = `'Dancing Script', Georgia, 'Times New Roman', serif`
+const SERIF  = `Georgia, 'Times New Roman', serif`
+const SANS   = `Arial, Helvetica, sans-serif`
 
-const BRAND_FOOTER = `
-  <tr>
-    <td style="padding:20px 0;text-align:center;">
-      <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
-        Sent securely via Letter from Heart · Your privacy is respected.
-      </p>
-    </td>
-  </tr>`
+// ── Content sanitization helpers ─────────────────────────────────────────────
 
-function emailShell(title, bodyRows) {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${title}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&display=swap');
-    .lfh-script { font-family: 'Dancing Script', cursive !important; }
-  </style>
-</head>
-<body style="margin:0;padding:0;background:#f5f0e8;font-family:'DM Sans',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f0e8;padding:40px 0;">
-    <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
-        ${BRAND_LOGO}
-        ${bodyRows}
-        ${BRAND_FOOTER}
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`
+// Escape the five dangerous HTML characters so raw user text can never inject
+// tags or break attribute values.  Call this BEFORE any newline → <br/> step.
+function escapeHtml(text) {
+  return String(text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
+// Format user-written letter body for safe HTML injection:
+//   1. Escape HTML entities (prevents tag injection / layout break)
+//   2. Convert newlines → <br/> (preserves paragraphs)
+//   3. Return a non-empty fallback if the message is blank
+export function formatLetterBody(text) {
+  const escaped = escapeHtml(text)
+  if (!escaped.trim()) return '<em style="color:#8c8478;">No message provided.</em>'
+  return escaped.replace(/\n/g, '<br/>')
+}
+
+// Sanitize system-generated notification HTML.
+// Notification messages are composed internally (never raw user text) but may
+// include <br/>, <strong>, and <b> tags added by the worker.  Strip every other
+// tag so nothing unexpected leaks through if a message string ever contains HTML.
+function sanitizeNotificationHtml(html) {
+  const safe = String(html ?? '')
+  // Allow only: <br/> <br /> <strong> </strong> <b> </b>
+  return safe
+    .replace(/<[^>]*>/g, tag => /^<\/?(br|strong|b)\s*\/?>$/i.test(tag.trim()) ? tag : '')
+    .replace(/\n/g, '<br/>')  // plain newlines in any remaining text → <br/>
+    || '<em style="color:#8c8478;">No message provided.</em>'
 }
 
 // ── Tracking helpers ──────────────────────────────────────────────────────────
@@ -71,139 +88,320 @@ export function generateTrackingPixel(trackingId) {
 export function wrapLinksForClickTracking(html, trackingId) {
   const base = config.trackingBaseUrl
   return html.replace(/(https?:\/\/[^\s<"']+)/g, (url) => {
-    const redirectUrl = `${base}/api/tracking/click?tid=${encodeURIComponent(trackingId)}&url=${encodeURIComponent(url)}`
-    return `<a href="${redirectUrl}" style="color:inherit;">${url}</a>`
+    const redirect = `${base}/api/tracking/click?tid=${encodeURIComponent(trackingId)}&url=${encodeURIComponent(url)}`
+    return `<a href="${redirect}" style="color:${C.accent};text-decoration:underline;font-family:${SERIF};">${url}</a>`
   })
+}
+
+// ── Reply URL ─────────────────────────────────────────────────────────────────
+// Existing users → /?reply=<id>  (AppContext navigates to received letters)
+// New users     → /?reply=<id>&email=<email>  (AuthPage pre-fills signup)
+function buildReplyUrl(toEmail, letterId) {
+  const params = new URLSearchParams()
+  if (letterId) params.set('reply', letterId.toString())
+  if (toEmail)  params.set('email', toEmail)
+  return `${config.clientOrigin}/?${params.toString()}`
+}
+
+// ── Base shell ────────────────────────────────────────────────────────────────
+// All email templates share this outer wrapper.
+// Uses table-based centering that works across all major clients including Outlook.
+function emailShell(rawTitle, rawPreview, bodyRows) {
+  const title   = escapeHtml(rawTitle   || 'Letter from Heart')
+  const preview = escapeHtml(rawPreview || rawTitle || 'Letter from Heart')
+  return `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <title>${title}</title>   <!-- escapeHtml applied above -->
+  ${FONT_IMPORT}
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <style>table { border-collapse: collapse; } td { font-family: Georgia, serif; }</style>
+  <![endif]-->
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; display: block; }
+    a { color: ${C.accent}; }
+    @media only screen and (max-width: 620px) {
+      .outer-table { width: 100% !important; }
+      .card-cell { padding: 28px 20px !important; }
+      .logo-img  { width: 76px !important; height: auto !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:${C.bg};" bgcolor="${C.bg}">
+
+  <!-- Preview text (hidden in most clients but shows in inbox preview) -->
+  <div style="display:none;font-size:1px;color:${C.bg};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preview}</div>
+
+  <!-- Outer wrapper -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="${C.bg}" style="background-color:${C.bg};padding:40px 16px;">
+    <tr>
+      <td align="center" valign="top">
+
+        <!-- Content container (560px centred) -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" class="outer-table" style="width:560px;max-width:560px;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding:0 0 20px 0;">
+              <a href="${config.clientOrigin}" target="_blank" style="text-decoration:none;border:none;">
+                <img
+                  src="${config.clientOrigin}/auth-logo.png"
+                  alt="Letter from Heart"
+                  width="96"
+                  class="logo-img"
+                  style="width:96px;height:auto;border:0;outline:none;display:block;margin:0 auto;"
+                />
+              </a>
+            </td>
+          </tr>
+
+          <!-- Body rows injected here -->
+          ${bodyRows}
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:20px 0 0 0;">
+              <p style="margin:0;font-size:11px;color:${C.inkMuted};font-family:${SANS};letter-spacing:0.3px;line-height:1.6;">
+                Sent securely via
+                <a href="${config.clientOrigin}" target="_blank" style="color:${C.inkMuted};text-decoration:none;">Letter from Heart</a>
+                &middot; Your privacy is respected.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>`
+}
+
+// ── Divider row ───────────────────────────────────────────────────────────────
+function dividerRow(paddingTop = '0', paddingBottom = '24px') {
+  return `
+  <tr>
+    <td style="padding:${paddingTop} 0 ${paddingBottom} 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="border-bottom:1px solid ${C.border};font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+      </table>
+    </td>
+  </tr>`
+}
+
+// ── CTA button (table-based for Outlook rounded corners) ──────────────────────
+function ctaButton(href, label, bgColor = C.ink, textColor = C.cream) {
+  return `
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+    <tr>
+      <td align="center" bgcolor="${bgColor}" style="background-color:${bgColor};border-radius:99px;mso-padding-alt:0;">
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+          href="${href}"
+          style="height:42px;v-text-anchor:middle;width:180px;"
+          arcsize="50%"
+          fillcolor="${bgColor}"
+          strokecolor="${bgColor}">
+          <w:anchorlock/>
+          <center style="color:${textColor};font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;letter-spacing:0.3px;">
+            ${label}
+          </center>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]><!-->
+        <a href="${href}" target="_blank"
+          style="display:inline-block;padding:11px 28px;font-family:${SANS};font-size:13px;font-weight:bold;color:${textColor};text-decoration:none;border-radius:99px;letter-spacing:0.2px;mso-hide:all;">
+          ${label}
+        </a>
+        <!--<![endif]-->
+      </td>
+    </tr>
+  </table>`
 }
 
 // ── Letter delivery email ─────────────────────────────────────────────────────
 
-// Build the CTA URL for the "reply" button in letter emails.
-// - Existing users land on /?reply=<letterId> → AppContext navigates to received letters
-// - New users land on /?reply=<letterId>&email=<email> → AuthPage pre-fills email, shows
-//   signup, and after auth AppContext reads ?reply and navigates to the letter
-function buildReplyUrl(toEmail, letterId) {
-  const base = config.clientOrigin
-  const params = new URLSearchParams()
-  if (letterId) params.set('reply', letterId.toString())
-  if (toEmail)  params.set('email', toEmail)
-  return `${base}/?${params.toString()}`
-}
-
 export function buildEmailHtml(message, trackingId, toEmail = '', letterId = '') {
-  const withBreaks = message.replace(/\n/g, '<br/>')
-  const withLinks  = wrapLinksForClickTracking(withBreaks, trackingId)
-  const pixel      = generateTrackingPixel(trackingId)
-  const replyUrl   = buildReplyUrl(toEmail, letterId)
+  // 1. Escape HTML entities  →  2. preserve line breaks  →  3. wrap tracked links
+  // Order matters: escape first so we never double-encode the <br/> tags we add,
+  // and so URL-wrapping regex only sees plain-text URLs (no < > around them).
+  const safeBody  = formatLetterBody(message)        // escape + \n→<br/>
+  const withLinks = wrapLinksForClickTracking(safeBody, trackingId)
+  const pixel     = generateTrackingPixel(trackingId)
+  const replyUrl  = buildReplyUrl(toEmail, letterId)
+
+  console.log(`[mailer] buildEmailHtml — to:${toEmail} letterId:${letterId} chars:${(message || '').length}`)
 
   const body = `
+    <!-- ── Letter card ─────────────────────────────────────────────── -->
     <tr>
-      <td style="background:#ffffff;border-radius:16px;padding:40px 44px;box-shadow:0 4px 24px rgba(28,26,23,0.07);border:1px solid rgba(28,26,23,0.06);">
+      <td class="card-cell"
+        bgcolor="${C.paper}"
+        style="background-color:${C.paper};border:1px solid ${C.accentBorder};border-radius:12px;padding:40px 44px;">
 
-        <!-- Handwritten tagline -->
-        <p class="lfh-script" style="margin:0 0 6px;font-family:'Dancing Script',cursive;font-size:22px;color:#c4633a;line-height:1.4;">
-          Someone took a quiet moment to write this for you.
-        </p>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
 
-        <!-- Salutation -->
-        <p class="lfh-script" style="margin:0 0 20px;font-family:'Dancing Script',cursive;font-size:26px;font-weight:600;color:#2c2a27;line-height:1.3;">
-          Dear reader,
-        </p>
+          <!-- Tagline + salutation -->
+          <tr>
+            <td style="padding:0 0 20px 0;">
+              <p style="margin:0 0 6px;font-family:${SCRIPT};font-size:21px;color:${C.accent};line-height:1.4;">
+                Someone took a quiet moment to write this for you.
+              </p>
+              <p style="margin:0;font-family:${SCRIPT};font-size:27px;font-weight:bold;color:${C.ink};line-height:1.3;">
+                Dear reader,
+              </p>
+            </td>
+          </tr>
 
-        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(196,99,58,0.2),transparent);margin-bottom:28px;"></div>
+          ${dividerRow('0', '20px')}
 
-        <!-- Letter body — Georgia for readability -->
-        <div style="font-family:Georgia,serif;font-size:16px;line-height:2;color:#2c2a27;">
-          ${withLinks}
-        </div>
+          <!-- Letter body — word-break prevents long words/URLs from overflowing -->
+          <tr>
+            <td style="padding:4px 0 28px;font-family:${SERIF};font-size:16px;line-height:2.05;color:${C.inkSoft};word-break:break-word;overflow-wrap:break-word;white-space:normal;max-width:100%;">
+              ${withLinks}
+            </td>
+          </tr>
 
-        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.1),transparent);margin:32px 0;"></div>
+          ${dividerRow('0', '20px')}
 
-        <!-- Handwritten closing -->
-        <p class="lfh-script" style="margin:0 0 4px;font-family:'Dancing Script',cursive;font-size:22px;color:#2c2a27;line-height:1.4;">
-          With warmth,
-        </p>
-        <p class="lfh-script" style="margin:0 0 20px;font-family:'Dancing Script',cursive;font-size:19px;color:#8c8478;line-height:1.4;">
-          A stranger who cared enough to write.
-        </p>
+          <!-- Closing -->
+          <tr>
+            <td style="padding:4px 0 20px;">
+              <p style="margin:0 0 4px;font-family:${SCRIPT};font-size:21px;color:${C.ink};line-height:1.4;">
+                With warmth,
+              </p>
+              <p style="margin:0;font-family:${SCRIPT};font-size:18px;color:${C.inkMuted};line-height:1.4;">
+                A stranger who cared enough to write.
+              </p>
+            </td>
+          </tr>
 
-        <p style="margin:0;font-size:12px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
-          This letter was written with care and sent through Letter from Heart —<br/>
-          a quiet space for words that matter.
-        </p>
+          <!-- Brand note -->
+          <tr>
+            <td align="center">
+              <p style="margin:0;font-size:12px;color:${C.inkMuted};font-family:${SERIF};font-style:italic;line-height:1.6;">
+                This letter was written with care and sent through Letter from Heart &mdash;<br/>
+                a quiet space for words that matter.
+              </p>
+            </td>
+          </tr>
+
+        </table>
       </td>
     </tr>
+
+    <!-- ── CTA row ─────────────────────────────────────────────────── -->
     <tr>
-      <td style="padding:20px 0;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
+      <td align="center" style="padding:24px 0 8px;">
+        <p style="margin:0 0 16px;font-size:11px;color:${C.inkMuted};font-family:${SANS};letter-spacing:0.3px;line-height:1.5;">
           You received this because someone chose to write to you.
         </p>
-        <div style="margin-top:16px;">
-          <a href="${replyUrl}" target="_blank"
-            style="display:inline-block;padding:10px 22px;background:#1C1A17;color:#F7F2EA;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;letter-spacing:0.2px;">
-            Click here to reply 💌
-          </a>
-        </div>
-        <p style="margin:8px 0 0;font-size:10px;color:#c8c0b4;font-family:Helvetica,Arial,sans-serif;">
-          Already have an account? You'll be taken straight to the letter.
+        ${ctaButton(replyUrl, 'Click here to reply &#128140;')}
+        <p style="margin:10px 0 0;font-size:10px;color:${C.inkMuted};font-family:${SANS};">
+          Already have an account? You&rsquo;ll be taken straight to the letter.
         </p>
       </td>
     </tr>`
 
-  return emailShell('A letter for you', body) + `\n${pixel}`
+  return emailShell('A letter for you', 'Someone took a quiet moment to write this for you.', body) + `\n${pixel}`
 }
 
 export function buildEmailText(message) {
   return `${message}\n\n---\nSent securely via Letter from Heart. Your privacy is respected.\n${config.clientOrigin}`
 }
 
-// ── Notification reminder email ───────────────────────────────────────────────
+// ── Notification / reminder email ─────────────────────────────────────────────
 
-const NOTIFICATION_MESSAGES = {
-  reply:    'Someone replied to your letter 💬',
-  open:     'Someone opened your letter 💌',
-  claim:    'A listener picked up your letter 🤍',
-  delivery: 'Your letter was delivered successfully ✉️',
+const NOTIFICATION_HEADLINES = {
+  reply:    'Someone replied to your letter',
+  open:     'Someone opened your letter',
+  claim:    'A listener picked up your letter',
+  delivery: 'Your letter was delivered',
   general:  'You have a new update on Letter from Heart',
   system:   'A message from Letter from Heart',
 }
 
+const NOTIFICATION_EMOJI = {
+  reply:    '&#x1F4AC;',  // 💬
+  open:     '&#x1F48C;',  // 💌
+  claim:    '&#x1F90D;',  // 🤍
+  delivery: '&#x2709;&#xFE0F;', // ✉️
+  general:  '&#x1F514;',  // 🔔
+  system:   '&#x2699;&#xFE0F;', // ⚙️
+}
+
 export function buildNotificationEmail({ message, type, link }) {
-  const headline = NOTIFICATION_MESSAGES[type] || NOTIFICATION_MESSAGES.general
-  const ctaUrl = link
+  const headline   = NOTIFICATION_HEADLINES[type] || NOTIFICATION_HEADLINES.general
+  const emoji      = NOTIFICATION_EMOJI[type]     || NOTIFICATION_EMOJI.general
+  const safeMsg    = sanitizeNotificationHtml(message)  // strips unknown tags, converts \n→<br/>
+  const ctaUrl     = link
     ? `${config.clientOrigin}${link.startsWith('/') ? '' : '/'}${link}`
     : config.clientOrigin
 
+  console.log(`[mailer] buildNotificationEmail — type:${type} link:${link || '(none)'} chars:${(message || '').length}`)
+
   const body = `
+    <!-- ── Notification card ───────────────────────────────────────── -->
     <tr>
-      <td style="background:#ffffff;border-radius:16px;padding:36px 40px;box-shadow:0 4px 24px rgba(28,26,23,0.07);border:1px solid rgba(28,26,23,0.06);">
+      <td class="card-cell"
+        bgcolor="${C.paper}"
+        style="background-color:${C.paper};border:1px solid ${C.border};border-radius:12px;padding:36px 40px;">
 
-        <!-- Handwritten headline -->
-        <h2 class="lfh-script" style="margin:0 0 12px;font-family:'Dancing Script',cursive;font-size:28px;font-weight:600;color:#1c1a17;line-height:1.3;">
-          ${headline}
-        </h2>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
 
-        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(196,99,58,0.2),transparent);margin:16px 0 20px;"></div>
+          <!-- Headline -->
+          <tr>
+            <td style="padding:0 0 16px 0;">
+              <p style="margin:0 0 8px;font-size:28px;line-height:1;">${emoji}</p>
+              <h2 style="margin:0;font-family:${SCRIPT};font-size:27px;font-weight:bold;color:${C.ink};line-height:1.3;">
+                ${headline}
+              </h2>
+            </td>
+          </tr>
 
-        <!-- Body — Georgia for readability -->
-        <p style="margin:0 0 28px;font-family:Georgia,serif;font-size:15px;color:#4a4540;line-height:1.7;">
-          ${message}
-        </p>
-        <div style="text-align:center;">
-          <a href="${ctaUrl}" target="_blank"
-            style="display:inline-block;padding:12px 28px;background:#c4633a;color:#ffffff;text-decoration:none;border-radius:99px;font-size:13px;font-family:Helvetica,Arial,sans-serif;font-weight:600;letter-spacing:0.3px;">
-            View in app →
-          </a>
-        </div>
-        <div style="height:1px;background:linear-gradient(to right,transparent,rgba(28,26,23,0.08),transparent);margin:28px 0 20px;"></div>
-        <p style="margin:0;font-size:11px;color:#b0a89c;font-family:Georgia,serif;font-style:italic;line-height:1.6;text-align:center;">
-          You're receiving this because you haven't seen this notification yet.<br/>
-          Visit <a href="${config.clientOrigin}" style="color:#b0a89c;">my.letterfromheart.com</a> to manage your preferences.
-        </p>
+          ${dividerRow('0', '20px')}
+
+          <!-- Body — word-break prevents long notification text from overflowing -->
+          <tr>
+            <td style="padding:4px 0 28px;font-family:${SERIF};font-size:15px;color:${C.inkSoft};line-height:1.75;word-break:break-word;overflow-wrap:break-word;white-space:normal;max-width:100%;">
+              ${safeMsg}
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td align="center" style="padding:0 0 28px;">
+              ${ctaButton(ctaUrl, 'View in app &rarr;', C.accent, C.white)}
+            </td>
+          </tr>
+
+          ${dividerRow('0', '0')}
+
+          <!-- Footer note -->
+          <tr>
+            <td align="center" style="padding:20px 0 0 0;">
+              <p style="margin:0;font-size:11px;color:${C.inkMuted};font-family:${SERIF};font-style:italic;line-height:1.6;">
+                You&rsquo;re receiving this because you haven&rsquo;t seen this notification yet.<br/>
+                Visit <a href="${config.clientOrigin}" target="_blank" style="color:${C.inkMuted};text-decoration:underline;">Letter from Heart</a> to manage your preferences.
+              </p>
+            </td>
+          </tr>
+
+        </table>
       </td>
     </tr>`
 
-  return emailShell(headline, body)
+  return emailShell(headline, headline, body)
 }
 
 // ── System SMTP transporter ───────────────────────────────────────────────────
@@ -223,13 +421,8 @@ export function formatFromSystem() {
 
 // ── Resend (system path) ──────────────────────────────────────────────────────
 
-/**
- * Send an email via Resend and return the Resend message ID.
- * Only used for the system (useSystem=true) path.
- * @returns {Promise<string>} Resend email ID
- */
 export async function sendViaResend({ to, subject, html, text, replyTo }) {
-  const resend = new Resend(config.resendApiKey)
+  const resend  = new Resend(config.resendApiKey)
   const payload = {
     from:    `Letter from Heart <${config.emailFrom}>`,
     to:      [to],

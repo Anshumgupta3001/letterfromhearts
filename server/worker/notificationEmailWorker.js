@@ -118,7 +118,7 @@ async function processBatch() {
         to:      user.email,
         subject,
         html,
-        text:    `${bodyMessage.replace(/<[^>]+>/g, '')}\n\nVisit https://letterfromheart.com to view your updates.`,
+        text:    `${bodyMessage.replace(/<[^>]+>/g, '')}\n\nVisit ${config.clientOrigin} to view your updates.`,
       })
 
       await Notification.updateMany(
