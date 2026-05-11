@@ -26,6 +26,8 @@ if (config.googleClientId && config.googleClientSecret) {
     )
   )
   console.log('✅  Passport Google Strategy initialised.')
+  console.log('    callbackURL :', config.googleCallbackUrl)
+  console.log('    clientOrigin:', config.clientOrigin)
 } else {
   console.warn('⚠️  Google OAuth: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not set. /api/auth/google will return 503.')
 }

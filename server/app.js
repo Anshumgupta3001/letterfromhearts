@@ -28,10 +28,17 @@ const app = express()
 app.use(helmet())
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+// CLIENT_ORIGIN is the canonical production origin; always include it dynamically
+// so a single env change is enough to update CORS without touching code.
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:5173',
   'https://letterfromheart.com',
   'https://www.letterfromheart.com',
+  'https://app.letterfromheart.com',
+  'https://my.letterfromheart.com',
+  // Always honour whatever CLIENT_ORIGIN env var says (catches future renames)
+  ...(process.env.CLIENT_ORIGIN ? [process.env.CLIENT_ORIGIN] : []),
 ]
 app.use(cors({
   origin: (origin, cb) => {

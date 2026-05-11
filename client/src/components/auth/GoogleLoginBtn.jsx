@@ -17,6 +17,15 @@ function GoogleIcon() {
   )
 }
 
+// Resolve the backend API root — works in dev (proxy via Vite) and in production
+// (VITE_API_URL points to https://my.letterfromheart.com/api).
+// Strip any trailing /api so we can append /api/auth/google ourselves.
+const API_ROOT = (() => {
+  const raw = import.meta.env.VITE_API_URL || ''
+  // VITE_API_URL ends with /api — we need the origin only
+  return raw ? raw.replace(/\/api\/?$/, '') : ''
+})()
+
 // mode: 'signup' | 'login'
 export default function GoogleLoginBtn({ mode = 'login' }) {
   const { googleAuthError, setGoogleAuthError } = useApp()
@@ -27,7 +36,9 @@ export default function GoogleLoginBtn({ mode = 'login' }) {
 
   function handleClick() {
     setGoogleAuthError('')
-    window.location.href = `/api/auth/google?mode=${mode}`
+    // Use absolute URL when API_ROOT is set (production), relative otherwise (dev with Vite proxy)
+    const base = API_ROOT || ''
+    window.location.href = `${base}/api/auth/google?mode=${mode}`
   }
 
   const label = mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'
