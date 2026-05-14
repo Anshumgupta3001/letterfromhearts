@@ -22,7 +22,8 @@ import { useApp } from './context/AppContext'
 function PageRouter() {
   const { currentPage, authUser, authLoading, pendingRoleSetup } = useApp()
 
-  if (window.location.pathname === '/admin-secret-dashboard') {
+  const adminPaths = ['/admin-secret-dashboard', '/admin/dashboard']
+  if (adminPaths.includes(window.location.pathname)) {
     return <AdminDashboardPage />
   }
 

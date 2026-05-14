@@ -1,6 +1,9 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+// Strip a trailing /api suffix so the constant works whether the env var is
+// "https://my.letterfromheart.com/api" or "https://my.letterfromheart.com".
+// All fetch calls below append "/api/..." themselves.
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const C = {
@@ -310,14 +313,26 @@ export default function AdminDashboardPage() {
   const [resolvingId,    setResolvingId]    = useState(null)
   const reportsInitialized = useRef(false)
 
+  // ── Restore key from localStorage on mount ────────────────────────────────────
+  useEffect(() => {
+    const saved = localStorage.getItem('adminKey')
+    if (saved) {
+      setKey(saved)
+      fetchData(saved, days)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const fetchData = useCallback(async (k, d) => {
     setLoading(true)
     setError('')
     try {
-      const res  = await fetch(`${API}/api/admin/analytics?key=${encodeURIComponent(k)}&days=${d}`)
+      const res  = await fetch(`${API}/api/admin/analytics?days=${d}`, {
+        headers: { 'x-admin-key': k },
+      })
       const json = await res.json()
       if (!res.ok) { setError(json.error || 'Failed to fetch.'); return }
       setData(json.data)
+      localStorage.setItem('adminKey', k)
       setUnlocked(true)
     } catch {
       setError('Network error — is the server running?')
@@ -329,9 +344,11 @@ export default function AdminDashboardPage() {
   const fetchReports = useCallback(async (adminKey, filter, search, pg) => {
     setReportsLoading(true)
     try {
-      const params = new URLSearchParams({ key: adminKey, status: filter, page: pg, limit: 50 })
+      const params = new URLSearchParams({ status: filter, page: pg, limit: 50 })
       if (search.trim()) params.set('search', search.trim())
-      const res  = await fetch(`${API}/api/reports?${params}`)
+      const res  = await fetch(`${API}/api/reports?${params}`, {
+        headers: { 'x-admin-key': adminKey },
+      })
       const json = await res.json()
       if (!res.ok) return
       setReports(json.data || [])
@@ -343,10 +360,12 @@ export default function AdminDashboardPage() {
   const fetchLetters = useCallback(async (adminKey, search, type, pg) => {
     setLettersLoading(true)
     try {
-      const params = new URLSearchParams({ key: adminKey, page: pg, limit: 50 })
+      const params = new URLSearchParams({ page: pg, limit: 50 })
       if (search.trim()) params.set('search', search.trim())
       if (type !== 'all') params.set('type', type)
-      const res  = await fetch(`${API}/api/admin/letters?${params}`)
+      const res  = await fetch(`${API}/api/admin/letters?${params}`, {
+        headers: { 'x-admin-key': adminKey },
+      })
       const json = await res.json()
       if (!res.ok) return
       setAllLetters(json.data || [])
@@ -358,9 +377,9 @@ export default function AdminDashboardPage() {
   const resolveReport = useCallback(async (reportId, newStatus) => {
     setResolvingId(reportId)
     try {
-      const res = await fetch(`${API}/api/reports/${reportId}/status?key=${encodeURIComponent(key)}`, {
+      const res = await fetch(`${API}/api/reports/${reportId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
         body: JSON.stringify({ status: newStatus }),
       })
       if (res.ok) {
@@ -498,7 +517,7 @@ export default function AdminDashboardPage() {
             onMouseLeave={e => e.currentTarget.style.background = 'rgba(247,242,234,0.1)'}
           >↻ Refresh</button>
           <button
-            onClick={() => { setUnlocked(false); setData(null); setKey('') }}
+            onClick={() => { localStorage.removeItem('adminKey'); setUnlocked(false); setData(null); setKey('') }}
             style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(196,99,58,0.15)', color: '#f0a080', border: '1px solid rgba(196,99,58,0.25)', fontFamily: '"DM Sans",sans-serif' }}
           >🔒 Lock</button>
         </div>
