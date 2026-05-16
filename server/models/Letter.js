@@ -42,6 +42,8 @@ const letterSchema = new mongoose.Schema(
     // Scheduling — populated for type:'sent' scheduled letters
     isScheduled:  { type: Boolean, default: false, index: true },
     scheduledFor: { type: Date },
+    // Edit tracking — true once the letter has been updated after initial save
+    isEdited: { type: Boolean, default: false },
   },
   { timestamps: true }
 )

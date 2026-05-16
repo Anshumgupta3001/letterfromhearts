@@ -274,6 +274,7 @@ const TABS = [
   { id: 'engagement',    icon: '📈', label: 'Engagement',    desc: 'Activity, rates & funnel' },
   { id: 'users',         icon: '👤', label: 'Users',         desc: 'Directory & demographics' },
   { id: 'letters',       icon: '📬', label: 'Letters',       desc: 'Recent activity & moods' },
+  { id: 'connections',   icon: '🤝', label: 'Connections',   desc: 'Known-contact letter delivery' },
   { id: 'notifications', icon: '🔔', label: 'Notifications', desc: 'Platform notifications' },
   { id: 'trends',        icon: '📉', label: 'Trends',        desc: 'Daily activity charts' },
   { id: 'reports',       icon: '🚨', label: 'Reports',       desc: 'User reports & moderation' },
@@ -312,6 +313,16 @@ export default function AdminDashboardPage() {
   const [reportsPage,    setReportsPage]    = useState(1)
   const [resolvingId,    setResolvingId]    = useState(null)
   const reportsInitialized = useRef(false)
+
+  // ── Connections tab state ─────────────────────────────────────────────────
+  const [connections,        setConnections]        = useState([])
+  const [connectionsTotal,   setConnectionsTotal]   = useState(0)
+  const [connectionsSummary, setConnectionsSummary] = useState(null)
+  const [connectionsLoading, setConnectionsLoading] = useState(false)
+  const [connectionsSearch,  setConnectionsSearch]  = useState('')
+  const [connectionsPage,    setConnectionsPage]    = useState(1)
+  const [connectionsFilter,  setConnectionsFilter]  = useState('all')
+  const connectionsInitialized = useRef(false)
 
   // ── Restore key from localStorage on mount ────────────────────────────────────
   useEffect(() => {
@@ -391,6 +402,24 @@ export default function AdminDashboardPage() {
     finally { setResolvingId(null) }
   }, [key])
 
+  const fetchConnections = useCallback(async (adminKey, search, pg, acctFilter = 'all') => {
+    setConnectionsLoading(true)
+    try {
+      const params = new URLSearchParams({ page: pg, limit: 50 })
+      if (search.trim()) params.set('search', search.trim())
+      if (acctFilter && acctFilter !== 'all') params.set('accountFilter', acctFilter)
+      const res  = await fetch(`${API}/api/admin/known-connections?${params}`, {
+        headers: { 'x-admin-key': adminKey },
+      })
+      const json = await res.json()
+      if (!res.ok) return
+      setConnections(json.data || [])
+      setConnectionsTotal(json.total || 0)
+      setConnectionsSummary(json.summary || null)
+    } catch { /* silently fail */ }
+    finally { setConnectionsLoading(false) }
+  }, [])
+
   // Must be before early returns — Rules of Hooks
   const filteredUsers = useMemo(() => {
     if (!data) return []
@@ -438,6 +467,13 @@ export default function AdminDashboardPage() {
     if (activeTab !== 'reports' || reportsInitialized.current) return
     reportsInitialized.current = true
     fetchReports(key, reportsFilter, reportsSearch, reportsPage)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch connections exactly once when the connections tab first becomes active
+  useEffect(() => {
+    if (activeTab !== 'connections' || connectionsInitialized.current) return
+    connectionsInitialized.current = true
+    fetchConnections(key, connectionsSearch, connectionsPage, connectionsFilter)
   }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Lock screen ──────────────────────────────────────────────────────────────
@@ -1231,6 +1267,214 @@ export default function AdminDashboardPage() {
                   <span style={{ fontSize: 12, color: C.muted, alignSelf: 'center' }}>Page {reportsPage} of {Math.ceil(reportsTotal / 50)}</span>
                   <button disabled={reportsPage >= Math.ceil(reportsTotal / 50)} onClick={() => { const p = reportsPage + 1; setReportsPage(p); fetchReports(key, reportsFilter, reportsSearch, p) }}
                     style={{ padding: '5px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 12, color: C.muted }}>Next →</button>
+                </div>
+              )}
+            </section>
+          )
+        })()}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: CONNECTIONS  — "Someone I Know" letter delivery analytics
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'connections' && (() => {
+          const s = connectionsSummary
+          const convPct = s?.conversionRate ?? 0
+
+          return (
+            <section>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>🤝 Known Connections</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>
+                    "Someone I Know" letters — who sent them and whether recipients joined.
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Summary stat cards ── */}
+              {s && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(170px,1fr))', gap: 12, marginBottom: 22 }}>
+                  {[
+                    { label: 'Total Letters Sent',      value: fmt(s.totalConnections), color: C.ink,    icon: '📬' },
+                    { label: 'Unique Recipients',        value: fmt(s.uniqueRecipients), color: C.gold,   icon: '👥' },
+                    { label: 'Recipients w/ Account',   value: fmt(s.withAccount),      color: C.sage,   icon: '✅' },
+                    { label: 'No Account Yet',           value: fmt(s.withoutAccount),   color: C.muted,  icon: '⭕' },
+                  ].map(stat => (
+                    <div key={stat.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                      <div style={{ fontSize: 18, marginBottom: 6 }}>{stat.icon}</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: stat.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{stat.value}</div>
+                      <div style={{ fontSize: 10.5, color: C.muted, marginTop: 5, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.4 }}>{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── Conversion rate bar ── */}
+              {s && (
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>Recipient conversion rate</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: convPct >= 50 ? C.sage : C.tc, fontFamily: '"Lora",serif' }}>{convPct}%</span>
+                    </div>
+                    <div style={{ width: '100%', background: `${C.border}`, borderRadius: 99, height: 8, overflow: 'hidden' }}>
+                      <div style={{ width: `${Math.min(convPct, 100)}%`, height: '100%', background: convPct >= 50 ? C.sage : C.tc, borderRadius: 99, transition: 'width 0.6s ease' }} />
+                    </div>
+                    <div style={{ fontSize: 10.5, color: C.muted, marginTop: 5, fontFamily: '"DM Sans",sans-serif' }}>
+                      {s.withAccount} of {s.uniqueRecipients} unique recipients have registered accounts
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Search + refresh toolbar ── */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                <input
+                  value={connectionsSearch}
+                  onChange={e => setConnectionsSearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { setConnectionsPage(1); fetchConnections(key, connectionsSearch, 1, connectionsFilter) } }}
+                  placeholder="Search sender name, email or recipient…"
+                  style={{ flex: 1, minWidth: 240, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', outline: 'none', background: C.white, color: C.ink }}
+                />
+                <button
+                  onClick={() => { setConnectionsPage(1); fetchConnections(key, connectionsSearch, 1, connectionsFilter) }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans",sans-serif' }}
+                >Search</button>
+                <button
+                  onClick={() => fetchConnections(key, connectionsSearch, connectionsPage, connectionsFilter)}
+                  style={{ padding: '8px 14px', borderRadius: 8, background: C.paper, color: C.muted, border: `1px solid ${C.border}`, fontSize: 13, cursor: 'pointer', fontFamily: '"DM Sans",sans-serif' }}
+                >↻</button>
+              </div>
+
+              {/* ── Account filter pills ── */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+                {[
+                  { id: 'all',          label: 'All' },
+                  { id: 'with_account', label: '✅ Has Account' },
+                  { id: 'no_account',   label: '⭕ No Account' },
+                ].map(f => {
+                  const active = connectionsFilter === f.id
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => {
+                        setConnectionsFilter(f.id)
+                        setConnectionsPage(1)
+                        fetchConnections(key, connectionsSearch, 1, f.id)
+                      }}
+                      style={{
+                        padding: '6px 16px', borderRadius: 99, fontSize: 12.5, fontFamily: '"DM Sans",sans-serif',
+                        fontWeight: active ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s',
+                        border: `1px solid ${active ? C.tc : C.border}`,
+                        background: active ? `${C.tc}14` : C.white,
+                        color: active ? C.tc : C.muted,
+                      }}
+                    >{f.label}</button>
+                  )
+                })}
+              </div>
+
+              {/* ── Table ── */}
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                {connectionsLoading ? (
+                  <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13, fontFamily: '"Lora",serif' }}>Loading connections…</div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
+                        <tr>
+                          <TH>Sender</TH>
+                          <TH>Sender Email</TH>
+                          <TH>Recipient Email</TH>
+                          <TH>Account</TH>
+                          <TH>Type</TH>
+                          <TH>Status</TH>
+                          <TH>Sent</TH>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {connections.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
+                              {connectionsFilter === 'with_account'
+                                ? 'No recipients have created accounts yet.'
+                                : connectionsFilter === 'no_account'
+                                  ? 'All recipients have accounts — great conversion!'
+                                  : 'No known-contact letters found.'}
+                            </td>
+                          </tr>
+                        ) : connections.map((c, i) => (
+                          <tr
+                            key={c.letterId || i}
+                            style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
+                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                          >
+                            {/* Sender */}
+                            <td style={{ padding: '10px 12px', maxWidth: 160 }}>
+                              <div style={{ fontWeight: 600, color: C.ink, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.senderName}</div>
+                            </td>
+                            {/* Sender email */}
+                            <td style={{ padding: '10px 12px', maxWidth: 180 }}>
+                              <div style={{ fontSize: 11.5, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.senderEmail}</div>
+                            </td>
+                            {/* Recipient email */}
+                            <td style={{ padding: '10px 12px', maxWidth: 200 }}>
+                              <div style={{ fontSize: 12, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.recipientEmail}</div>
+                            </td>
+                            {/* Account status badge */}
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
+                              {c.recipientExists ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: 'rgba(107,158,138,0.1)', color: C.sage, border: `1px solid rgba(107,158,138,0.25)`, whiteSpace: 'nowrap' }}>
+                                  ✅ Has account
+                                </span>
+                              ) : (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: 'rgba(28,26,23,0.04)', color: C.muted, border: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>
+                                  ⭕ No account
+                                </span>
+                              )}
+                            </td>
+                            {/* Account type */}
+                            <td style={{ padding: '10px 12px' }}>
+                              {c.recipientExists && c.recipientAccountType ? (
+                                <Badge
+                                  label={c.recipientAccountType === 'google' ? 'Google' : 'Email'}
+                                  color={c.recipientAccountType === 'google' ? C.google : C.muted}
+                                />
+                              ) : (
+                                <span style={{ fontSize: 11, color: C.border }}>—</span>
+                              )}
+                            </td>
+                            {/* Letter status */}
+                            <td style={{ padding: '10px 12px' }}>
+                              <Badge label={c.status || '—'} color={STATUS_COLOR[c.status] || '#4A4640'} />
+                            </td>
+                            {/* Date */}
+                            <TD small muted nowrap>{fmtDate(c.createdAt)}</TD>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Pagination ── */}
+              {connectionsTotal > 50 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 12.5, color: C.muted }}>
+                  <span>{connectionsTotal} total · page {connectionsPage} of {Math.ceil(connectionsTotal / 50)}</span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      disabled={connectionsPage === 1}
+                      onClick={() => { const p = connectionsPage - 1; setConnectionsPage(p); fetchConnections(key, connectionsSearch, p, connectionsFilter) }}
+                      style={{ padding: '5px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 12, color: C.muted }}
+                    >← Prev</button>
+                    <button
+                      disabled={connectionsPage >= Math.ceil(connectionsTotal / 50)}
+                      onClick={() => { const p = connectionsPage + 1; setConnectionsPage(p); fetchConnections(key, connectionsSearch, p, connectionsFilter) }}
+                      style={{ padding: '5px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 12, color: C.muted }}
+                    >Next →</button>
+                  </div>
                 </div>
               )}
             </section>

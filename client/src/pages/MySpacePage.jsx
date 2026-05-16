@@ -11,8 +11,10 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
   const [editHov, setEditHov] = useState(false)
   const [delHov, setDelHov]   = useState(false)
 
-  const date   = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+  const date       = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
   const isPersonal = letter.type === 'personal'
+  const isStranger = letter.type === 'stranger'
+  const canEdit    = isPersonal || (isStranger && !letter.isClaimed && !letter.isRead)
 
   // status: 'sent' | 'opened' | 'clicked' | 'failed' | 'saved'
   const isOpened = letter.status === 'opened' || letter.status === 'clicked'
@@ -61,6 +63,12 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
             {letter.type === 'stranger' && letter.replyCount > 0 && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 600, background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.28)' }}>
                 🌿 {letter.replyCount} {letter.replyCount === 1 ? 'reply' : 'replies'}
+              </span>
+            )}
+            {/* Edited badge */}
+            {letter.isEdited && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, background: 'rgba(201,168,76,0.1)', color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.28)', fontFamily: '"DM Sans", sans-serif' }}>
+                ✏ Edited
               </span>
             )}
           </div>
@@ -127,8 +135,8 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
             )
           })()}
         </div>
-        {/* Only personal letters can be edited/deleted */}
-        {isPersonal && onEdit && onDelete && (
+        {/* Edit (personal + unclaimed stranger) / Delete (personal only) */}
+        {canEdit && onEdit && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
               onClick={e => { e.stopPropagation(); onEdit(letter) }}
@@ -136,12 +144,14 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
               onMouseLeave={() => setEditHov(false)}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: editHov ? '1.5px solid var(--gold)' : '1.5px solid #E0D4BC', color: editHov ? 'var(--gold)' : 'var(--ink-soft)', background: editHov ? '#fef9f2' : 'transparent' }}
             >✏ Edit</button>
-            <button
-              onClick={e => { e.stopPropagation(); onDelete(letter) }}
-              onMouseEnter={() => setDelHov(true)}
-              onMouseLeave={() => setDelHov(false)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: delHov ? '1.5px solid var(--tc)' : '1.5px solid #f5d4ce', color: delHov ? '#fff' : 'var(--tc)', background: delHov ? 'var(--tc)' : 'transparent' }}
-            >✕ Delete</button>
+            {isPersonal && onDelete && (
+              <button
+                onClick={e => { e.stopPropagation(); onDelete(letter) }}
+                onMouseEnter={() => setDelHov(true)}
+                onMouseLeave={() => setDelHov(false)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: delHov ? '1.5px solid var(--tc)' : '1.5px solid #f5d4ce', color: delHov ? '#fff' : 'var(--tc)', background: delHov ? 'var(--tc)' : 'transparent' }}
+              >✕ Delete</button>
+            )}
           </div>
         )}
       </div>
@@ -150,18 +160,34 @@ function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, ta
 }
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
+const MOOD_OPTIONS = [
+  { value: '',          label: 'No mood',    emoji: '—'  },
+  { value: 'vent',      label: 'Need to vent', emoji: '🌧️' },
+  { value: 'joy',       label: 'Pure joy',     emoji: '🌟' },
+  { value: 'love',      label: 'Love & warmth',emoji: '💌' },
+  { value: 'grief',     label: 'Grief & loss', emoji: '🕯️' },
+  { value: 'gratitude', label: 'Gratitude',    emoji: '🌿' },
+  { value: 'longing',   label: 'Longing',      emoji: '🌙' },
+]
+
 function EditModal({ letter, onSave, onClose }) {
-  const [subject, setSubject] = useState(letter.subject)
-  const [message, setMessage] = useState(letter.message)
-  const [saving, setSaving]   = useState(false)
-  const [error, setError]     = useState('')
+  const [subject, setSubject] = useState(letter.subject || '')
+  const [message, setMessage] = useState(letter.message || '')
+  const [mood,    setMood]    = useState(letter.mood    || '')
+  const [saving,  setSaving]  = useState(false)
+  const [error,   setError]   = useState('')
+
+  const isStranger = letter.type === 'stranger'
 
   async function handleSave() {
     setError('')
     if (!message.trim()) { setError('Message cannot be empty.'); return }
     setSaving(true)
     try {
-      const res  = await apiFetch(`/api/letters/${letter._id}`, { method: 'PUT', body: JSON.stringify({ subject, message }) })
+      const res  = await apiFetch(`/api/letters/${letter._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ subject, message, mood }),
+      })
       const json = await res.json()
       if (!res.ok) { setError(json.error || 'Failed to save.'); return }
       onSave(json.data)
@@ -170,25 +196,92 @@ function EditModal({ letter, onSave, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center" style={{ background: 'rgba(26,18,8,0.45)', backdropFilter: 'blur(4px)' }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-[560px] mx-4 overflow-hidden animate-fade-up" style={{ background: 'var(--cream)', border: `1px solid ${BD}`, borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,8,0.18)' }}>
-        <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: `1px solid ${FT}` }}>
-          <span style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>Edit Letter</span>
+    <div
+      className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center"
+      style={{ background: 'rgba(26,18,8,0.45)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div
+        className="w-full sm:max-w-[560px] sm:mx-4 animate-fade-up flex flex-col"
+        style={{
+          background: 'var(--cream)', border: `1px solid ${BD}`,
+          borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,8,0.18)',
+          maxHeight: 'calc(100dvh - 32px)', overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: `1px solid ${FT}` }}>
+          <div>
+            <span style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>Edit Letter</span>
+            {isStranger && (
+              <span style={{ marginLeft: 10, fontSize: 10, padding: '2px 8px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.25)', fontFamily: '"DM Sans", sans-serif' }}>
+                Caring Stranger
+              </span>
+            )}
+          </div>
           <button onClick={onClose} className="w-7 h-7 flex items-center justify-center cursor-pointer bg-transparent border-none text-[20px]" style={{ color: 'var(--ink-muted)' }}>×</button>
         </div>
-        <div className="px-6 py-5 flex flex-col gap-4">
+
+        {/* Scrollable body */}
+        <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
           <label className="flex flex-col gap-1">
             <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Subject</span>
-            <input value={subject} onChange={e => setSubject(e.target.value)} className="w-full px-3 py-[10px] rounded-[8px] font-sans text-[13px] outline-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }} />
+            <input
+              value={subject}
+              onChange={e => setSubject(e.target.value)}
+              className="w-full px-3 py-[10px] rounded-[8px] font-sans text-[13px] outline-none"
+              style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }}
+            />
           </label>
+
           <label className="flex flex-col gap-1">
             <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Message</span>
-            <textarea value={message} onChange={e => setMessage(e.target.value)} rows={10} className="w-full px-3 py-[10px] rounded-[8px] font-lora text-[14px] leading-[1.9] outline-none resize-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink-soft)' }} />
+            <textarea
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              rows={10}
+              className="w-full px-3 py-[10px] rounded-[8px] font-lora text-[14px] leading-[1.9] outline-none resize-none"
+              style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink-soft)' }}
+            />
           </label>
-          {error && <div className="text-[12px] px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(196,99,58,0.07)', border: '1px solid rgba(196,99,58,0.2)' }}>{error}</div>}
-          <div className="flex gap-2 justify-end">
+
+          {/* Mood picker */}
+          <div className="flex flex-col gap-2">
+            <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Mood</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {MOOD_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setMood(opt.value)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    padding: '5px 11px', borderRadius: 20, cursor: 'pointer',
+                    fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+                    transition: 'all 0.12s',
+                    background: mood === opt.value ? 'var(--ink)' : 'var(--paper)',
+                    color:      mood === opt.value ? 'var(--cream)' : 'var(--ink-soft)',
+                    border:     mood === opt.value ? '1px solid var(--ink)' : `1px solid ${BD}`,
+                  }}
+                >
+                  {opt.emoji !== '—' && <span>{opt.emoji}</span>}
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-[12px] px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(196,99,58,0.07)', border: '1px solid rgba(196,99,58,0.2)' }}>
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-2 justify-end pb-1">
             <button onClick={onClose} className="px-5 py-[9px] rounded-pill font-sans text-[13px] cursor-pointer bg-transparent" style={{ color: 'var(--ink-muted)', border: `1px solid ${BD}` }}>Cancel</button>
-            <button onClick={handleSave} disabled={saving} className="px-5 py-[9px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50" style={{ background: 'var(--ink)', color: 'var(--cream)' }}>{saving ? 'Saving…' : 'Save changes'}</button>
+            <button onClick={handleSave} disabled={saving} className="px-5 py-[9px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50" style={{ background: 'var(--ink)', color: 'var(--cream)' }}>
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
           </div>
         </div>
       </div>
@@ -402,6 +495,7 @@ export default function MySpacePage() {
 
   function handleSaved(updated) {
     setPersonal(prev => prev.map(l => l._id === updated._id ? updated : l))
+    setStranger(prev => prev.map(l => l._id === updated._id ? updated : l))
     setEditingLetter(null)
   }
 
@@ -505,7 +599,11 @@ export default function MySpacePage() {
                 tagColor={cfg.tagColor}
                 tagBorder={cfg.tagBorder}
                 onOpen={openLetterPanel}
-                onEdit={letter.type === 'personal' ? setEditingLetter : undefined}
+                onEdit={
+                  letter.type === 'personal' ||
+                  (letter.type === 'stranger' && !letter.isClaimed && !letter.isRead)
+                    ? setEditingLetter : undefined
+                }
                 onDelete={letter.type === 'personal' ? setDeletingLetter : undefined}
               />
             )

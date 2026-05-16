@@ -265,6 +265,168 @@ export async function getAdminAnalytics(req, res) {
   })
 }
 
+// GET /api/admin/known-connections?key=xxx&page=1&limit=50&search=xxx&accountFilter=all|with_account|no_account
+// Returns all "Someone I Know" (type:'sent') letters with sender + recipient account status.
+// accountFilter is applied server-side before pagination so page counts stay correct.
+// Summary counts are always all-time, independent of search/filter.
+export async function getAdminKnownConnections(req, res) {
+  const page          = Math.max(1, parseInt(req.query.page)  || 1)
+  const limit         = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50))
+  const skip          = (page - 1) * limit
+  const search        = (req.query.search || '').trim()
+  const accountFilter = ['with_account', 'no_account'].includes(req.query.accountFilter)
+    ? req.query.accountFilter : 'all'
+
+  // Base: all delivered "Someone I Know" letters (exclude still-queued scheduled ones)
+  const baseFilter = { type: 'sent', status: { $ne: 'scheduled' } }
+  let filter = { ...baseFilter }
+
+  // ── Account-existence filter — must be computed before pagination ─────────
+  // Strategy: get all distinct toEmails → check which have accounts →
+  // build an $in/$nin list and push it into the Mongo filter.
+  // This keeps pagination row counts correct (not possible to do this post-hoc).
+  if (accountFilter !== 'all') {
+    const allToEmails = await Letter.distinct('toEmail', baseFilter)
+    const validEmails = allToEmails.filter(Boolean)
+    // Lowercase for User lookup; keep a map back to original casing for the $in filter
+    const lcToOrigMap = {}
+    for (const e of validEmails) lcToOrigMap[e.toLowerCase()] = e
+
+    const lcEmails    = Object.keys(lcToOrigMap)
+    const usersFound  = lcEmails.length > 0
+      ? await User.find({ email: { $in: lcEmails } }, 'email').lean()
+      : []
+    const lcWithAcct  = new Set(usersFound.map(u => u.email.toLowerCase()))
+
+    if (accountFilter === 'with_account') {
+      const matchEmails = validEmails.filter(e => lcWithAcct.has(e.toLowerCase()))
+      if (matchEmails.length === 0) {
+        // No recipients with accounts — short-circuit with empty result
+        const allRecipEmails2 = await Letter.distinct('toEmail', baseFilter)
+        const uq2             = [...new Set(allRecipEmails2.filter(Boolean).map(e => e.toLowerCase()))]
+        const [tc2, wac2]     = await Promise.all([
+          Letter.countDocuments(baseFilter),
+          uq2.length > 0 ? User.countDocuments({ email: { $in: uq2 } }) : Promise.resolve(0),
+        ])
+        return res.json({
+          success: true, data: [], total: 0, page: 1, pages: 0,
+          summary: { totalConnections: tc2, uniqueRecipients: uq2.length, withAccount: wac2, withoutAccount: Math.max(0, uq2.length - wac2), conversionRate: uq2.length > 0 ? Math.round((wac2 / uq2.length) * 100) : 0 },
+        })
+      }
+      filter.toEmail = { $in: matchEmails }
+    } else {
+      // no_account
+      const noAcctEmails = validEmails.filter(e => !lcWithAcct.has(e.toLowerCase()))
+      if (noAcctEmails.length === 0) {
+        const allRecipEmails2 = await Letter.distinct('toEmail', baseFilter)
+        const uq2             = [...new Set(allRecipEmails2.filter(Boolean).map(e => e.toLowerCase()))]
+        const [tc2, wac2]     = await Promise.all([
+          Letter.countDocuments(baseFilter),
+          uq2.length > 0 ? User.countDocuments({ email: { $in: uq2 } }) : Promise.resolve(0),
+        ])
+        return res.json({
+          success: true, data: [], total: 0, page: 1, pages: 0,
+          summary: { totalConnections: tc2, uniqueRecipients: uq2.length, withAccount: wac2, withoutAccount: Math.max(0, uq2.length - wac2), conversionRate: uq2.length > 0 ? Math.round((wac2 / uq2.length) * 100) : 0 },
+        })
+      }
+      filter.toEmail = { $in: noAcctEmails }
+    }
+  }
+
+  // ── Text search (combines with accountFilter via AND) ─────────────────────
+  if (search) {
+    const senderMatches = await User.distinct('_id', {
+      $or: [
+        { name:  { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ],
+    })
+    const searchOr = [
+      { toEmail: { $regex: search, $options: 'i' } },
+      ...(senderMatches.length > 0 ? [{ userId: { $in: senderMatches } }] : []),
+    ]
+    // If an accountFilter toEmail constraint already exists, AND it with the search
+    if (filter.toEmail) {
+      filter.$and = [{ toEmail: filter.toEmail }, { $or: searchOr }]
+      delete filter.toEmail
+    } else {
+      filter.$or = searchOr
+    }
+  }
+
+  const [letters, total] = await Promise.all([
+    Letter.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select('userId toEmail fromEmail subject createdAt status')
+      .lean(),
+    Letter.countDocuments(filter),
+  ])
+
+  // Batch-resolve sender info
+  const senderIds = [...new Set(letters.map(l => l.userId?.toString()).filter(Boolean))]
+  const senders   = await User.find({ _id: { $in: senderIds } }, 'name email').lean()
+  const senderMap = {}
+  for (const u of senders) senderMap[u._id.toString()] = { name: u.name || '—', email: u.email }
+
+  // Batch-check which recipient emails have registered accounts
+  const recipientEmails = [...new Set(letters.map(l => (l.toEmail || '').toLowerCase()).filter(Boolean))]
+  const existingRecipients = recipientEmails.length > 0
+    ? await User.find({ email: { $in: recipientEmails } }, 'email authProvider').lean()
+    : []
+  const recipientMap = {}
+  for (const u of existingRecipients) {
+    if (u.email) recipientMap[u.email.toLowerCase()] = {
+      exists: true, userId: u._id, accountType: u.authProvider || 'email',
+    }
+  }
+
+  // All-time summary (ignores current search/page filter)
+  const allRecipientEmails = await Letter.distinct('toEmail', baseFilter)
+  const uniqueEmails       = [...new Set(allRecipientEmails.filter(Boolean).map(e => e.toLowerCase()))]
+  const [totalCount, withAccountCount] = await Promise.all([
+    Letter.countDocuments(baseFilter),
+    uniqueEmails.length > 0 ? User.countDocuments({ email: { $in: uniqueEmails } }) : Promise.resolve(0),
+  ])
+  const conversionRate = uniqueEmails.length > 0
+    ? Math.round((withAccountCount / uniqueEmails.length) * 100)
+    : 0
+
+  const out = letters.map(l => {
+    const re = (l.toEmail || '').toLowerCase()
+    const rc = recipientMap[re] || { exists: false, userId: null, accountType: null }
+    const sn = senderMap[l.userId?.toString()] || { name: '—', email: l.fromEmail || '—' }
+    return {
+      letterId:             l._id,
+      senderName:           sn.name,
+      senderEmail:          sn.email,
+      recipientEmail:       l.toEmail || '—',
+      subject:              l.subject || '—',
+      status:               l.status,
+      createdAt:            l.createdAt,
+      recipientExists:      rc.exists,
+      recipientUserId:      rc.userId       || null,
+      recipientAccountType: rc.accountType  || null,
+    }
+  })
+
+  res.json({
+    success: true,
+    data:    out,
+    total,
+    page,
+    pages:   Math.ceil(total / limit),
+    summary: {
+      totalConnections: totalCount,
+      uniqueRecipients: uniqueEmails.length,
+      withAccount:      withAccountCount,
+      withoutAccount:   Math.max(0, uniqueEmails.length - withAccountCount),
+      conversionRate,
+    },
+  })
+}
+
 // GET /api/admin/letters?key=xxx&page=1&limit=50&search=xxx&type=xxx
 export async function getAdminLetters(req, res) {
   const page  = Math.max(1, parseInt(req.query.page)  || 1)
