@@ -1,6 +1,6 @@
 import { useApp } from '../context/AppContext'
 import { MyLettersSidebar } from '../components/Sidebar'
-import LetterCard from '../components/LetterCard'
+import { LegacyLetterCard as LetterCard } from '../components/LetterCard'
 import FilterPills from '../components/FilterPills'
 import EmptyState from '../components/EmptyState'
 

@@ -1,163 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
+import LetterCard from '../components/LetterCard'
 
 const BD = '#E0D4BC'
 const FT = '#F2EBE0'
-
-// ── Shared letter card (same design as global system) ─────────────────────────
-function LetterCard({ letter, onEdit, onDelete, onOpen, accentGrad, tagLabel, tagBg, tagColor, tagBorder }) {
-  const [hov, setHov] = useState(false)
-  const [editHov, setEditHov] = useState(false)
-  const [delHov, setDelHov]   = useState(false)
-
-  const date       = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-  const isPersonal = letter.type === 'personal'
-  const isStranger = letter.type === 'stranger'
-  const canEdit    = isPersonal || (isStranger && !letter.isClaimed && !letter.isRead)
-
-  // status: 'sent' | 'opened' | 'clicked' | 'failed' | 'saved'
-  const isOpened = letter.status === 'opened' || letter.status === 'clicked'
-  const isSentLetter = letter.type === 'sent'
-
-  return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: '#fff', borderRadius: 14, border: `1px solid ${BD}`,
-        overflow: 'hidden', position: 'relative',
-        transform: hov ? 'translateY(-3px)' : 'translateY(0)',
-        boxShadow: hov ? '0 14px 40px rgba(26,18,8,0.09)' : 'none',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-      }}
-    >
-      {/* Left accent */}
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: accentGrad, borderRadius: '4px 0 0 4px' }} />
-
-      {/* Card body — clickable to open */}
-      <div
-        style={{ padding: '22px 22px 18px 28px', cursor: 'pointer' }}
-        onClick={() => onOpen(letter)}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, marginBottom: 12 }}>
-          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-            {letter.subject || 'A letter from my heart'}
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: tagBg, color: tagColor, border: `1px solid ${tagBorder}` }}>
-              ✦ {tagLabel}
-            </span>
-            {/* "Heard" indicator — stranger letters claimed by a listener */}
-            {letter.type === 'stranger' && (letter.isClaimed || letter.isRead) && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, background: 'rgba(139,126,200,0.1)', color: 'var(--purple)', border: '1px solid rgba(139,126,200,0.25)' }}>
-                ✓ Heard by a listener
-              </span>
-            )}
-            {letter.type === 'stranger' && !letter.isClaimed && !letter.isRead && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, background: 'rgba(28,26,23,0.04)', color: 'var(--ink-muted)', border: '1px solid rgba(28,26,23,0.1)' }}>
-                · Waiting to be heard
-              </span>
-            )}
-            {/* Reply count badge */}
-            {letter.type === 'stranger' && letter.replyCount > 0 && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 600, background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.28)' }}>
-                🌿 {letter.replyCount} {letter.replyCount === 1 ? 'reply' : 'replies'}
-              </span>
-            )}
-            {/* Edited badge */}
-            {letter.isEdited && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, background: 'rgba(201,168,76,0.1)', color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.28)', fontFamily: '"DM Sans", sans-serif' }}>
-                ✏ Edited
-              </span>
-            )}
-          </div>
-        </div>
-
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-          {letter.message || '(No content)'}
-        </p>
-
-        {/* With: — only shown on sent letters so users know the recipient without opening */}
-        {letter.type === 'sent' && letter.toEmail && (
-          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            With: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{letter.toEmail}</span>
-          </p>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 22px 12px 28px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--ink-muted)' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
-              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            {date}
-          </div>
-          {/* Open status badge — only for sent letters */}
-          {isSentLetter && (() => {
-            // Prefer new openedBy-based count; fall back to legacy status field
-            const uniqueOpens     = letter.openCount ?? (isOpened ? 1 : 0)
-            const emailOpens      = letter.emailOpenCount ?? 0
-            const platformOpens   = letter.platformOpenCount ?? 0
-            const hasOpens        = uniqueOpens > 0 || isOpened
-            const showBreakdown   = uniqueOpens > 0 && (emailOpens > 0 || platformOpens > 0)
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 3 }}>
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                  fontSize: 10.5, padding: '3px 9px', borderRadius: 20, fontWeight: 500,
-                  letterSpacing: '0.3px', fontFamily: '"DM Sans", sans-serif',
-                  background: hasOpens ? 'rgba(90,158,122,0.1)' : 'rgba(28,26,23,0.05)',
-                  color: hasOpens ? 'var(--sage)' : 'var(--ink-muted)',
-                  border: `1px solid ${hasOpens ? 'rgba(90,158,122,0.25)' : 'rgba(28,26,23,0.1)'}`,
-                }}>
-                  {hasOpens
-                    ? `👁 Opened by ${uniqueOpens} ${uniqueOpens === 1 ? 'person' : 'people'}`
-                    : '· Not opened'}
-                </span>
-                {showBreakdown && (
-                  <div style={{ display: 'flex', gap: 5, paddingLeft: 2 }}>
-                    {emailOpens > 0 && (
-                      <span style={{ fontSize: 9.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
-                        📧 {emailOpens} email
-                      </span>
-                    )}
-                    {platformOpens > 0 && (
-                      <span style={{ fontSize: 9.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
-                        📱 {platformOpens} app
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-        </div>
-        {/* Edit (personal + unclaimed stranger) / Delete (personal only) */}
-        {canEdit && onEdit && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={e => { e.stopPropagation(); onEdit(letter) }}
-              onMouseEnter={() => setEditHov(true)}
-              onMouseLeave={() => setEditHov(false)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: editHov ? '1.5px solid var(--gold)' : '1.5px solid #E0D4BC', color: editHov ? 'var(--gold)' : 'var(--ink-soft)', background: editHov ? '#fef9f2' : 'transparent' }}
-            >✏ Edit</button>
-            {isPersonal && onDelete && (
-              <button
-                onClick={e => { e.stopPropagation(); onDelete(letter) }}
-                onMouseEnter={() => setDelHov(true)}
-                onMouseLeave={() => setDelHov(false)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: delHov ? '1.5px solid var(--tc)' : '1.5px solid #f5d4ce', color: delHov ? '#fff' : 'var(--tc)', background: delHov ? 'var(--tc)' : 'transparent' }}
-              >✕ Delete</button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
 const MOOD_OPTIONS = [
@@ -351,92 +198,6 @@ function Tab({ label, count, active, onClick }) {
   )
 }
 
-// ── Received letter card ──────────────────────────────────────────────────────
-function ReceivedLetterCard({ letter, onOpen }) {
-  const [hov, setHov] = useState(false)
-  const date = new Date(letter.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-
-  // "With" context — shown only to the recipient (private, not public).
-  // senderInfo.name is the sender's display name; fall back to email.
-  const senderName  = letter.senderInfo?.name
-  const senderEmail = letter.senderInfo?.email || letter.fromEmail
-  const withLabel   = senderName && senderName !== '—' ? senderName : senderEmail || null
-
-  return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      onClick={() => onOpen(letter)}
-      style={{
-        background: '#fff', borderRadius: 14, border: `1px solid ${BD}`,
-        overflow: 'hidden', position: 'relative', cursor: 'pointer',
-        transform: hov ? 'translateY(-3px)' : 'translateY(0)',
-        boxShadow: hov ? '0 14px 40px rgba(26,18,8,0.09)' : 'none',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-      }}
-    >
-      {/* Left accent — purple for received */}
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--purple), var(--tc))', borderRadius: '4px 0 0 4px' }} />
-
-      <div style={{ padding: '22px 22px 18px 28px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, marginBottom: 10 }}>
-          <div style={{ minWidth: 0 }}>
-            {/* From badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(139,126,200,0.1)', color: 'var(--purple)', border: '1px solid rgba(139,126,200,0.25)', fontFamily: '"DM Sans", sans-serif' }}>
-                📥 For You
-              </span>
-            </div>
-            <h3 style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px', marginBottom: 4 }}>
-              {letter.subject || 'A letter from my heart'}
-            </h3>
-          </div>
-        </div>
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-          {letter.message || '(No content)'}
-        </p>
-        {withLabel && (
-          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            With: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>{withLabel}</span>
-          </p>
-        )}
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 22px 12px 28px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--ink-muted)' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          {date}
-        </div>
-        <span style={{ fontSize: 11.5, color: 'var(--purple)', fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>
-          Open & reply →
-        </span>
-      </div>
-    </div>
-  )
-}
-
-// ── Card config per type ──────────────────────────────────────────────────────
-const CARD_CONFIG = {
-  personal: {
-    accentGrad: 'linear-gradient(180deg, var(--tc), var(--gold))',
-    tagLabel: 'Personal', tagBg: '#fdf0ee', tagColor: 'var(--tc)', tagBorder: '#f5d4ce',
-  },
-  stranger: {
-    accentGrad: 'linear-gradient(180deg, var(--sage), var(--gold))',
-    tagLabel: 'Caring Stranger', tagBg: 'rgba(122,158,142,0.1)', tagColor: 'var(--sage)', tagBorder: 'rgba(122,158,142,0.25)',
-  },
-  read: {
-    accentGrad: 'linear-gradient(180deg, var(--purple), var(--gold))',
-    tagLabel: 'Listener Read', tagBg: 'rgba(139,126,200,0.1)', tagColor: 'var(--purple)', tagBorder: 'rgba(139,126,200,0.25)',
-  },
-  sent: {
-    accentGrad: 'linear-gradient(180deg, var(--gold), var(--ink-muted))',
-    tagLabel: 'Send to Someone I Know', tagBg: '#EDE5D4', tagColor: 'var(--ink-muted)', tagBorder: '#E0D4BC',
-  },
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function MySpacePage() {
   const {
@@ -577,37 +338,20 @@ export default function MySpacePage() {
           <EmptyState icon="✦" title="Your space is empty" subtitle="Start by writing a letter — to yourself, to a stranger, or to someone you love." cta="Write your first letter" onCta={() => navigate('write')} />
         )
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {visibleLetters.map(letter => {
-            if (letter._cardType === 'received') {
-              return (
-                <ReceivedLetterCard
-                  key={letter._id}
-                  letter={letter}
-                  onOpen={openLetterPanel}
-                />
-              )
-            }
-            const cfg = CARD_CONFIG[letter._cardType] || CARD_CONFIG.personal
-            return (
-              <LetterCard
-                key={letter._id}
-                letter={letter}
-                accentGrad={cfg.accentGrad}
-                tagLabel={cfg.tagLabel}
-                tagBg={cfg.tagBg}
-                tagColor={cfg.tagColor}
-                tagBorder={cfg.tagBorder}
-                onOpen={openLetterPanel}
-                onEdit={
-                  letter.type === 'personal' ||
-                  (letter.type === 'stranger' && !letter.isClaimed && !letter.isRead)
-                    ? setEditingLetter : undefined
-                }
-                onDelete={letter.type === 'personal' ? setDeletingLetter : undefined}
-              />
-            )
-          })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {visibleLetters.map(letter => (
+            <LetterCard
+              key={letter._id}
+              letter={letter}
+              onOpen={openLetterPanel}
+              onEdit={
+                letter.type === 'personal' ||
+                (letter.type === 'stranger' && !letter.isClaimed && !letter.isRead)
+                  ? setEditingLetter : undefined
+              }
+              onDelete={letter.type === 'personal' ? setDeletingLetter : undefined}
+            />
+          ))}
         </div>
       )}
 
