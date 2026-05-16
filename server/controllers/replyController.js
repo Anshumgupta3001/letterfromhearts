@@ -1,6 +1,6 @@
 import Reply  from '../models/Reply.js'
 import Letter from '../models/Letter.js'
-import { checkContentSafety } from '../utils/moderation.js'
+import { checkContentSafety, MSG_FLAGGED, MSG_UNAVAILABLE } from '../utils/moderation.js'
 import { createNotification } from './notificationController.js'
 
 const MAX_MESSAGES = 10
@@ -65,8 +65,10 @@ export async function sendMessage(req, res) {
 
   try {
     await checkContentSafety(content.trim())
-  } catch {
-    return res.status(400).json({ error: 'Your message contains restricted content. Please revise it.' })
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ error })
   }
 
   const isFirstMessage = conv.messages.length === 0

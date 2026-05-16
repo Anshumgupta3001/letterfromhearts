@@ -4,7 +4,7 @@ import Letter from '../models/Letter.js'
 import User from '../models/User.js'
 import config from '../config/index.js'
 import { decrypt } from './emailAccountController.js'
-import { checkContentSafety } from '../utils/moderation.js'
+import { checkFieldsSafety, MSG_FLAGGED, MSG_UNAVAILABLE } from '../utils/moderation.js'
 import { createNotification } from './notificationController.js'
 import {
   generateTrackingId,
@@ -31,9 +31,11 @@ export async function sendEmail(req, res) {
   if (!message?.trim())                 return res.status(400).json({ error: 'Message body is required.' })
 
   try {
-    await checkContentSafety(message.trim())
-  } catch {
-    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+    await checkFieldsSafety(subject, message)
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ success: false, error })
   }
 
   const trackingId = generateTrackingId(userId.toString())

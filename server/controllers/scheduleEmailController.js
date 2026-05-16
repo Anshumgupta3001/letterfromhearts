@@ -1,7 +1,7 @@
 import Letter        from '../models/Letter.js'
 import EmailAccount   from '../models/EmailAccount.js'
 import config         from '../config/index.js'
-import { checkContentSafety } from '../utils/moderation.js'
+import { checkFieldsSafety, MSG_FLAGGED, MSG_UNAVAILABLE } from '../utils/moderation.js'
 import { generateTrackingId } from '../utils/mailer.js'
 import { emailQueue }         from '../queues/emailQueue.js'
 
@@ -37,9 +37,11 @@ export async function scheduleEmail(req, res) {
 
   // Content moderation
   try {
-    await checkContentSafety(message.trim())
-  } catch {
-    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+    await checkFieldsSafety(subject, message)
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ success: false, error })
   }
 
   // ── Resolve sender ────────────────────────────────────────────────────────

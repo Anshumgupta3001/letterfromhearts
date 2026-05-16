@@ -1,7 +1,7 @@
 import Letter     from '../models/Letter.js'
 import Reply      from '../models/Reply.js'
 import User       from '../models/User.js'
-import { checkContentSafety } from '../utils/moderation.js'
+import { checkFieldsSafety, MSG_FLAGGED, MSG_UNAVAILABLE } from '../utils/moderation.js'
 import { createNotification } from './notificationController.js'
 
 // ── Helper: compute open stats from openedBy array ────────────────────────────
@@ -202,9 +202,11 @@ export async function createLetter(req, res) {
   if (!message?.trim()) return res.status(400).json({ error: 'Message cannot be empty.' })
 
   try {
-    await checkContentSafety(message.trim())
-  } catch {
-    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+    await checkFieldsSafety(subject, message)
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ success: false, error })
   }
 
   const defaults = {
@@ -363,9 +365,11 @@ export async function updateLetter(req, res) {
   if (!message?.trim()) return res.status(400).json({ error: 'Message cannot be empty.' })
 
   try {
-    await checkContentSafety(message.trim())
-  } catch {
-    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+    await checkFieldsSafety(subject, message)
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ success: false, error })
   }
 
   const letter = await Letter.findOne({ _id: req.params.id, userId: req.user._id })
