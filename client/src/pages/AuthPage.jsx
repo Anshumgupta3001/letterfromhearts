@@ -282,15 +282,15 @@ function getReplyFromUrl() {
   return new URLSearchParams(window.location.search).get('reply') || ''
 }
 
-export default function AuthPage() {
+export default function AuthPage({ initialMode = 'signup' }) {
   const { login } = useApp()
   const emailFromUrl = getEmailFromUrl()
   const replyFromUrl = getReplyFromUrl()
-  // ?reply → existing user logging in to read their letter; show login first
-  // ?email (no reply) → new user signing up via email invite
+  // Priority: ?reply → login (existing user), ?email → signup (invite), initialMode (URL-driven)
   const [mode, setMode] = useState(() => {
     if (replyFromUrl) return 'login'
-    return emailFromUrl ? 'signup' : 'login'
+    if (emailFromUrl) return 'signup'
+    return initialMode
   })
 
   const [name,            setName]            = useState('')
@@ -319,7 +319,11 @@ export default function AuthPage() {
   function reset() {
     setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setSource(''); setOtherSource('')
   }
-  function switchMode(m) { reset(); setMode(m) }
+  function switchMode(m) {
+    reset()
+    setMode(m)
+    window.history.replaceState({}, '', m === 'login' ? '/login' : '/signup')
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -387,10 +391,23 @@ export default function AuthPage() {
           style={{ width: 240, height: 240, bottom: 60, left: -60, background: 'rgba(122,158,142,0.08)', filter: 'blur(50px)' }}
         />
 
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, borderRadius: 8, filter: 'drop-shadow(0 1px 3px rgba(28,26,23,0.12))' }} />
-          <div className="font-lora text-[20px] italic font-medium" style={{ color: 'var(--ink)' }}>Letter from Heart</div>
+        {/* Back link + Logo */}
+        <div className="flex flex-col gap-4">
+          <a
+            href="https://letterfromheart.com"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--ink-muted)', textDecoration: 'none', fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 400, transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--tc)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Back
+          </a>
+          <div className="flex items-center gap-3">
+            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, borderRadius: 8, filter: 'drop-shadow(0 1px 3px rgba(28,26,23,0.12))' }} />
+            <div className="font-lora text-[20px] italic font-medium" style={{ color: 'var(--ink)' }}>Letter from Heart</div>
+          </div>
         </div>
 
         {/* Center — main copy + floating cards */}
@@ -436,6 +453,21 @@ export default function AuthPage() {
       <div className="flex-1 flex items-center justify-center px-5 py-10">
         <div className="w-full max-w-[400px]">
 
+          {/* Mobile back link */}
+          <div className="lg:hidden mb-5">
+            <a
+              href="https://letterfromheart.com"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--ink-muted)', textDecoration: 'none', fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 400, minHeight: 44, paddingTop: 4, transition: 'color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--tc)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+              Back
+            </a>
+          </div>
+
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <img src="/favicon.png" alt="Letter from Heart" style={{ width: 48, height: 48, objectFit: 'contain', margin: '0 auto 14px', borderRadius: 10, filter: 'drop-shadow(0 2px 6px rgba(28,26,23,0.12))' }} />
@@ -454,13 +486,36 @@ export default function AuthPage() {
             }}
           >
             {/* Heading */}
-            <div className={emailFromUrl && mode === 'signup' ? 'mb-4' : 'mb-6'}>
-              <h2 className="font-lora text-[22px] font-medium" style={{ color: 'var(--ink)' }}>
-                {mode === 'login' ? 'Welcome back' : 'Create account'}
-              </h2>
-              <p className="text-[13px] font-light mt-1" style={{ color: 'var(--ink-muted)' }}>
-                {mode === 'login' ? 'Sign in to continue writing.' : 'Join and start writing today.'}
-              </p>
+            <div className={`flex items-start justify-between gap-3 ${emailFromUrl && mode === 'signup' ? 'mb-4' : 'mb-6'}`}>
+              <div>
+                <h2 className="font-lora text-[22px] font-medium" style={{ color: 'var(--ink)' }}>
+                  {mode === 'login' ? 'Welcome back' : 'Create account'}
+                </h2>
+                <p className="text-[13px] font-light mt-1" style={{ color: 'var(--ink-muted)' }}>
+                  {mode === 'login' ? 'Sign in to continue writing.' : 'Join and start writing today.'}
+                </p>
+              </div>
+              <a
+                href="https://letterfromheart.com"
+                className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] transition-all duration-150"
+                style={{
+                  color: 'var(--ink-muted)',
+                  textDecoration: 'none',
+                  fontSize: 11.5,
+                  fontFamily: '"DM Sans", sans-serif',
+                  fontWeight: 400,
+                  border: '0.5px solid rgba(28,26,23,0.12)',
+                  background: 'var(--cream)',
+                  marginTop: 3,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--tc)'; e.currentTarget.style.borderColor = 'rgba(196,99,58,0.3)'; e.currentTarget.style.background = 'rgba(196,99,58,0.04)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.12)'; e.currentTarget.style.background = 'var(--cream)' }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Back
+              </a>
             </div>
 
             {/* Email-link contextual banner */}

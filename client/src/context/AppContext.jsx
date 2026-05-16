@@ -140,6 +140,10 @@ export function AppProvider({ children }) {
       setMySpaceTab(null)  // reset to default when navigating without a tab
     }
     if (page === 'home') refreshAnalytics()
+    // Clear the /welcome URL once the user enters the main app
+    if (window.location.pathname === '/welcome') {
+      window.history.replaceState({}, '', '/')
+    }
     window.scrollTo(0, 0)
   }
 

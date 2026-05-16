@@ -19,6 +19,7 @@ import replyRoutes         from './routes/replyRoutes.js'
 import resendWebhookRoutes from './routes/resendWebhookRoutes.js'
 import notificationRoutes  from './routes/notificationRoutes.js'
 import reportRoutes        from './routes/reportRoutes.js'
+import onboardingRoutes    from './routes/onboardingRoutes.js'
 import { notFound, errorHandler } from './middlewares/errorHandler.js'
 import { guardMaliciousInput }    from './middlewares/sanitize.js'
 
@@ -87,6 +88,7 @@ app.use('/api/schedule-email',            scheduleEmailRoutes)
 app.use('/api/admin',                     adminRoutes)
 app.use('/api/replies',                   replyRoutes)
 app.use('/api/notifications',             notificationRoutes)
+app.use('/api/onboarding',               onboardingRoutes)
 app.get('/api/reports',       reportReadLimiter,  (req, res, next) => next())  // read — generous
 app.post('/api/reports',      reportWriteLimiter, (req, res, next) => next())  // write — strict
 app.use('/api/reports',       reportRoutes)

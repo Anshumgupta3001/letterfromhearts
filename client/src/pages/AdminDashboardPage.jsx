@@ -37,6 +37,35 @@ function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 }
 
+// ── DonutChart (pure SVG, no deps) ───────────────────────────────────────────
+function DonutChart({ segments, size = 148, thickness = 26 }) {
+  const total = segments.reduce((s, seg) => s + (seg.value || 0), 0)
+  if (total === 0) return <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(28,26,23,0.05)' }} />
+  const r  = (size - thickness) / 2
+  const cx = size / 2
+  const cy = size / 2
+  const circ = 2 * Math.PI * r
+  const GAP  = 2.5
+  let accum  = 0
+  return (
+    <svg width={size} height={size} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(28,26,23,0.06)" strokeWidth={thickness} />
+      {segments.map((seg, i) => {
+        const dashLen = Math.max(0, (seg.value / total) * circ - GAP)
+        const offset  = -(accum / total) * circ
+        accum += seg.value
+        return (
+          <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+            stroke={seg.color} strokeWidth={thickness}
+            strokeDasharray={`${dashLen} ${circ - dashLen}`}
+            strokeDashoffset={offset}
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
 // ── Sparkline (SVG, no deps) ──────────────────────────────────────────────────
 function Sparkline({ data, color = C.tc, height = 40, width = 160 }) {
   if (!data || data.length < 2) return <span style={{ fontSize: 11, color: C.muted }}>No trend data</span>
@@ -278,6 +307,7 @@ const TABS = [
   { id: 'notifications', icon: '🔔', label: 'Notifications', desc: 'Platform notifications' },
   { id: 'trends',        icon: '📉', label: 'Trends',        desc: 'Daily activity charts' },
   { id: 'reports',       icon: '🚨', label: 'Reports',       desc: 'User reports & moderation' },
+  { id: 'onboarding',   icon: '🌿', label: 'Onboarding',   desc: 'Questionnaire insights' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -323,6 +353,11 @@ export default function AdminDashboardPage() {
   const [connectionsPage,    setConnectionsPage]    = useState(1)
   const [connectionsFilter,  setConnectionsFilter]  = useState('all')
   const connectionsInitialized = useRef(false)
+
+  // ── Onboarding Insights tab state ─────────────────────────────────────────
+  const [onboardingInsights,  setOnboardingInsights]  = useState(null)
+  const [onboardingLoading,   setOnboardingLoading]   = useState(false)
+  const onboardingInitialized = useRef(false)
 
   // ── Restore key from localStorage on mount ────────────────────────────────────
   useEffect(() => {
@@ -420,6 +455,19 @@ export default function AdminDashboardPage() {
     finally { setConnectionsLoading(false) }
   }, [])
 
+  const fetchOnboardingInsights = useCallback(async (adminKey) => {
+    setOnboardingLoading(true)
+    try {
+      const res  = await fetch(`${API}/api/admin/onboarding-insights`, {
+        headers: { 'x-admin-key': adminKey },
+      })
+      const json = await res.json()
+      if (!res.ok) return
+      setOnboardingInsights(json.data || null)
+    } catch { /* silently fail */ }
+    finally { setOnboardingLoading(false) }
+  }, [])
+
   // Must be before early returns — Rules of Hooks
   const filteredUsers = useMemo(() => {
     if (!data) return []
@@ -474,6 +522,13 @@ export default function AdminDashboardPage() {
     if (activeTab !== 'connections' || connectionsInitialized.current) return
     connectionsInitialized.current = true
     fetchConnections(key, connectionsSearch, connectionsPage, connectionsFilter)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch onboarding insights exactly once when the tab first becomes active
+  useEffect(() => {
+    if (activeTab !== 'onboarding' || onboardingInitialized.current) return
+    onboardingInitialized.current = true
+    fetchOnboardingInsights(key)
   }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Lock screen ──────────────────────────────────────────────────────────────
@@ -1514,6 +1569,212 @@ export default function AdminDashboardPage() {
             )}
           </section>
         )}
+
+        {activeTab === 'onboarding' && (() => {
+          const oi   = onboardingInsights
+          const dist = key => (oi?.distributions?.[key] || [])
+          const top  = key => dist(key)[0] || null
+          const pctOf = (key) => {
+            const t = top(key); if (!t || !oi?.total) return 0
+            return Math.round((t.count / oi.total) * 100)
+          }
+
+          // Derive summary highlights
+          const topAge     = top('ageRange')
+          const topSupport = top('supportStyle')
+          const topUnsaid  = top('unsaidFeelings')
+          const topBenefit = top('writingBenefit')
+
+          // Age donut segments
+          const AGE_COLORS = [C.tc, C.sage, C.purple, C.gold]
+          const ageSegments = dist('ageRange').map((r, i) => ({ value: r.count, color: AGE_COLORS[i % AGE_COLORS.length], label: r.answer }))
+
+          // Helpers for a consistent EmotionCard
+          function EmotionCard({ qKey, question, accentColor }) {
+            const rows  = dist(qKey)
+            const total = rows.reduce((s, r) => s + r.count, 0)
+            const lead  = rows[0]
+            if (!lead) return null
+            const leadPct = Math.round((lead.count / Math.max(total, 1)) * 100)
+            return (
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 22px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.3px', textTransform: 'uppercase', color: accentColor, marginBottom: 5 }}>Insight</div>
+                  <div style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, lineHeight: 1.5 }}>{question}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+                  <div style={{ fontSize: 44, fontWeight: 700, color: accentColor, fontFamily: '"Lora",serif', lineHeight: 1 }}>{leadPct}%</div>
+                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"Lora",serif', fontStyle: 'italic', lineHeight: 1.5, paddingBottom: 4, maxWidth: 200 }}>
+                    "{lead.answer}"
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {rows.map((r, i) => {
+                    const p = Math.round((r.count / Math.max(total, 1)) * 100)
+                    return (
+                      <div key={r.answer}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                          <span style={{ fontSize: 11.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? accentColor : C.muted }}>{p}%</span>
+                        </div>
+                        <div style={{ height: 4, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                          <div style={{ width: `${p}%`, height: '100%', background: i === 0 ? accentColor : 'rgba(28,26,23,0.12)', borderRadius: 99, transition: 'width 0.6s ease' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <section>
+              <SectionHeading sub="What users told us when they first joined">Onboarding Insights</SectionHeading>
+
+              {onboardingLoading ? (
+                <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13, fontFamily: '"Lora",serif' }}>Loading insights…</div>
+              ) : !oi || oi.total === 0 ? (
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+                  No onboarding responses yet. They will appear here once new users complete the questionnaire.
+                </div>
+              ) : (<>
+
+                {/* ── Summary cards ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 28 }}>
+                  {[
+                    { label: 'Completed', value: fmt(oi.total),           sub: 'total respondents',           color: C.tc },
+                    { label: 'Top Age',   value: topAge?.answer || '—',   sub: `${pctOf('ageRange')}% of users`,  color: C.sage },
+                    { label: 'Top Support', value: topSupport ? topSupport.answer.split(',')[0] : '—',
+                                           sub: `${pctOf('supportStyle')}% prefer this`, color: C.purple },
+                    { label: 'What Goes Unsaid', value: topUnsaid ? topUnsaid.answer.split(',')[0] : '—',
+                                           sub: `${pctOf('unsaidFeelings')}% said this`, color: C.gold },
+                    { label: 'Writing Reason', value: topBenefit ? topBenefit.answer.split(',')[0] : '—',
+                                           sub: `${pctOf('writingBenefit')}% chose this`, color: C.tc },
+                  ].map(card => (
+                    <div key={card.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 6 }}>{card.label}</div>
+                      <div style={{ fontSize: 17, fontWeight: 700, color: card.color, fontFamily: '"Lora",serif', lineHeight: 1.2, marginBottom: 4 }}>{card.value}</div>
+                      <div style={{ fontSize: 10.5, color: C.muted }}>{card.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Demographics: Age donut + Identity bars ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 16 }}>
+
+                  {/* Age groups — donut chart */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Age Groups</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <DonutChart segments={ageSegments} size={130} thickness={24} />
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>{oi.total}</div>
+                          <div style={{ fontSize: 9.5, color: C.muted }}>total</div>
+                        </div>
+                      </div>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {ageSegments.map((seg, i) => {
+                          const p = Math.round((seg.value / oi.total) * 100)
+                          return (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+                              <span style={{ fontSize: 11.5, color: C.ink, flex: 1, fontFamily: '"DM Sans",sans-serif' }}>{seg.label}</span>
+                              <span style={{ fontSize: 11.5, fontWeight: 700, color: seg.color }}>{p}%</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Identity — horizontal bars */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Identity</div>
+                    {dist('identity').map((r, i) => {
+                      const p = Math.round((r.count / oi.total) * 100)
+                      const ICOLS = [C.tc, C.sage, C.purple, C.gold]
+                      return (
+                        <div key={r.answer} style={{ marginBottom: 12 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: ICOLS[i % ICOLS.length] }}>{p}%</span>
+                          </div>
+                          <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ width: `${p}%`, height: '100%', background: ICOLS[i % ICOLS.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* ── Profession breakdown ── */}
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', marginBottom: 16 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Professions</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '10px 32px' }}>
+                    {dist('profession').map((r, i) => {
+                      const p    = Math.round((r.count / oi.total) * 100)
+                      const PCOL = [C.tc, C.sage, C.purple, C.gold, C.red, C.muted]
+                      return (
+                        <div key={r.answer}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: PCOL[i % PCOL.length] }}>{p}%</span>
+                          </div>
+                          <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ width: `${p}%`, height: '100%', background: PCOL[i % PCOL.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* ── Emotional Insights: 2-col grid of big-% cards ── */}
+                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Emotional Insights</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
+                  <EmotionCard qKey="unsaidFeelings"         question="What usually goes unsaid for you?"                         accentColor={C.tc} />
+                  <EmotionCard qKey="unfinishedRelationship" question="Is there a relationship in your life that feels unfinished?" accentColor={C.sage} />
+                  <EmotionCard qKey="feelingHeard"           question="When did you last feel truly heard by someone?"             accentColor={C.purple} />
+                  <EmotionCard qKey="unspokenReason"         question="What stopped you from saying what you needed to say?"       accentColor={C.gold} />
+                  <EmotionCard qKey="selfTreatment"          question="How do you treat yourself when you're struggling?"          accentColor={C.tc} />
+                </div>
+
+                {/* ── Writing Psychology ── */}
+                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Writing Psychology</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
+                  <EmotionCard qKey="writingExperience" question="What does writing feel like for you?"                              accentColor={C.sage} />
+                  <EmotionCard qKey="writingBenefit"    question="What would writing a letter here actually give you?"               accentColor={C.purple} />
+                  <EmotionCard qKey="writingRelief"     question="Have you felt relief just from writing something down?"            accentColor={C.gold} />
+                </div>
+
+                {/* ── Support Preferences ── */}
+                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Support Preferences</div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 500, color: C.ink, fontFamily: '"DM Sans",sans-serif', marginBottom: 16 }}>
+                    What kind of support feels most natural to receive?
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
+                    {dist('supportStyle').map((r, i) => {
+                      const p    = Math.round((r.count / oi.total) * 100)
+                      const SCOL = [C.tc, C.sage, C.purple, C.gold]
+                      const SICO = ['💬', '🤝', '🔭', '🌿']
+                      return (
+                        <div key={r.answer} style={{ background: `${SCOL[i % SCOL.length]}0C`, border: `1px solid ${SCOL[i % SCOL.length]}30`, borderRadius: 12, padding: '14px 16px' }}>
+                          <div style={{ fontSize: 20, marginBottom: 6 }}>{SICO[i % SICO.length]}</div>
+                          <div style={{ fontSize: 12, color: C.ink, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.45, marginBottom: 8 }}>{r.answer}</div>
+                          <div style={{ fontSize: 22, fontWeight: 700, color: SCOL[i % SCOL.length], fontFamily: '"Lora",serif' }}>{p}%</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>)}
+            </section>
+          )
+        })()}
 
       </div>
     </div>

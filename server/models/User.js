@@ -30,6 +30,24 @@ const userSchema = new mongoose.Schema(
     emailMode: { type: String, enum: ['custom', 'system'], default: 'custom' },
     // Acquisition channel (email signups only)
     heardFrom: { type: String, default: '' },
+
+    // One-time onboarding questionnaire
+    hasCompletedOnboarding: { type: Boolean, default: false },
+    onboardingAnswers: {
+      ageRange:               { type: String, default: '' },
+      identity:               { type: String, default: '' },
+      profession:             { type: String, default: '' },
+      unsaidFeelings:         { type: String, default: '' },
+      unfinishedRelationship: { type: String, default: '' },
+      writingExperience:      { type: String, default: '' },
+      feelingHeard:           { type: String, default: '' },
+      unspokenReason:         { type: String, default: '' },
+      selfTreatment:          { type: String, default: '' },
+      writingBenefit:         { type: String, default: '' },
+      supportStyle:           { type: String, default: '' },
+      writingRelief:          { type: String, default: '' },
+      _id:                    false,
+    },
   },
   { timestamps: true }
 )
