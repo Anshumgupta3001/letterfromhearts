@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import { seekerLetters, listenerReplies, openLetters } from '../data/mockData'
 import { apiFetch, getToken, setToken, removeToken } from '../utils/api'
 
@@ -208,9 +208,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshEmailAccounts()
-  }, [authLoading, authUser, refreshEmailAccounts])
+  // initial load handled by orchestrated init effect below
 
   // ── Sent letters ──────────────────────────────────────────────────────────────
   const [sentLetters, setSentLetters] = useState([])
@@ -224,9 +222,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshLetters()
-  }, [authLoading, authUser, refreshLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Personal letters ──────────────────────────────────────────────────────────
   const [personalLetters, setPersonalLetters] = useState([])
@@ -240,9 +236,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshPersonalLetters()
-  }, [authLoading, authUser, refreshPersonalLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Own stranger letters (what the user wrote to the community) ───────────────
   const [ownStrangerLetters, setOwnStrangerLetters] = useState([])
@@ -256,9 +250,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshOwnStrangerLetters()
-  }, [authLoading, authUser, refreshOwnStrangerLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Received letters (letters sent TO the current user by known contacts) ─────
   const [receivedLetters, setReceivedLetters] = useState([])
@@ -272,9 +264,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshReceivedLetters()
-  }, [authLoading, authUser, refreshReceivedLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Caring Stranger feed (community feed for listeners) ───────────────────────
   const [strangerLetters, setStrangerLetters] = useState([])
@@ -288,9 +278,42 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
+  // initial load handled by orchestrated init effect below
+
+  // ── Orchestrated app-data initialization ──────────────────────────────────────
+  // Replaces 6 independent useEffects that all fired simultaneously on login,
+  // causing an 8-request burst that quickly consumed the old global rate limit.
+  //
+  // A ref prevents React StrictMode's intentional double-invocation from sending
+  // duplicate requests.  The ref is reset on logout so re-login re-initializes.
+  const initRef = useRef(false)
+
   useEffect(() => {
-    if (!authLoading && authUser) refreshStrangerLetters()
-  }, [authLoading, authUser, refreshStrangerLetters])
+    if (!authUser) { initRef.current = false }
+  }, [authUser])
+
+  useEffect(() => {
+    if (authLoading || !authUser || initRef.current) return
+    initRef.current = true
+
+    // Batch 1 — immediate: data the UI needs first
+    refreshEmailAccounts()
+    refreshReceivedLetters()
+
+    // Batch 2 — 200 ms: letter lists
+    const t1 = setTimeout(() => {
+      refreshLetters()
+      refreshPersonalLetters()
+    }, 200)
+
+    // Batch 3 — 500 ms: community feed (background, less time-critical)
+    const t2 = setTimeout(() => {
+      refreshOwnStrangerLetters()
+      refreshStrangerLetters()
+    }, 500)
+
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [authLoading, authUser]) // eslint-disable-line
 
   // ── Notifications ─────────────────────────────────────────────────────────────
   const [notifications, setNotifications] = useState([])
@@ -324,11 +347,28 @@ export function AppProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    if (!authLoading && authUser) {
-      refreshNotifications()
-      // Poll every 15 seconds for new notifications
-      const interval = setInterval(refreshNotifications, 15_000)
-      return () => clearInterval(interval)
+    if (authLoading || !authUser) return
+
+    refreshNotifications()
+    // Poll every 45 s — reduced from 15 s to cut background request volume by 3×
+    // while keeping notifications near-real-time for this app's use case.
+    // Polling pauses automatically when the tab is hidden and resumes on focus.
+    let intervalId = setInterval(refreshNotifications, 45_000)
+
+    function handleVisibility() {
+      if (document.hidden) {
+        clearInterval(intervalId)
+        intervalId = null
+      } else {
+        refreshNotifications()
+        if (!intervalId) intervalId = setInterval(refreshNotifications, 45_000)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [authLoading, authUser, refreshNotifications])
 

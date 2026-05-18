@@ -5,7 +5,7 @@ import helmet         from 'helmet'
 import mongoSanitize  from 'express-mongo-sanitize'
 import config         from './config/index.js'
 import passport       from './config/passport.js'
-import { globalLimiter, reportReadLimiter, reportWriteLimiter } from './middlewares/rateLimiters.js'
+import { apiLimiter, sendEmailLimiter, reportReadLimiter, reportWriteLimiter } from './middlewares/rateLimiters.js'
 import authRoutes          from './routes/authRoutes.js'
 import authGoogleRoutes    from './routes/authGoogle.js'
 import emailAccountRoutes  from './routes/emailAccountRoutes.js'
@@ -24,6 +24,12 @@ import { notFound, errorHandler } from './middlewares/errorHandler.js'
 import { guardMaliciousInput }    from './middlewares/sanitize.js'
 
 const app = express()
+
+// ── Trust proxy — must be set before rate limiters ────────────────────────────
+// Without this, all users behind Nginx/a load balancer appear to share the same
+// IP (the proxy's IP) and hit a single rate-limit bucket.  Setting to 1 trusts
+// one hop (the immediate Nginx proxy) and uses X-Forwarded-For as the real IP.
+app.set('trust proxy', 1)
 
 // ── Security headers ──────────────────────────────────────────────────────────
 app.use(helmet())
@@ -50,9 +56,6 @@ app.use(cors({
   credentials: true,
 }))
 
-// ── Global rate limiter ───────────────────────────────────────────────────────
-app.use(globalLimiter)
-
 // ── Webhook — raw body BEFORE json parser (HMAC verification requirement) ─────
 app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }), resendWebhookRoutes)
 
@@ -75,23 +78,44 @@ app.get('/api/health', (_req, res) => {
   res.json({ success: true, message: 'Letter from Heart API 💌', env: config.nodeEnv })
 })
 
+// ── Per-route rate limiters ───────────────────────────────────────────────────
+//
+//  authLimiter      — applied inside authRoutes on POST /login and POST /signup only
+//  sendEmailLimiter — email sending: strict (15/15min) to prevent spam
+//  apiLimiter       — general authenticated traffic: generous (600/15min)
+//
+//  No limiter on:
+//    /api/tracking  — hit by email clients automatically (pixel opens, clicks)
+//    /api/admin     — protected by x-admin-key secret header
+//    /api/webhooks  — Resend webhook with HMAC signature verification
+
 // authLimiter is applied per-route inside authRoutes (POST /signup, POST /login only)
 // authGoogleRoutes has no extra limiter — OAuth redirects must flow freely
 app.use('/api/auth',          authRoutes)
 app.use('/api/auth',          authGoogleRoutes)
-app.use('/api/email-accounts',            emailAccountRoutes)
-app.use('/api/send-email',                sendEmailRoutes)
-app.use('/api/letters',                   letterRoutes)
-app.use('/api/tracking',                  trackingRoutes)
-app.use('/api/report-issue',              reportIssueRoutes)
-app.use('/api/schedule-email',            scheduleEmailRoutes)
-app.use('/api/admin',                     adminRoutes)
-app.use('/api/replies',                   replyRoutes)
-app.use('/api/notifications',             notificationRoutes)
-app.use('/api/onboarding',               onboardingRoutes)
-app.get('/api/reports',       reportReadLimiter,  (req, res, next) => next())  // read — generous
-app.post('/api/reports',      reportWriteLimiter, (req, res, next) => next())  // write — strict
-app.use('/api/reports',       reportRoutes)
+
+// Email sending — strict limiter (spam prevention)
+app.use('/api/send-email',     sendEmailLimiter, sendEmailRoutes)
+app.use('/api/schedule-email', sendEmailLimiter, scheduleEmailRoutes)
+
+// General authenticated routes — generous limiter
+app.use('/api/email-accounts', apiLimiter, emailAccountRoutes)
+app.use('/api/letters',        apiLimiter, letterRoutes)
+app.use('/api/replies',        apiLimiter, replyRoutes)
+app.use('/api/notifications',  apiLimiter, notificationRoutes)
+app.use('/api/onboarding',     apiLimiter, onboardingRoutes)
+app.use('/api/report-issue',   apiLimiter, reportIssueRoutes)
+
+// Tracking — no rate limiter (email clients trigger opens/clicks automatically)
+app.use('/api/tracking', trackingRoutes)
+
+// Admin — no rate limiter (protected by x-admin-key header in verifyAdminKey middleware)
+app.use('/api/admin', adminRoutes)
+
+// Reports — read generous, write strict
+app.get('/api/reports',  reportReadLimiter,  (req, res, next) => next())
+app.post('/api/reports', reportWriteLimiter, (req, res, next) => next())
+app.use('/api/reports',  reportRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
