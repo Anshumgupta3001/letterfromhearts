@@ -151,7 +151,7 @@ export async function sendEmail(req, res) {
         letterId: letter._id,
         message:  `Someone sent you a letter 💌`,
         type:     'delivery',
-        link:     `/myspace`,
+        link:     `/welcome`,
       })
     }
   } catch (err) {

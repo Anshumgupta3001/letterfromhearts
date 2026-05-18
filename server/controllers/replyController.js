@@ -89,7 +89,7 @@ export async function sendMessage(req, res) {
           letterId: letter._id,
           message:  notifMessage,
           type:     'reply',
-          link:     `/letters/${letter._id}`,
+          link:     `/welcome/letters/${letter._id}`,
         })
       }
     } else if (isFirstMessage) {
@@ -104,7 +104,7 @@ export async function sendMessage(req, res) {
           letterId: letter._id,
           message:  notifMessage,
           type:     'reply',
-          link:     `/letters/${letter._id}`,
+          link:     `/welcome/letters/${letter._id}`,
         })
       }
     }

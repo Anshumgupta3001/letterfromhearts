@@ -276,7 +276,7 @@ export async function markLetterOpen(req, res) {
         letterId: letter._id,
         message:  'Your letter was opened 👁',
         type:     'claim',
-        link:     `/letters/${letter._id}`,
+        link:     `/welcome/letters/${letter._id}`,
         dedup:    true,
       })
     } catch (err) {
@@ -345,7 +345,7 @@ export async function markLetterRead(req, res) {
         letterId:  letter._id,
         message:   'Someone opened your letter 💌',
         type:      'claim',
-        link:      `/letters/${letter._id}`,
+        link:      `/welcome/letters/${letter._id}`,
         dedup:     true,
       })
     } catch (err) {

@@ -17,14 +17,25 @@ export function AppProvider({ children }) {
     setToken(token)
     localStorage.setItem('lfh_user', JSON.stringify(user))
     setAuthUser(user)
-    // If user clicked an email reply CTA, send them straight to received letters
-    const replyId = new URLSearchParams(window.location.search).get('reply') || pendingReplyLetterId
-    if (replyId) {
+
+    const params   = new URLSearchParams(window.location.search)
+    const redirect = params.get('redirect') || ''
+    const replyId  = params.get('reply')    || pendingReplyLetterId
+
+    // Deep link from email notification: /welcome/letters/:id or /welcome/reply/:id
+    if (redirect.startsWith('/welcome/letters/') || redirect.startsWith('/welcome/reply/')) {
       setCurrentPage('myspace')
       setMySpaceTab('received')
       setPendingReplyLetterId('')
-      window.history.replaceState({}, '', '/')
+    } else if (redirect === '/welcome/notifications') {
+      setCurrentPage('home')
+    } else if (replyId) {
+      // Legacy email reply CTA (?reply=<id>) — land on received letters
+      setCurrentPage('myspace')
+      setMySpaceTab('received')
+      setPendingReplyLetterId('')
     }
+    window.history.replaceState({}, '', '/welcome')
   }
 
   function logout() {
@@ -57,7 +68,9 @@ export function AppProvider({ children }) {
       const googleToken = params.get('google_token')
       const googleNew   = params.get('google_new') === 'true'
       const googleError = params.get('google_error')
-      const replyId     = params.get('reply') || ''
+      const replyId     = params.get('reply')    || ''
+      const redirect    = params.get('redirect') || ''
+      const pathname    = window.location.pathname
 
       if (replyId) setPendingReplyLetterId(replyId)
 
@@ -93,8 +106,17 @@ export function AppProvider({ children }) {
           if (!json.user.role && json.user.authProvider === 'google') {
             setPendingRoleSetup(true)
           }
-          // If came from email reply link, land on received letters tab
-          if (replyId) {
+          // ── Deep link navigation (already-authenticated user clicking email link)
+          const deepLinkPath = pathname.startsWith('/welcome/') ? pathname : redirect
+          if (deepLinkPath.startsWith('/welcome/letters/') || deepLinkPath.startsWith('/welcome/reply/')) {
+            setCurrentPage('myspace')
+            setMySpaceTab('received')
+            window.history.replaceState({}, '', '/welcome')
+          } else if (deepLinkPath === '/welcome/notifications') {
+            setCurrentPage('home')
+            window.history.replaceState({}, '', '/welcome')
+          } else if (replyId) {
+            // Legacy ?reply= email CTA
             setCurrentPage('myspace')
             setMySpaceTab('received')
             window.history.replaceState({}, '', '/')

@@ -94,13 +94,13 @@ export function wrapLinksForClickTracking(html, trackingId) {
 }
 
 // ── Reply URL ─────────────────────────────────────────────────────────────────
-// Existing users → /?reply=<id>  (AppContext navigates to received letters)
-// New users     → /?reply=<id>&email=<email>  (AuthPage pre-fills signup)
+// Sends recipient to /login?reply=<id>&email=<to>
+// AuthPage reads ?reply → shows login mode; AppContext reads it after auth → navigates to received
 function buildReplyUrl(toEmail, letterId) {
   const params = new URLSearchParams()
   if (letterId) params.set('reply', letterId.toString())
   if (toEmail)  params.set('email', toEmail)
-  return `${config.clientOrigin}/?${params.toString()}`
+  return `${config.clientOrigin}/login?${params.toString()}`
 }
 
 // ── Base shell ────────────────────────────────────────────────────────────────
