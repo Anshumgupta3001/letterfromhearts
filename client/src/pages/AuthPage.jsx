@@ -120,6 +120,13 @@ function TermsModal({ onClose }) {
 
 const ROLES = [
   {
+    id:          'both',
+    icon:        '🌿',
+    label:       'Seeker + Listener',
+    desc:        'I want to write and listen — give words and receive them.',
+    recommended: true,
+  },
+  {
     id:    'seeker',
     icon:  '✍️',
     label: 'Seeker',
@@ -130,12 +137,6 @@ const ROLES = [
     icon:  '👂',
     label: 'Listener',
     desc:  'I want to read letters and show up for people who need to be heard.',
-  },
-  {
-    id:    'both',
-    icon:  '🌿',
-    label: 'Seeker + Listener',
-    desc:  'I want to write and listen — give words and receive them.',
   },
 ]
 
@@ -546,15 +547,28 @@ export default function AuthPage() {
                           onClick={() => setRole(r.id)}
                           className="flex items-start gap-3 px-4 py-3 rounded-[11px] text-left cursor-pointer border-none outline-none transition-all duration-200"
                           style={{
-                            background: active ? 'rgba(196,99,58,0.06)' : 'var(--cream)',
-                            border: `1px solid ${active ? 'var(--tc)' : 'rgba(28,26,23,0.1)'}`,
+                            background: active ? 'rgba(196,99,58,0.06)' : r.recommended ? 'rgba(196,99,58,0.02)' : 'var(--cream)',
+                            border: `1px solid ${active ? 'var(--tc)' : r.recommended ? 'rgba(196,99,58,0.22)' : 'rgba(28,26,23,0.1)'}`,
                             boxShadow: active ? '0 0 0 3px rgba(196,99,58,0.07)' : 'none',
                           }}
                         >
                           <span className="text-[17px] flex-shrink-0 mt-0.5">{r.icon}</span>
                           <div className="flex-1">
-                            <div className="text-[13px] font-medium font-sans" style={{ color: active ? 'var(--tc)' : 'var(--ink)' }}>
-                              {r.label}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[13px] font-medium font-sans" style={{ color: active ? 'var(--tc)' : 'var(--ink)' }}>
+                                {r.label}
+                              </span>
+                              {r.recommended && (
+                                <span
+                                  className="text-[9.5px] font-medium font-sans uppercase tracking-[0.6px] px-[7px] py-[2px] rounded-full flex-shrink-0"
+                                  style={{
+                                    background: active ? 'rgba(196,99,58,0.14)' : 'rgba(196,99,58,0.09)',
+                                    color: 'var(--tc)',
+                                  }}
+                                >
+                                  Recommended
+                                </span>
+                              )}
                             </div>
                             <div className="text-[11px] font-light mt-0.5" style={{ color: 'var(--ink-muted)' }}>{r.desc}</div>
                           </div>
