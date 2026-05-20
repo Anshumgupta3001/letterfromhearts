@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import { seekerLetters, listenerReplies, openLetters } from '../data/mockData'
 import { apiFetch, getToken, setToken, removeToken } from '../utils/api'
 
@@ -17,14 +17,25 @@ export function AppProvider({ children }) {
     setToken(token)
     localStorage.setItem('lfh_user', JSON.stringify(user))
     setAuthUser(user)
-    // If user clicked an email reply CTA, send them straight to received letters
-    const replyId = new URLSearchParams(window.location.search).get('reply') || pendingReplyLetterId
-    if (replyId) {
+
+    const params   = new URLSearchParams(window.location.search)
+    const redirect = params.get('redirect') || ''
+    const replyId  = params.get('reply')    || pendingReplyLetterId
+
+    // Deep link from email notification: /welcome/letters/:id or /welcome/reply/:id
+    if (redirect.startsWith('/welcome/letters/') || redirect.startsWith('/welcome/reply/')) {
       setCurrentPage('myspace')
       setMySpaceTab('received')
       setPendingReplyLetterId('')
-      window.history.replaceState({}, '', '/')
+    } else if (redirect === '/welcome/notifications') {
+      setCurrentPage('home')
+    } else if (replyId) {
+      // Legacy email reply CTA (?reply=<id>) — land on received letters
+      setCurrentPage('myspace')
+      setMySpaceTab('received')
+      setPendingReplyLetterId('')
     }
+    window.history.replaceState({}, '', '/welcome')
   }
 
   function logout() {
@@ -57,7 +68,9 @@ export function AppProvider({ children }) {
       const googleToken = params.get('google_token')
       const googleNew   = params.get('google_new') === 'true'
       const googleError = params.get('google_error')
-      const replyId     = params.get('reply') || ''
+      const replyId     = params.get('reply')    || ''
+      const redirect    = params.get('redirect') || ''
+      const pathname    = window.location.pathname
 
       if (replyId) setPendingReplyLetterId(replyId)
 
@@ -93,8 +106,17 @@ export function AppProvider({ children }) {
           if (!json.user.role && json.user.authProvider === 'google') {
             setPendingRoleSetup(true)
           }
-          // If came from email reply link, land on received letters tab
-          if (replyId) {
+          // ── Deep link navigation (already-authenticated user clicking email link)
+          const deepLinkPath = pathname.startsWith('/welcome/') ? pathname : redirect
+          if (deepLinkPath.startsWith('/welcome/letters/') || deepLinkPath.startsWith('/welcome/reply/')) {
+            setCurrentPage('myspace')
+            setMySpaceTab('received')
+            window.history.replaceState({}, '', '/welcome')
+          } else if (deepLinkPath === '/welcome/notifications') {
+            setCurrentPage('home')
+            window.history.replaceState({}, '', '/welcome')
+          } else if (replyId) {
+            // Legacy ?reply= email CTA
             setCurrentPage('myspace')
             setMySpaceTab('received')
             window.history.replaceState({}, '', '/')
@@ -140,6 +162,10 @@ export function AppProvider({ children }) {
       setMySpaceTab(null)  // reset to default when navigating without a tab
     }
     if (page === 'home') refreshAnalytics()
+    // Clear the /welcome URL once the user enters the main app
+    if (window.location.pathname === '/welcome') {
+      window.history.replaceState({}, '', '/')
+    }
     window.scrollTo(0, 0)
   }
 
@@ -182,9 +208,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshEmailAccounts()
-  }, [authLoading, authUser, refreshEmailAccounts])
+  // initial load handled by orchestrated init effect below
 
   // ── Sent letters ──────────────────────────────────────────────────────────────
   const [sentLetters, setSentLetters] = useState([])
@@ -198,9 +222,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshLetters()
-  }, [authLoading, authUser, refreshLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Personal letters ──────────────────────────────────────────────────────────
   const [personalLetters, setPersonalLetters] = useState([])
@@ -214,9 +236,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshPersonalLetters()
-  }, [authLoading, authUser, refreshPersonalLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Own stranger letters (what the user wrote to the community) ───────────────
   const [ownStrangerLetters, setOwnStrangerLetters] = useState([])
@@ -230,9 +250,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshOwnStrangerLetters()
-  }, [authLoading, authUser, refreshOwnStrangerLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Received letters (letters sent TO the current user by known contacts) ─────
   const [receivedLetters, setReceivedLetters] = useState([])
@@ -246,9 +264,7 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (!authLoading && authUser) refreshReceivedLetters()
-  }, [authLoading, authUser, refreshReceivedLetters])
+  // initial load handled by orchestrated init effect below
 
   // ── Caring Stranger feed (community feed for listeners) ───────────────────────
   const [strangerLetters, setStrangerLetters] = useState([])
@@ -262,9 +278,42 @@ export function AppProvider({ children }) {
     } catch { /* ignore */ }
   }, [])
 
+  // initial load handled by orchestrated init effect below
+
+  // ── Orchestrated app-data initialization ──────────────────────────────────────
+  // Replaces 6 independent useEffects that all fired simultaneously on login,
+  // causing an 8-request burst that quickly consumed the old global rate limit.
+  //
+  // A ref prevents React StrictMode's intentional double-invocation from sending
+  // duplicate requests.  The ref is reset on logout so re-login re-initializes.
+  const initRef = useRef(false)
+
   useEffect(() => {
-    if (!authLoading && authUser) refreshStrangerLetters()
-  }, [authLoading, authUser, refreshStrangerLetters])
+    if (!authUser) { initRef.current = false }
+  }, [authUser])
+
+  useEffect(() => {
+    if (authLoading || !authUser || initRef.current) return
+    initRef.current = true
+
+    // Batch 1 — immediate: data the UI needs first
+    refreshEmailAccounts()
+    refreshReceivedLetters()
+
+    // Batch 2 — 200 ms: letter lists
+    const t1 = setTimeout(() => {
+      refreshLetters()
+      refreshPersonalLetters()
+    }, 200)
+
+    // Batch 3 — 500 ms: community feed (background, less time-critical)
+    const t2 = setTimeout(() => {
+      refreshOwnStrangerLetters()
+      refreshStrangerLetters()
+    }, 500)
+
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [authLoading, authUser]) // eslint-disable-line
 
   // ── Notifications ─────────────────────────────────────────────────────────────
   const [notifications, setNotifications] = useState([])
@@ -298,11 +347,28 @@ export function AppProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    if (!authLoading && authUser) {
-      refreshNotifications()
-      // Poll every 15 seconds for new notifications
-      const interval = setInterval(refreshNotifications, 15_000)
-      return () => clearInterval(interval)
+    if (authLoading || !authUser) return
+
+    refreshNotifications()
+    // Poll every 45 s — reduced from 15 s to cut background request volume by 3×
+    // while keeping notifications near-real-time for this app's use case.
+    // Polling pauses automatically when the tab is hidden and resumes on focus.
+    let intervalId = setInterval(refreshNotifications, 45_000)
+
+    function handleVisibility() {
+      if (document.hidden) {
+        clearInterval(intervalId)
+        intervalId = null
+      } else {
+        refreshNotifications()
+        if (!intervalId) intervalId = setInterval(refreshNotifications, 45_000)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [authLoading, authUser, refreshNotifications])
 

@@ -472,3 +472,31 @@ export async function getAdminLetters(req, res) {
 
   res.json({ success: true, data: out, total, page, pages: Math.ceil(total / limit) })
 }
+
+// GET /api/admin/onboarding-insights
+// Returns answer-distribution analytics across all completed onboarding responses.
+export async function getOnboardingInsights(req, res) {
+  const FIELDS = [
+    'ageRange', 'identity', 'profession', 'unsaidFeelings',
+    'unfinishedRelationship', 'writingExperience', 'feelingHeard',
+    'unspokenReason', 'selfTreatment', 'writingBenefit', 'supportStyle', 'writingRelief',
+  ]
+
+  const total = await User.countDocuments({ hasCompletedOnboarding: true })
+
+  if (total === 0) {
+    return res.json({ success: true, data: { total: 0, distributions: {} } })
+  }
+
+  const distributions = {}
+  await Promise.all(FIELDS.map(async field => {
+    const rows = await User.aggregate([
+      { $match: { hasCompletedOnboarding: true, [`onboardingAnswers.${field}`]: { $nin: ['', null] } } },
+      { $group: { _id: `$onboardingAnswers.${field}`, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ])
+    distributions[field] = rows.map(r => ({ answer: r._id, count: r.count }))
+  }))
+
+  res.json({ success: true, data: { total, distributions } })
+}
