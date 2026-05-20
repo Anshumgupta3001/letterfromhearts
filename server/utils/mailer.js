@@ -102,10 +102,10 @@ export function wrapLinksForClickTracking(html, trackingId) {
 // Sends recipient to /login?reply=<id>&email=<to>
 // AuthPage reads ?reply → shows login mode; AppContext reads it after auth → navigates to received
 function buildReplyUrl(toEmail, letterId) {
-  const params = new URLSearchParams();
-  if (letterId) params.set("reply", letterId.toString());
-  if (toEmail) params.set("email", toEmail);
-  return `${config.clientOrigin}/login?${params.toString()}`;
+  const params = new URLSearchParams()
+  if (letterId) params.set('reply', letterId.toString())
+  if (toEmail)  params.set('email', toEmail)
+  return `${config.clientOrigin}/login?${params.toString()}`
 }
 
 // ── Parchment divider row ─────────────────────────────────────────────────────
