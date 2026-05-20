@@ -373,48 +373,56 @@ export function buildNotificationEmail({ message, type, link }) {
       <td class="parchment-cell" style="padding:36px 40px 32px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
 
-          <!-- Headline -->
+          <!-- Opener: emoji + headline (mirrors letter tagline style) -->
           <tr>
-            <td style="padding:0 0 16px;">
-              <p style="margin:0 0 8px;font-size:28px;line-height:1;">${emoji}</p>
-              <p style="margin:0;font-family:${SCRIPT};font-size:27px;font-weight:bold;color:${C.ink};line-height:1.3;">${headline}</p>
+            <td style="padding:0 0 22px;text-align:center;">
+              <p style="margin:0 0 10px;font-size:22px;line-height:1;">${emoji}</p>
+              <p style="margin:0;font-family:${LORA};font-style:italic;font-size:14px;color:${C.accent};line-height:1.65;">${headline}</p>
             </td>
           </tr>
 
           ${parchmentDivider()}
 
-          <!-- Body — word-break prevents long notification text from overflowing -->
+          <!-- Body -->
           <tr>
             <td style="padding:4px 0 28px;font-family:${LORA};font-size:15px;color:${C.inkSoft};line-height:1.75;word-break:break-word;overflow-wrap:break-word;white-space:normal;max-width:100%;">
               ${safeMsg}
             </td>
           </tr>
 
-          <!-- CTA button -->
+          <!-- CTA in reply-block style (mirrors letter reply block) -->
           <tr>
-            <td align="center" style="padding:0 0 28px;">
-              <a href="${ctaUrl}" target="_blank"
-                style="display:inline-block;background-color:${C.accentDark};color:#fdf9f4;font-family:${LORA};font-style:italic;font-size:13.5px;padding:12px 28px;border-radius:30px;text-decoration:none;letter-spacing:0.4px;box-shadow:0 4px 14px rgba(144,63,32,0.32);">
-                View in app &rarr;
-              </a>
-            </td>
-          </tr>
-
-          <!-- Divider -->
-          <tr>
-            <td style="padding:0 0 20px 0;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr><td style="height:1px;background:rgba(160,120,80,0.15);font-size:0;line-height:0;">&nbsp;</td></tr>
+            <td style="padding:0 0 24px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                style="background-color:rgba(192,112,74,0.06);border:1px solid rgba(180,118,75,0.28);border-radius:10px;">
+                <tr>
+                  <td style="padding:18px 22px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td valign="middle">
+                          <p style="margin:0 0 3px;font-family:${LORA};font-style:italic;font-size:11.5px;color:#a07858;">A quiet update is waiting for you.</p>
+                          <p style="margin:0;font-family:${LORA};font-style:italic;font-size:13.5px;color:#5a3820;line-height:1.5;">Take a moment — it only takes a second.</p>
+                        </td>
+                        <td valign="middle" align="right" style="padding-left:16px;white-space:nowrap;">
+                          <a href="${ctaUrl}" target="_blank"
+                            style="display:inline-block;background-color:${C.accentDark};color:#fdf9f4;font-family:${LORA};font-style:italic;font-size:13.5px;padding:12px 24px;border-radius:30px;text-decoration:none;letter-spacing:0.4px;white-space:nowrap;box-shadow:0 4px 14px rgba(144,63,32,0.32);">
+                            View in app &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Footer note -->
+          <!-- Footnote (mirrors letter footnote style) -->
           <tr>
             <td align="center">
-              <p style="margin:0;font-family:${LORA};font-style:italic;font-size:11px;color:${C.inkMuted};line-height:1.6;text-align:center;">
+              <p style="margin:0 0 8px;font-family:${LORA};font-style:italic;font-size:11.5px;color:#9a7868;line-height:1.75;text-align:center;">
                 You&rsquo;re receiving this because you haven&rsquo;t seen this notification yet.<br/>
-                Visit <a href="${config.clientOrigin}" target="_blank" style="color:${C.inkMuted};text-decoration:underline;">Letter from Heart</a> to manage your preferences.
+                Visit <a href="${config.clientOrigin}" target="_blank" style="color:#9a7868;text-decoration:underline;">Letter from Heart</a> to manage your preferences.
               </p>
             </td>
           </tr>
