@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import GoogleLoginBtn from '../components/auth/GoogleLoginBtn'
+import {
+  trackLoginPageViewed,
+  trackSignupPageViewed,
+  trackLoginSuccess,
+  trackLoginFailed,
+  trackSignupSuccess,
+  trackSignupFailed,
+  identifyUser,
+} from '../utils/mixpanel'
 
 // ── Terms & Conditions Modal ───────────────────────────────────────────────────
 const TERMS_SECTIONS = [
@@ -317,23 +326,11 @@ export default function AuthPage({ initialMode = 'signup' }) {
     }
   }, [])
 
-  // ContentSquare tracking — auth pages only (/login and /signup).
-  // Injected once on mount, removed on unmount so it never runs on
-  // authenticated pages (AuthPage unmounts as soon as the user logs in).
-  // The ID guard prevents duplicate <script> tags when React StrictMode
-  // double-invokes effects in development.
+  // Track page views — fires on mount and on tab switch between Login / Signup
   useEffect(() => {
-    const SCRIPT_ID = 'cs-tracking'
-    if (document.getElementById(SCRIPT_ID)) return
-    const script = document.createElement('script')
-    script.id    = SCRIPT_ID
-    script.src   = 'https://t.contentsquare.net/uxa/f2ff37357a0da.js'
-    script.async = true
-    document.head.appendChild(script)
-    return () => {
-      document.getElementById(SCRIPT_ID)?.remove()
-    }
-  }, [])
+    if (mode === 'login') trackLoginPageViewed()
+    else trackSignupPageViewed()
+  }, [mode])
 
   function reset() {
     setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setSource(''); setOtherSource('')
@@ -379,10 +376,25 @@ export default function AuthPage({ initialMode = 'signup' }) {
         body: JSON.stringify(body),
       })
       const json = await res.json()
-      if (!res.ok) { setError(json.error || 'Something went wrong.'); return }
+      if (!res.ok) {
+        const errMsg = json.error || 'Something went wrong.'
+        setError(errMsg)
+        if (mode === 'login') trackLoginFailed(errMsg)
+        else trackSignupFailed(errMsg)
+        return
+      }
+      if (mode === 'login') {
+        trackLoginSuccess('email')
+      } else {
+        trackSignupSuccess('email', role)
+      }
+      identifyUser(json.user)
       await login(json.token, json.user)
     } catch (e) {
-      setError(e.message || 'Network error.')
+      const errMsg = e.message || 'Network error.'
+      setError(errMsg)
+      if (mode === 'login') trackLoginFailed(errMsg)
+      else trackSignupFailed(errMsg)
     } finally {
       setLoading(false)
     }

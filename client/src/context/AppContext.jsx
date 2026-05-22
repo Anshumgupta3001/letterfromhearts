@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import { seekerLetters, listenerReplies, openLetters } from '../data/mockData'
 import { apiFetch, getToken, setToken, removeToken } from '../utils/api'
+import { trackLoginSuccess, trackSignupSuccess, identifyUser } from '../utils/mixpanel'
 
 const AppContext = createContext(null)
 
@@ -105,6 +106,13 @@ export function AppProvider({ children }) {
           // Show role setup modal if this is a Google user who never set a role
           if (!json.user.role && json.user.authProvider === 'google') {
             setPendingRoleSetup(true)
+          }
+          // Track Google OAuth result — only when this is a fresh OAuth redirect,
+          // not on every page load / session restore
+          if (googleToken) {
+            if (googleNew) trackSignupSuccess('google')
+            else trackLoginSuccess('google')
+            identifyUser(json.user)
           }
           // ── Deep link navigation (already-authenticated user clicking email link)
           const deepLinkPath = pathname.startsWith('/welcome/') ? pathname : redirect
