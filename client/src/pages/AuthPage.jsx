@@ -317,6 +317,24 @@ export default function AuthPage({ initialMode = 'signup' }) {
     }
   }, [])
 
+  // ContentSquare tracking — auth pages only (/login and /signup).
+  // Injected once on mount, removed on unmount so it never runs on
+  // authenticated pages (AuthPage unmounts as soon as the user logs in).
+  // The ID guard prevents duplicate <script> tags when React StrictMode
+  // double-invokes effects in development.
+  useEffect(() => {
+    const SCRIPT_ID = 'cs-tracking'
+    if (document.getElementById(SCRIPT_ID)) return
+    const script = document.createElement('script')
+    script.id    = SCRIPT_ID
+    script.src   = 'https://t.contentsquare.net/uxa/f2ff37357a0da.js'
+    script.async = true
+    document.head.appendChild(script)
+    return () => {
+      document.getElementById(SCRIPT_ID)?.remove()
+    }
+  }, [])
+
   function reset() {
     setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setSource(''); setOtherSource('')
   }
