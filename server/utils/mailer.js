@@ -20,7 +20,7 @@ const C = {
   inkSoft: "#4a4540",
   inkMuted: "#9a7060",
   accent: "#b05a35",
-  accentDark: "#903f20",
+  accentDark: "#C4633A",
   white: "#ffffff",
 };
 
@@ -196,7 +196,7 @@ function emailShell(rawTitle, rawPreview, bodyRows, footerText) {
               <div style="${ROD_STYLE}">&nbsp;</div>
 
               <!-- Parchment -->
-              <div style="background-color:${C.paper};margin:0 8px;box-shadow:0 8px 32px rgba(80,55,30,0.2),0 2px 4px rgba(80,55,30,0.1);">
+              <div style="background-color:${C.paper};background-image:repeating-linear-gradient(transparent,transparent 31px,rgba(28,26,23,0.028) 31px,rgba(28,26,23,0.028) 32px);background-position:0 76px;margin:0 8px;box-shadow:0 8px 32px rgba(80,55,30,0.2),0 2px 4px rgba(80,55,30,0.1);">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                   ${bodyRows}
                 </table>

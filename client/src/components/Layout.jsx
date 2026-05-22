@@ -1191,8 +1191,8 @@ function Navbar() {
 
       <ReportDrawer open={reportOpen} onClose={() => setReportOpen(false)} />
 
-      {/* Floating Write button — mobile only, hidden when already on write page */}
-      {currentPage !== 'write' && (
+      {/* Floating Write button — mobile only, hidden on write page and home page (home has its own compose CTA + tab bar) */}
+      {currentPage !== 'write' && currentPage !== 'home' && (
         <button
           className="sm:hidden"
           onClick={() => navigate('write')}
@@ -1216,21 +1216,330 @@ function Navbar() {
   )
 }
 
+// ── Mobile Journey Tab — full-page stats view for mobile home ────────────────
+// Reuses useAnalyticsData() (reads context only — no extra API calls)
+function MobileJourneyTab() {
+  const {
+    navigate, canReadFeed, strangerLetters,
+    analyticsDays, setAnalyticsDays, refreshAnalytics, analyticsRefreshing,
+    written, sent, opened, personal, stranger, heard, openRate, scheduled,
+    repliesReceived, hasSent, heartline, heardCount, repliedOut, convsClosed,
+  } = useAnalyticsData()
+
+  const MetricCard = ({ value, label, accent }) => (
+    <div style={{
+      background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)',
+      borderRadius: 12, padding: '14px 15px', position: 'relative', overflow: 'hidden',
+    }}>
+      {accent && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: accent, borderRadius: '12px 12px 0 0' }} />
+      )}
+      <div style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 500, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>
+        {value.toLocaleString()}
+      </div>
+      <div style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontWeight: 400, marginTop: 5, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>
+        {label}
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={{ padding: '24px 20px 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Header */}
+      <div>
+        <h2 style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', marginBottom: 5, letterSpacing: '-0.3px' }}>
+          My Journey
+        </h2>
+        <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.65, margin: 0 }}>
+          A reflection of your words, connections, and impact.
+        </p>
+      </div>
+
+      {/* Emotional heartline */}
+      <div style={{
+        background: 'linear-gradient(120deg, rgba(196,99,58,0.06), rgba(122,158,142,0.06))',
+        border: '0.5px solid rgba(196,99,58,0.12)',
+        borderRadius: 12, padding: '12px 14px',
+      }}>
+        <div style={{ fontSize: 13, fontFamily: '"Lora", serif', fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.55 }}>
+          {heartline}
+        </div>
+      </div>
+
+      {/* Date filter row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+            Your story
+          </div>
+          <button
+            onClick={() => refreshAnalytics()}
+            disabled={analyticsRefreshing}
+            title="Refresh analytics"
+            style={{ background: 'none', border: 'none', cursor: analyticsRefreshing ? 'default' : 'pointer', padding: '1px 2px', display: 'flex', alignItems: 'center', color: 'var(--ink-muted)', opacity: analyticsRefreshing ? 0.5 : 1, transition: 'opacity 0.2s' }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ animation: analyticsRefreshing ? 'spin 0.8s linear infinite' : 'none' }}>
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </button>
+        </div>
+        <select
+          value={analyticsDays}
+          onChange={e => setAnalyticsDays(Number(e.target.value))}
+          style={{
+            fontSize: 10, padding: '3px 8px', borderRadius: 6, cursor: 'pointer',
+            background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)',
+            color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+            outline: 'none', appearance: 'none', WebkitAppearance: 'none',
+          }}
+        >
+          <option value={7}>Last 7 days</option>
+          <option value={15}>Last 15 days</option>
+          <option value={30}>Last 30 days</option>
+        </select>
+      </div>
+
+      {/* Overview metric cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+        <MetricCard value={written}  label="Letters written" accent="linear-gradient(90deg, var(--tc), var(--gold))" />
+        <MetricCard value={sent}     label="Letters sent"    accent="linear-gradient(90deg, var(--gold), var(--tc))" />
+        <MetricCard value={personal} label="To myself" />
+        <MetricCard value={stranger} label="To a stranger" />
+        {scheduled > 0 && (
+          <MetricCard value={scheduled} label="Scheduled ⏳" accent="linear-gradient(90deg, var(--purple), var(--sage))" />
+        )}
+      </div>
+
+      {/* Open rate — only when letters have been sent */}
+      {hasSent && (
+        <div style={{
+          background: 'var(--paper)',
+          border: `0.5px solid ${openRate >= 50 ? 'rgba(122,158,142,0.25)' : 'rgba(196,99,58,0.18)'}`,
+          borderRadius: 12, padding: '14px 15px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 4 }}>
+                Open rate
+              </div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 28, fontWeight: 500, letterSpacing: '-1px', color: openRate >= 50 ? 'var(--sage)' : 'var(--tc)', lineHeight: 1 }}>
+                {openRate}%
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', textAlign: 'right', lineHeight: 1.5, paddingBottom: 2 }}>
+              {opened} of {sent}<br />letters seen
+            </div>
+          </div>
+          <div style={{ height: 5, background: 'rgba(28,26,23,0.07)', borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 100,
+              width: `${Math.min(openRate, 100)}%`,
+              background: openRate >= 50
+                ? 'linear-gradient(90deg, var(--sage), #7ec8a4)'
+                : 'linear-gradient(90deg, var(--tc), var(--gold))',
+              transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)',
+            }} />
+          </div>
+          {openRate >= 50 && (
+            <div style={{ fontSize: 11, color: 'var(--sage)', marginTop: 8, fontFamily: '"DM Sans", sans-serif' }}>
+              People are reading what you write 🌿
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Connections Activity */}
+      <div>
+        <div style={{ fontSize: 10, letterSpacing: '1.8px', textTransform: 'uppercase', fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 8 }}>
+          Connections Activity
+        </div>
+
+        {/* Your Sent Letters */}
+        <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)', borderRadius: 12, padding: '14px 15px', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
+            📨 Your Sent Letters
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { label: 'Sent',             value: sent,            color: 'var(--ink)'  },
+              { label: 'Opened',           value: opened,          color: 'var(--sage)' },
+              { label: 'Replies Received', value: repliesReceived, color: 'var(--tc)'   },
+            ].map(({ label, value, color }) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>{label}</span>
+                <span style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 500, color, letterSpacing: '-0.3px' }}>{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Strangers You Heard — listeners only */}
+        {canReadFeed && (
+          <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(122,158,142,0.2)', borderRadius: 12, padding: '14px 15px' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
+              👂 Strangers You Heard
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { label: 'Heard',                 value: heardCount,  color: 'var(--purple)'    },
+                { label: 'Replies Sent',           value: repliedOut,  color: 'var(--sage)'      },
+                { label: 'Conversations Closed',   value: convsClosed, color: 'var(--ink-muted)' },
+              ].map(({ label, value, color }) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>{label}</span>
+                  <span style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 500, color, letterSpacing: '-0.3px' }}>{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Connection card */}
+      {(heard > 0 || canReadFeed) && (
+        <div style={{ background: 'var(--paper)', border: '0.5px solid rgba(122,158,142,0.2)', borderRadius: 12, padding: '14px 15px' }}>
+          <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 10 }}>
+            Connection
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <div>
+              <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--sage)', lineHeight: 1 }}>{heard}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>Strangers heard you</div>
+            </div>
+            {canReadFeed && (
+              <div style={{ cursor: 'pointer' }} onClick={() => navigate('listenerread')}>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--tc)', lineHeight: 1 }}>{strangerLetters?.length || 0}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>Waiting to be read</div>
+              </div>
+            )}
+            {repliesReceived > 0 && (
+              <div style={{ cursor: 'pointer' }} onClick={() => navigate('myspace', 'stranger')}>
+                <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500, color: 'var(--purple)', lineHeight: 1 }}>{repliesReceived}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--ink-muted)', marginTop: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>Replies received</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}
+
+// ── Mobile Home Tab Bar — fixed bottom, home page only, mobile only ────────────
+function MobileHomeTabBar({ tab, onChange }) {
+  const TABS = [
+    {
+      id: 'home',
+      label: 'Home',
+      icon: (active) => (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.6} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+          <path d="M9 21V12h6v9"/>
+        </svg>
+      ),
+    },
+    {
+      id: 'journey',
+      label: 'My Journey',
+      icon: (active) => (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.6} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+      ),
+    },
+  ]
+
+  return (
+    <div
+      className="md:hidden"
+      style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 95,
+        background: 'rgba(247,242,234,0.97)',
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        borderTop: '0.5px solid rgba(28,26,23,0.1)',
+        display: 'flex', alignItems: 'stretch',
+        height: 60,
+        boxShadow: '0 -2px 16px rgba(28,26,23,0.07)',
+      }}
+    >
+      {TABS.map(t => {
+        const active = tab === t.id
+        return (
+          <button
+            key={t.id}
+            onClick={() => onChange(t.id)}
+            style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: 3, border: 'none', background: 'transparent', cursor: 'pointer',
+              color: active ? 'var(--tc)' : 'var(--ink-muted)',
+              borderTop: `2px solid ${active ? 'var(--tc)' : 'transparent'}`,
+              transition: 'color 0.15s, border-color 0.15s',
+              paddingTop: 2,
+            }}
+          >
+            {t.icon(active)}
+            <span style={{
+              fontSize: 10, fontWeight: active ? 600 : 400,
+              fontFamily: '"DM Sans", sans-serif', letterSpacing: '0.2px',
+              lineHeight: 1,
+            }}>
+              {t.label}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Layout ────────────────────────────────────────────────────────────────────
 export default function Layout({ children }) {
   const { currentPage } = useApp()
+  const [mobileHomeTab, setMobileHomeTab] = useState('home')
+
+  // JS-driven mobile detection — matches the project's existing pattern (see HomeSidebar).
+  // This avoids the inline-style vs Tailwind class specificity conflict where
+  // `display:'flex'` on MobileHomeTabBar always beats `md:hidden`'s `display:none`.
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  useEffect(() => {
+    function onResize() { setIsMobile(window.innerWidth < 768) }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  // Always reset to writing experience when navigating away and returning to home
+  useEffect(() => {
+    if (currentPage !== 'home') setMobileHomeTab('home')
+  }, [currentPage])
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--cream)' }}>
       <Navbar />
       {currentPage === 'home' ? (
-        // Home: analytics sidebar always visible, stacks on mobile
-        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr]" style={{ minHeight: 'calc(100vh - 56px)' }}>
-          <HomeSidebar />
-          <div style={{ minWidth: 0, overflowX: 'hidden' }}>
-            {children}
+        isMobile ? (
+          // ── Mobile: tab-based layout (writing experience or My Journey stats) ──
+          <>
+            <div style={{ minHeight: 'calc(100vh - 56px)', paddingBottom: 60 }}>
+              {mobileHomeTab === 'home'
+                ? <div style={{ minWidth: 0, overflowX: 'hidden' }}>{children}</div>
+                : <MobileJourneyTab />
+              }
+            </div>
+            <MobileHomeTabBar tab={mobileHomeTab} onChange={setMobileHomeTab} />
+          </>
+        ) : (
+          // ── Desktop / tablet: sidebar + content side by side — unchanged ──
+          <div className="grid md:grid-cols-[220px_1fr]" style={{ minHeight: 'calc(100vh - 56px)' }}>
+            <HomeSidebar />
+            <div style={{ minWidth: 0, overflowX: 'hidden' }}>
+              {children}
+            </div>
           </div>
-        </div>
+        )
       ) : (
         // All other pages: no sidebar, full-width (each page manages its own layout)
         <div style={{ width: '100%' }}>
