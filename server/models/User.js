@@ -33,6 +33,13 @@ const userSchema = new mongoose.Schema(
 
     // One-time onboarding questionnaire
     hasCompletedOnboarding: { type: Boolean, default: false },
+    // 'pending' → not yet shown; 'completed' → all 12 answered;
+    // 'partially_completed' → some answered then skipped; 'skipped' → dismissed immediately
+    onboardingStatus: {
+      type:    String,
+      enum:    ['pending', 'completed', 'partially_completed', 'skipped'],
+      default: 'pending',
+    },
     onboardingAnswers: {
       ageRange:               { type: String, default: '' },
       identity:               { type: String, default: '' },

@@ -112,32 +112,40 @@ const QUESTIONS = [
 
 export default function OnboardingModal() {
   const { updateAuthUser } = useApp()
-  const [step,     setStep]     = useState(0)
-  const [answers,  setAnswers]  = useState({})
-  const [loading,  setLoading]  = useState(false)
-  const [animKey,  setAnimKey]  = useState(0)
+  const [step,    setStep]    = useState(0)
+  const [answers, setAnswers] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [animKey, setAnimKey] = useState(0)
 
   const total    = QUESTIONS.length
   const current  = QUESTIONS[step]
-  const progress = ((step) / total) * 100
+  // Progress = % of questions already answered (behind current step)
+  const progress = Math.round((step / total) * 100)
 
-  async function submit(finalAnswers) {
+  // ── API call ──────────────────────────────────────────────────────────────
+  async function submit(finalAnswers, skipped = false) {
     setLoading(true)
     try {
       const res  = await apiFetch('/api/onboarding', {
         method: 'POST',
-        body:   JSON.stringify(finalAnswers),
+        body:   JSON.stringify({ ...finalAnswers, skip: skipped }),
       })
       const json = await res.json()
-      if (json.success) updateAuthUser({ hasCompletedOnboarding: true })
+      if (json.success) {
+        updateAuthUser({
+          hasCompletedOnboarding: true,
+          onboardingStatus: json.user?.onboardingStatus || (skipped ? 'skipped' : 'completed'),
+        })
+      }
     } catch {
-      // silently complete — don't block the user
+      // Silently close — don't block the user on network failures
       updateAuthUser({ hasCompletedOnboarding: true })
     } finally {
       setLoading(false)
     }
   }
 
+  // ── Navigation ────────────────────────────────────────────────────────────
   function select(option) {
     const next = { ...answers, [current.key]: option }
     setAnswers(next)
@@ -145,7 +153,7 @@ export default function OnboardingModal() {
       setAnimKey(k => k + 1)
       setStep(s => s + 1)
     } else {
-      submit(next)
+      submit(next, false) // last question completed
     }
   }
 
@@ -153,6 +161,11 @@ export default function OnboardingModal() {
     if (step === 0) return
     setAnimKey(k => k + 1)
     setStep(s => s - 1)
+  }
+
+  function skip() {
+    if (loading) return
+    submit(answers, true)
   }
 
   return (
@@ -165,6 +178,7 @@ export default function OnboardingModal() {
         .lfh-question-card { animation: lfh-slide-in 0.28s cubic-bezier(0.22,1,0.36,1) both; }
         .lfh-opt:hover { background: rgba(196,99,58,0.06) !important; border-color: rgba(196,99,58,0.35) !important; }
         .lfh-opt:active { transform: scale(0.985); }
+        .lfh-skip:hover { background: rgba(28,26,23,0.04) !important; border-color: rgba(28,26,23,0.35) !important; }
       `}</style>
 
       {/* Backdrop */}
@@ -188,8 +202,8 @@ export default function OnboardingModal() {
             maxHeight: 'calc(100dvh - 32px)',
           }}
         >
-          {/* Progress bar */}
-          <div style={{ height: 3, background: 'rgba(28,26,23,0.07)', flexShrink: 0 }}>
+          {/* ── Progress bar ── */}
+          <div style={{ height: 4, background: 'rgba(28,26,23,0.07)', flexShrink: 0, position: 'relative' }}>
             <div
               style={{
                 height: '100%',
@@ -201,21 +215,36 @@ export default function OnboardingModal() {
             />
           </div>
 
-          {/* Scrollable content */}
-          <div style={{ overflowY: 'auto', padding: '32px 28px 20px', flex: 1 }}>
+          {/* ── Scrollable content ── */}
+          <div style={{ overflowY: 'auto', padding: '28px 28px 16px', flex: 1 }}>
 
-            {/* Step counter */}
+            {/* Step counter + % complete */}
             <div
               style={{
-                fontSize: 11, fontFamily: '"DM Sans", sans-serif',
-                fontWeight: 500, letterSpacing: '1.2px', textTransform: 'uppercase',
-                color: 'var(--tc)', marginBottom: 20,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                marginBottom: 20,
               }}
             >
-              {step + 1} of {total}
+              <div
+                style={{
+                  fontSize: 11, fontFamily: '"DM Sans", sans-serif',
+                  fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase',
+                  color: 'var(--tc)',
+                }}
+              >
+                Question {step + 1} of {total}
+              </div>
+              <div
+                style={{
+                  fontSize: 11, fontFamily: '"DM Sans", sans-serif',
+                  color: 'var(--ink-muted)', letterSpacing: '0.3px',
+                }}
+              >
+                {progress > 0 ? `${progress}% complete` : 'Take your time'}
+              </div>
             </div>
 
-            {/* Question */}
+            {/* Question card */}
             <div key={animKey} className="lfh-question-card">
               <h2
                 style={{
@@ -254,7 +283,8 @@ export default function OnboardingModal() {
                         <span
                           style={{
                             flexShrink: 0, width: 18, height: 18, borderRadius: '50%',
-                            background: 'var(--tc)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'var(--tc)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}
                         >
                           <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
@@ -269,21 +299,25 @@ export default function OnboardingModal() {
             </div>
           </div>
 
-          {/* Footer */}
+          {/* ── Footer ── */}
           <div
             style={{
-              padding: '16px 28px 24px',
+              padding: '14px 28px 22px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               borderTop: '0.5px solid rgba(28,26,23,0.07)', flexShrink: 0,
+              gap: 12,
             }}
           >
+            {/* Back button */}
             {step > 0 ? (
               <button
                 onClick={back}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)',
+                  fontFamily: '"DM Sans", sans-serif', fontSize: 13,
+                  color: 'var(--ink-muted)',
                   display: 'flex', alignItems: 'center', gap: 5, padding: '6px 0',
+                  flexShrink: 0,
                 }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -291,11 +325,36 @@ export default function OnboardingModal() {
                 </svg>
                 Back
               </button>
-            ) : <div />}
+            ) : (
+              /* Spacer so Skip stays on the right when Back is hidden */
+              <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', flexShrink: 0 }}>
+                Select an option above
+              </div>
+            )}
 
-            <div style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
-              {loading ? 'Saving your answers...' : 'Select an option to continue'}
-            </div>
+            {/* Skip for now button — always visible, clearly styled */}
+            <button
+              className="lfh-skip"
+              onClick={skip}
+              disabled={loading}
+              style={{
+                background: 'none',
+                border: '1px solid rgba(28,26,23,0.22)',
+                borderRadius: 99,
+                padding: '8px 20px',
+                fontSize: 12.5,
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 500,
+                color: loading ? 'var(--ink-muted)' : 'var(--ink)',
+                cursor: loading ? 'default' : 'pointer',
+                transition: 'all 0.15s ease',
+                opacity: loading ? 0.55 : 1,
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              {loading ? 'Saving…' : 'Skip for now'}
+            </button>
           </div>
         </div>
       </div>

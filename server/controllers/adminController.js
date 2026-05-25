@@ -474,7 +474,7 @@ export async function getAdminLetters(req, res) {
 }
 
 // GET /api/admin/onboarding-insights
-// Returns answer-distribution analytics across all completed onboarding responses.
+// Returns onboarding status counts, completion funnel, and per-question distributions.
 export async function getOnboardingInsights(req, res) {
   const FIELDS = [
     'ageRange', 'identity', 'profession', 'unsaidFeelings',
@@ -482,21 +482,74 @@ export async function getOnboardingInsights(req, res) {
     'unspokenReason', 'selfTreatment', 'writingBenefit', 'supportStyle', 'writingRelief',
   ]
 
-  const total = await User.countDocuments({ hasCompletedOnboarding: true })
+  // Must match the gate date used in the frontend (App.jsx ONBOARDING_LAUNCH)
+  const ONBOARDING_LAUNCH = new Date('2026-05-16')
 
-  if (total === 0) {
-    return res.json({ success: true, data: { total: 0, distributions: {} } })
+  // ── Status counts + funnel checkpoints (all in parallel) ─────────────────
+  const [
+    totalNewUsers,          // all users registered since onboarding launched
+    completedExplicit,      // new: onboardingStatus = 'completed'
+    completedLegacy,        // old: hasCompletedOnboarding=true before status field existed
+    partiallyCompleted,     // answered some, then skipped
+    skipped,                // dismissed immediately
+    q1Count,                // Q1  — ageRange
+    q3Count,                // Q3  — profession
+    q6Count,                // Q6  — writingExperience
+    q12Count,               // Q12 — writingRelief
+  ] = await Promise.all([
+    User.countDocuments({ createdAt: { $gte: ONBOARDING_LAUNCH } }),
+    User.countDocuments({ onboardingStatus: 'completed' }),
+    // Legacy docs (created before status field) — treat as completed
+    User.countDocuments({ hasCompletedOnboarding: true, onboardingStatus: { $exists: false } }),
+    User.countDocuments({ onboardingStatus: 'partially_completed' }),
+    User.countDocuments({ onboardingStatus: 'skipped' }),
+    User.countDocuments({ 'onboardingAnswers.ageRange':          { $nin: ['', null] } }),
+    User.countDocuments({ 'onboardingAnswers.profession':        { $nin: ['', null] } }),
+    User.countDocuments({ 'onboardingAnswers.writingExperience': { $nin: ['', null] } }),
+    User.countDocuments({ 'onboardingAnswers.writingRelief':     { $nin: ['', null] } }),
+  ])
+
+  const totalCompleted = completedExplicit + completedLegacy
+  const totalResponded = totalCompleted + partiallyCompleted
+  const pending        = Math.max(0, totalNewUsers - totalCompleted - partiallyCompleted - skipped)
+
+  // Build funnel — signed up → Q1 → Q3 → Q6 → Q12 → completed all
+  const funnel = [
+    { label: 'Signed Up',               count: totalNewUsers,  icon: '✍️', color: '#1C1A17' },
+    { label: 'Started Onboarding (Q1)', count: q1Count,        icon: '🌱', color: '#C4633A' },
+    { label: 'Reached Question 3',      count: q3Count,        icon: '📝', color: '#6B9E8A' },
+    { label: 'Reached Question 6',      count: q6Count,        icon: '💬', color: '#8B7EC8' },
+    { label: 'Reached Question 12',     count: q12Count,       icon: '🎯', color: '#C9A84C' },
+    { label: 'Completed All 12',        count: totalCompleted, icon: '✅', color: '#6B9E8A' },
+  ]
+
+  // ── Per-question distributions ────────────────────────────────────────────
+  // Only users who actually answered each question are counted.
+  // This naturally handles partial completions — Q1 has more responses than Q12.
+  const distributions = {}
+
+  if (totalResponded > 0) {
+    await Promise.all(FIELDS.map(async field => {
+      const rows = await User.aggregate([
+        { $match: { hasCompletedOnboarding: true, [`onboardingAnswers.${field}`]: { $nin: ['', null] } } },
+        { $group: { _id: `$onboardingAnswers.${field}`, count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ])
+      distributions[field] = rows.map(r => ({ answer: r._id, count: r.count }))
+    }))
   }
 
-  const distributions = {}
-  await Promise.all(FIELDS.map(async field => {
-    const rows = await User.aggregate([
-      { $match: { hasCompletedOnboarding: true, [`onboardingAnswers.${field}`]: { $nin: ['', null] } } },
-      { $group: { _id: `$onboardingAnswers.${field}`, count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ])
-    distributions[field] = rows.map(r => ({ answer: r._id, count: r.count }))
-  }))
-
-  res.json({ success: true, data: { total, distributions } })
+  res.json({
+    success: true,
+    data: {
+      total: totalResponded,   // backward compat — used as denominator in existing charts
+      totalNewUsers,
+      completed:          totalCompleted,
+      partiallyCompleted,
+      skipped,
+      pending,
+      funnel,
+      distributions,
+    },
+  })
 }

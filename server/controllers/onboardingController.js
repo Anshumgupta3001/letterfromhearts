@@ -7,18 +7,39 @@ const ANSWER_KEYS = [
 ]
 
 // POST /api/onboarding
-// Saves answers and marks the user's onboarding as complete.
-// Skipping is treated the same — we still mark it complete so it never shows again.
+// Saves answers and marks the user's onboarding as complete, partial, or skipped.
+//
+// Body fields:
+//   skip?: boolean   — true when the user clicked "Skip for now"
+//   ageRange?, identity?, … — any subset of the 12 answer keys
+//
+// Status rules:
+//   all 12 answered AND skip != true  → 'completed'
+//   some answered (skip or mid-flow)  → 'partially_completed'
+//   skip with zero answers            → 'skipped'
 export async function completeOnboarding(req, res) {
   const userId = req.user._id
+  const skip   = req.body.skip === true
+
   const answers = {}
   for (const key of ANSWER_KEYS) {
     answers[key] = typeof req.body[key] === 'string' ? req.body[key].trim() : ''
   }
 
+  const answeredCount = Object.values(answers).filter(v => v !== '').length
+
+  let onboardingStatus
+  if (!skip && answeredCount === ANSWER_KEYS.length) {
+    onboardingStatus = 'completed'
+  } else if (answeredCount === 0) {
+    onboardingStatus = 'skipped'
+  } else {
+    onboardingStatus = 'partially_completed'
+  }
+
   const user = await User.findByIdAndUpdate(
     userId,
-    { hasCompletedOnboarding: true, onboardingAnswers: answers },
+    { hasCompletedOnboarding: true, onboardingAnswers: answers, onboardingStatus },
     { new: true }
   )
 

@@ -106,16 +106,51 @@ function QuickNavCard({ card }) {
       {/* Left accent bar */}
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: card.accent, borderRadius: '4px 0 0 4px', opacity: hov ? 1 : 0.4, transition: 'opacity 0.2s' }} />
       <div style={{ paddingLeft: 6 }}>
-        {/* Icon + count row */}
+        {/* Icon + [Explore → / count] row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
           <span style={{ fontSize: 18 }}>{card.icon}</span>
-          <span style={{
-            fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600,
-            color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1,
-            flexShrink: 0,
-          }}>
-            {card.count}
-          </span>
+
+          {/* Right side: Explore label stacked above the count */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
+
+            {/* ── Explore → indicator ── */}
+            <span
+              aria-hidden="true"
+              style={{
+                fontSize: 10,
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 500,
+                color: 'var(--ink-muted)',
+                letterSpacing: '0.3px',
+                opacity: hov ? 0.76 : 0.46,
+                transition: 'opacity 0.2s ease',
+                pointerEvents: 'none',
+                userSelect: 'none',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              Explore
+              <span
+                style={{
+                  display: 'inline-block',
+                  marginLeft: 2,
+                  transform: hov ? 'translateX(3px)' : 'translateX(0)',
+                  transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+                }}
+              >
+                →
+              </span>
+            </span>
+
+            {/* Count */}
+            <span style={{
+              fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600,
+              color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1,
+            }}>
+              {card.count}
+            </span>
+          </div>
         </div>
         {/* Label */}
         <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 500, color: 'var(--ink-soft)', lineHeight: 1.3, letterSpacing: '-0.1px', marginBottom: 5 }}>

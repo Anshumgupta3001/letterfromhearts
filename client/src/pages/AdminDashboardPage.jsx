@@ -1579,17 +1579,26 @@ export default function AdminDashboardPage() {
             return Math.round((t.count / oi.total) * 100)
           }
 
-          // Derive summary highlights
+          // ── Derived highlights for community summary ──
           const topAge     = top('ageRange')
           const topSupport = top('supportStyle')
           const topUnsaid  = top('unsaidFeelings')
           const topBenefit = top('writingBenefit')
+          const topStruggle = top('unspokenReason')
+
+          // Total new users base for overview percentages
+          const newUserBase = oi?.totalNewUsers || oi?.total || 1
 
           // Age donut segments
-          const AGE_COLORS = [C.tc, C.sage, C.purple, C.gold]
+          const AGE_COLORS  = [C.tc, C.sage, C.purple, C.gold]
           const ageSegments = dist('ageRange').map((r, i) => ({ value: r.count, color: AGE_COLORS[i % AGE_COLORS.length], label: r.answer }))
 
-          // Helpers for a consistent EmotionCard
+          // Funnel: map server {label,count,icon,color} → Funnel {label,value,icon,color}
+          const funnelSteps = (oi?.funnel || []).map(f => ({
+            label: f.label, value: f.count, icon: f.icon, color: f.color,
+          }))
+
+          // Reusable EmotionCard for per-question breakdown
           function EmotionCard({ qKey, question, accentColor }) {
             const rows  = dist(qKey)
             const total = rows.reduce((s, r) => s + r.count, 0)
@@ -1630,147 +1639,315 @@ export default function AdminDashboardPage() {
 
           return (
             <section>
-              <SectionHeading sub="What users told us when they first joined">Onboarding Insights</SectionHeading>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+                <div>
+                  <SectionHeading sub="How new users are engaging with the onboarding questionnaire">Onboarding Insights</SectionHeading>
+                </div>
+                <button
+                  onClick={() => fetchOnboardingInsights(key)}
+                  disabled={onboardingLoading}
+                  style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(28,26,23,0.06)', color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"DM Sans",sans-serif', opacity: onboardingLoading ? 0.5 : 1 }}
+                >↻ Refresh</button>
+              </div>
 
               {onboardingLoading ? (
                 <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13, fontFamily: '"Lora",serif' }}>Loading insights…</div>
-              ) : !oi || oi.total === 0 ? (
+              ) : !oi ? (
                 <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
-                  No onboarding responses yet. They will appear here once new users complete the questionnaire.
+                  No onboarding data yet. Data will appear here once users sign up after the onboarding launch date.
                 </div>
               ) : (<>
 
-                {/* ── Summary cards ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 28 }}>
-                  {[
-                    { label: 'Completed', value: fmt(oi.total),           sub: 'total respondents',           color: C.tc },
-                    { label: 'Top Age',   value: topAge?.answer || '—',   sub: `${pctOf('ageRange')}% of users`,  color: C.sage },
-                    { label: 'Top Support', value: topSupport ? topSupport.answer.split(',')[0] : '—',
-                                           sub: `${pctOf('supportStyle')}% prefer this`, color: C.purple },
-                    { label: 'What Goes Unsaid', value: topUnsaid ? topUnsaid.answer.split(',')[0] : '—',
-                                           sub: `${pctOf('unsaidFeelings')}% said this`, color: C.gold },
-                    { label: 'Writing Reason', value: topBenefit ? topBenefit.answer.split(',')[0] : '—',
-                                           sub: `${pctOf('writingBenefit')}% chose this`, color: C.tc },
-                  ].map(card => (
-                    <div key={card.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 6 }}>{card.label}</div>
-                      <div style={{ fontSize: 17, fontWeight: 700, color: card.color, fontFamily: '"Lora",serif', lineHeight: 1.2, marginBottom: 4 }}>{card.value}</div>
-                      <div style={{ fontSize: 10.5, color: C.muted }}>{card.sub}</div>
+                {/* ══════════════════════════════════════════════════
+                    ONBOARDING OVERVIEW — status breakdown
+                ═══════════════════════════════════════════════════ */}
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Overview</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(185px,1fr))', gap: 12, marginBottom: 28 }}>
+
+                  {/* Total new users */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>New Users</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: 'rgba(28,26,23,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👥</div>
                     </div>
-                  ))}
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                      {fmt(oi.totalNewUsers || 0)}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.muted }}>Since onboarding launched</div>
+                  </div>
+
+                  {/* Completed */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>Completed</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.sage}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✅</div>
+                    </div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.sage, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                      {fmt(oi.completed || 0)}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.muted }}>
+                      {pct(oi.completed || 0, newUserBase)}% of new users · all 12 answered
+                    </div>
+                  </div>
+
+                  {/* Partially completed */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>Partial</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.purple}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📝</div>
+                    </div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.purple, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                      {fmt(oi.partiallyCompleted || 0)}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.muted }}>
+                      {pct(oi.partiallyCompleted || 0, newUserBase)}% of new users · answered some then skipped
+                    </div>
+                  </div>
+
+                  {/* Skipped */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>Skipped</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.gold}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏭️</div>
+                    </div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.gold, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                      {fmt(oi.skipped || 0)}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.muted }}>
+                      {pct(oi.skipped || 0, newUserBase)}% skip rate · dismissed immediately
+                    </div>
+                  </div>
                 </div>
 
-                {/* ── Demographics: Age donut + Identity bars ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 16 }}>
+                {/* Completion rate stacked bar */}
+                {(oi.totalNewUsers || 0) > 0 && (() => {
+                  const base       = oi.totalNewUsers
+                  const completedP = pct(oi.completed || 0, base)
+                  const partialP   = pct(oi.partiallyCompleted || 0, base)
+                  const skippedP   = pct(oi.skipped || 0, base)
+                  const pendingP   = Math.max(0, 100 - completedP - partialP - skippedP)
+                  return (
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px', marginBottom: 28 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 10, fontFamily: '"DM Sans",sans-serif', letterSpacing: '0.5px' }}>
+                        Onboarding Completion Breakdown
+                      </div>
+                      <div style={{ height: 14, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 2, background: 'rgba(28,26,23,0.04)', marginBottom: 12 }}>
+                        {completedP > 0 && <div style={{ width: `${completedP}%`, background: C.sage,   borderRadius: 99, transition: 'width 0.7s ease' }} />}
+                        {partialP   > 0 && <div style={{ width: `${partialP}%`,   background: C.purple, borderRadius: 99, transition: 'width 0.7s ease' }} />}
+                        {skippedP   > 0 && <div style={{ width: `${skippedP}%`,   background: C.gold,   borderRadius: 99, transition: 'width 0.7s ease' }} />}
+                        {pendingP   > 0 && <div style={{ width: `${pendingP}%`,   background: 'rgba(28,26,23,0.08)', borderRadius: 99 }} />}
+                      </div>
+                      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                        {[
+                          { label: 'Completed',  pct: completedP, color: C.sage   },
+                          { label: 'Partial',    pct: partialP,   color: C.purple },
+                          { label: 'Skipped',    pct: skippedP,   color: C.gold   },
+                          { label: 'Not started',pct: pendingP,   color: C.muted  },
+                        ].map(s => (
+                          <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                            <span style={{ fontSize: 11.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{s.label}</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: s.color }}>{s.pct}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
 
-                  {/* Age groups — donut chart */}
-                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Age Groups</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <DonutChart segments={ageSegments} size={130} thickness={24} />
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>{oi.total}</div>
-                          <div style={{ fontSize: 9.5, color: C.muted }}>total</div>
+                {/* ══════════════════════════════════════════════════
+                    COMPLETION FUNNEL
+                ═══════════════════════════════════════════════════ */}
+                {funnelSteps.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Completion Funnel</div>
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', marginBottom: 28 }}>
+                      <div style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif', marginBottom: 18, lineHeight: 1.5 }}>
+                        How far users progress through the 12 questions — drop-off indicates where to focus re-engagement.
+                      </div>
+                      <Funnel steps={funnelSteps} />
+                    </div>
+                  </>
+                )}
+
+                {/* ══════════════════════════════════════════════════
+                    COMMUNITY INSIGHTS SUMMARY  (auto-generated)
+                ═══════════════════════════════════════════════════ */}
+                {oi.total > 0 && (topBenefit || topStruggle || topSupport || topAge) && (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>🌿 Community Insights Summary</div>
+                    <div style={{ background: `linear-gradient(135deg, ${C.tc}0A 0%, ${C.sage}0A 100%)`, border: `1px solid ${C.tc}20`, borderRadius: 16, padding: '22px 24px', marginBottom: 28 }}>
+                      <div style={{ fontSize: 12.5, color: C.muted, fontFamily: '"DM Sans",sans-serif', marginBottom: 18, fontStyle: 'italic' }}>
+                        Auto-generated from {fmt(oi.total)} onboarding responses
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
+                        {[
+                          {
+                            icon: '✍️', label: 'Most common reason users join',
+                            value: topBenefit?.answer || '—', color: C.tc,
+                          },
+                          {
+                            icon: '💭', label: 'Most common struggle',
+                            value: topStruggle?.answer || '—', color: C.purple,
+                          },
+                          {
+                            icon: '🤝', label: 'Most selected support type',
+                            value: topSupport?.answer || '—', color: C.sage,
+                          },
+                          {
+                            icon: '👤', label: 'Most common age group',
+                            value: topAge?.answer || '—', color: C.gold,
+                          },
+                        ].map(insight => (
+                          <div key={insight.label} style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '14px 16px', border: `1px solid ${insight.color}18` }}>
+                            <div style={{ fontSize: 18, marginBottom: 6 }}>{insight.icon}</div>
+                            <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 6 }}>{insight.label}</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 600, color: insight.color, fontFamily: '"Lora",serif', lineHeight: 1.4 }}>{insight.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Only show detailed charts if anyone responded */}
+                {oi.total > 0 && (<>
+
+                  {/* ── Summary insight chips ── */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 28 }}>
+                    {[
+                      { label: 'Responded',       value: fmt(oi.total),          sub: 'answered at least 1 question', color: C.tc },
+                      { label: 'Top Age Group',   value: topAge?.answer || '—',  sub: `${pctOf('ageRange')}% of respondents`, color: C.sage },
+                      { label: 'Top Support',     value: topSupport ? topSupport.answer.split(',')[0] : '—',
+                                                  sub: `${pctOf('supportStyle')}% prefer this`, color: C.purple },
+                      { label: 'What Goes Unsaid', value: topUnsaid ? topUnsaid.answer.split(',')[0] : '—',
+                                                  sub: `${pctOf('unsaidFeelings')}% said this`, color: C.gold },
+                      { label: 'Writing Reason',  value: topBenefit ? topBenefit.answer.split(',')[0] : '—',
+                                                  sub: `${pctOf('writingBenefit')}% chose this`, color: C.tc },
+                    ].map(card => (
+                      <div key={card.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 6 }}>{card.label}</div>
+                        <div style={{ fontSize: 17, fontWeight: 700, color: card.color, fontFamily: '"Lora",serif', lineHeight: 1.2, marginBottom: 4 }}>{card.value}</div>
+                        <div style={{ fontSize: 10.5, color: C.muted }}>{card.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* ── Demographics: Age donut + Identity bars ── */}
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Demographics</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 16 }}>
+
+                    {/* Age donut */}
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Age Distribution</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <DonutChart segments={ageSegments} size={130} thickness={24} />
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>{oi.total}</div>
+                            <div style={{ fontSize: 9.5, color: C.muted }}>responses</div>
+                          </div>
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {ageSegments.map((seg, i) => {
+                            const p = Math.round((seg.value / Math.max(oi.total, 1)) * 100)
+                            return (
+                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+                                <span style={{ fontSize: 11.5, color: C.ink, flex: 1, fontFamily: '"DM Sans",sans-serif' }}>{seg.label}</span>
+                                <span style={{ fontSize: 11.5, fontWeight: 700, color: seg.color }}>{p}%</span>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {ageSegments.map((seg, i) => {
-                          const p = Math.round((seg.value / oi.total) * 100)
-                          return (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
-                              <span style={{ fontSize: 11.5, color: C.ink, flex: 1, fontFamily: '"DM Sans",sans-serif' }}>{seg.label}</span>
-                              <span style={{ fontSize: 11.5, fontWeight: 700, color: seg.color }}>{p}%</span>
+                    </div>
+
+                    {/* Identity bars */}
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Identity Distribution</div>
+                      {dist('identity').map((r, i) => {
+                        const p = Math.round((r.count / Math.max(oi.total, 1)) * 100)
+                        const ICOLS = [C.tc, C.sage, C.purple, C.gold]
+                        return (
+                          <div key={r.answer} style={{ marginBottom: 12 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                              <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: ICOLS[i % ICOLS.length] }}>{p}%</span>
                             </div>
-                          )
-                        })}
-                      </div>
+                            <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                              <div style={{ width: `${p}%`, height: '100%', background: ICOLS[i % ICOLS.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
 
-                  {/* Identity — horizontal bars */}
+                  {/* Occupation / Profession breakdown */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', marginBottom: 16 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Occupation Distribution</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '10px 32px' }}>
+                      {dist('profession').map((r, i) => {
+                        const p    = Math.round((r.count / Math.max(oi.total, 1)) * 100)
+                        const PCOL = [C.tc, C.sage, C.purple, C.gold, C.red, C.muted]
+                        return (
+                          <div key={r.answer}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                              <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: PCOL[i % PCOL.length] }}>{p}%</span>
+                            </div>
+                            <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                              <div style={{ width: `${p}%`, height: '100%', background: PCOL[i % PCOL.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* ── Question-by-Question: Emotional Insights ── */}
+                  <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Emotional Insights</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
+                    <EmotionCard qKey="unsaidFeelings"         question="What usually goes unsaid for you?"                         accentColor={C.tc} />
+                    <EmotionCard qKey="unfinishedRelationship" question="Is there a relationship in your life that feels unfinished?" accentColor={C.sage} />
+                    <EmotionCard qKey="feelingHeard"           question="When did you last feel truly heard by someone?"             accentColor={C.purple} />
+                    <EmotionCard qKey="unspokenReason"         question="What stopped you from saying what you needed to say?"       accentColor={C.gold} />
+                    <EmotionCard qKey="selfTreatment"          question="How do you treat yourself when you're struggling?"          accentColor={C.tc} />
+                  </div>
+
+                  {/* ── Question-by-Question: Writing Psychology ── */}
+                  <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Writing Psychology</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
+                    <EmotionCard qKey="writingExperience" question="What does writing feel like for you?"                 accentColor={C.sage} />
+                    <EmotionCard qKey="writingBenefit"    question="What would writing a letter here actually give you?"  accentColor={C.purple} />
+                    <EmotionCard qKey="writingRelief"     question="Have you felt relief just from writing something down?" accentColor={C.gold} />
+                  </div>
+
+                  {/* ── Support Preferences ── */}
+                  <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Support Preferences</div>
                   <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Identity</div>
-                    {dist('identity').map((r, i) => {
-                      const p = Math.round((r.count / oi.total) * 100)
-                      const ICOLS = [C.tc, C.sage, C.purple, C.gold]
-                      return (
-                        <div key={r.answer} style={{ marginBottom: 12 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: ICOLS[i % ICOLS.length] }}>{p}%</span>
+                    <div style={{ fontSize: 12.5, fontWeight: 500, color: C.ink, fontFamily: '"DM Sans",sans-serif', marginBottom: 16 }}>
+                      What kind of support feels most natural to receive?
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
+                      {dist('supportStyle').map((r, i) => {
+                        const total = dist('supportStyle').reduce((s, x) => s + x.count, 0)
+                        const p    = Math.round((r.count / Math.max(total, 1)) * 100)
+                        const SCOL = [C.tc, C.sage, C.purple, C.gold]
+                        const SICO = ['💬', '🤝', '🔭', '🌿']
+                        return (
+                          <div key={r.answer} style={{ background: `${SCOL[i % SCOL.length]}0C`, border: `1px solid ${SCOL[i % SCOL.length]}30`, borderRadius: 12, padding: '14px 16px' }}>
+                            <div style={{ fontSize: 20, marginBottom: 6 }}>{SICO[i % SICO.length]}</div>
+                            <div style={{ fontSize: 12, color: C.ink, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.45, marginBottom: 8 }}>{r.answer}</div>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: SCOL[i % SCOL.length], fontFamily: '"Lora",serif' }}>{p}%</div>
                           </div>
-                          <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
-                            <div style={{ width: `${p}%`, height: '100%', background: ICOLS[i % ICOLS.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
-                          </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
+                </>)}
 
-                {/* ── Profession breakdown ── */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', marginBottom: 16 }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Professions</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '10px 32px' }}>
-                    {dist('profession').map((r, i) => {
-                      const p    = Math.round((r.count / oi.total) * 100)
-                      const PCOL = [C.tc, C.sage, C.purple, C.gold, C.red, C.muted]
-                      return (
-                        <div key={r.answer}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: PCOL[i % PCOL.length] }}>{p}%</span>
-                          </div>
-                          <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
-                            <div style={{ width: `${p}%`, height: '100%', background: PCOL[i % PCOL.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* ── Emotional Insights: 2-col grid of big-% cards ── */}
-                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Emotional Insights</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
-                  <EmotionCard qKey="unsaidFeelings"         question="What usually goes unsaid for you?"                         accentColor={C.tc} />
-                  <EmotionCard qKey="unfinishedRelationship" question="Is there a relationship in your life that feels unfinished?" accentColor={C.sage} />
-                  <EmotionCard qKey="feelingHeard"           question="When did you last feel truly heard by someone?"             accentColor={C.purple} />
-                  <EmotionCard qKey="unspokenReason"         question="What stopped you from saying what you needed to say?"       accentColor={C.gold} />
-                  <EmotionCard qKey="selfTreatment"          question="How do you treat yourself when you're struggling?"          accentColor={C.tc} />
-                </div>
-
-                {/* ── Writing Psychology ── */}
-                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Writing Psychology</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
-                  <EmotionCard qKey="writingExperience" question="What does writing feel like for you?"                              accentColor={C.sage} />
-                  <EmotionCard qKey="writingBenefit"    question="What would writing a letter here actually give you?"               accentColor={C.purple} />
-                  <EmotionCard qKey="writingRelief"     question="Have you felt relief just from writing something down?"            accentColor={C.gold} />
-                </div>
-
-                {/* ── Support Preferences ── */}
-                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Support Preferences</div>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 500, color: C.ink, fontFamily: '"DM Sans",sans-serif', marginBottom: 16 }}>
-                    What kind of support feels most natural to receive?
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
-                    {dist('supportStyle').map((r, i) => {
-                      const p    = Math.round((r.count / oi.total) * 100)
-                      const SCOL = [C.tc, C.sage, C.purple, C.gold]
-                      const SICO = ['💬', '🤝', '🔭', '🌿']
-                      return (
-                        <div key={r.answer} style={{ background: `${SCOL[i % SCOL.length]}0C`, border: `1px solid ${SCOL[i % SCOL.length]}30`, borderRadius: 12, padding: '14px 16px' }}>
-                          <div style={{ fontSize: 20, marginBottom: 6 }}>{SICO[i % SICO.length]}</div>
-                          <div style={{ fontSize: 12, color: C.ink, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.45, marginBottom: 8 }}>{r.answer}</div>
-                          <div style={{ fontSize: 22, fontWeight: 700, color: SCOL[i % SCOL.length], fontFamily: '"Lora",serif' }}>{p}%</div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
               </>)}
             </section>
           )
