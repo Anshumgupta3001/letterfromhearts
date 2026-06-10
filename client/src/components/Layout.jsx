@@ -994,6 +994,7 @@ function Navbar() {
     { id: 'myspace',     label: 'My Space' },
     ...(canReadFeed ? [{ id: 'listenerread', label: 'Listen', badge: strangerLetters?.length || 0 }] : []),
     { id: 'connections', label: 'Connections' },
+    { id: 'therapists',  label: 'Therapists' },
   ]
 
   return (

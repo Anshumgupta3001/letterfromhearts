@@ -16,6 +16,7 @@ import PersonalLettersPage from './pages/PersonalLettersPage'
 import CaringStrangerPage from './pages/CaringStrangerPage'
 import ListenerReadPage from './pages/ListenerReadPage'
 import ReportIssuePage from './pages/ReportIssuePage'
+import TherapistsPage from './pages/TherapistsPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AuthPage from './pages/AuthPage'
 import OnboardingModal from './components/OnboardingModal'
@@ -115,6 +116,7 @@ function PageRouter() {
         {currentPage === 'caringstranger' && <CaringStrangerPage />}
         {currentPage === 'listenerread'   && <ListenerReadPage />}
         {currentPage === 'reportissue'    && <ReportIssuePage />}
+        {currentPage === 'therapists'     && <TherapistsPage />}
       </Layout>
       <Drawer />
       <LetterDrawer />

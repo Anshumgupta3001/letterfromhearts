@@ -307,7 +307,8 @@ const TABS = [
   { id: 'notifications', icon: '🔔', label: 'Notifications', desc: 'Platform notifications' },
   { id: 'trends',        icon: '📉', label: 'Trends',        desc: 'Daily activity charts' },
   { id: 'reports',       icon: '🚨', label: 'Reports',       desc: 'User reports & moderation' },
-  { id: 'onboarding',   icon: '🌿', label: 'Onboarding',   desc: 'Questionnaire insights' },
+  { id: 'onboarding',    icon: '🌿', label: 'Onboarding',   desc: 'Questionnaire insights' },
+  { id: 'therapists',    icon: '🩺', label: 'Therapists',   desc: 'Applications & verification' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -358,6 +359,14 @@ export default function AdminDashboardPage() {
   const [onboardingInsights,  setOnboardingInsights]  = useState(null)
   const [onboardingLoading,   setOnboardingLoading]   = useState(false)
   const onboardingInitialized = useRef(false)
+
+  // ── Therapists tab state ──────────────────────────────────────────────────
+  const [therapistList,       setTherapistList]       = useState([])
+  const [therapistCounts,     setTherapistCounts]     = useState({ pending: 0, verified: 0, rejected: 0 })
+  const [therapistLoading,    setTherapistLoading]    = useState(false)
+  const [therapistFilter,     setTherapistFilter]     = useState('pending')
+  const [updatingTherapistId, setUpdatingTherapistId] = useState(null)
+  const therapistInitialized = useRef(false)
 
   // ── Restore key from localStorage on mount ────────────────────────────────────
   useEffect(() => {
@@ -468,6 +477,53 @@ export default function AdminDashboardPage() {
     finally { setOnboardingLoading(false) }
   }, [])
 
+  const fetchTherapists = useCallback(async (adminKey, statusFilter) => {
+    setTherapistLoading(true)
+    try {
+      const params = statusFilter && statusFilter !== 'all' ? `?status=${statusFilter}` : ''
+      const url = `${API}/api/admin/therapists${params}`
+      console.log('[therapists] fetching', url, 'key length:', adminKey?.length)
+      const res    = await fetch(url, {
+        headers: { 'x-admin-key': adminKey },
+      })
+      console.log('[therapists] status:', res.status)
+      const json = await res.json()
+      console.log('[therapists] json:', json)
+      if (!res.ok) return
+      setTherapistList(json.data || [])
+      setTherapistCounts(json.counts || { pending: 0, verified: 0, rejected: 0 })
+    } catch (err) {
+      console.error('[therapists] fetch error:', err)
+    }
+    finally { setTherapistLoading(false) }
+  }, [])
+
+  const updateTherapistStatus = useCallback(async (therapistId, newStatus) => {
+    setUpdatingTherapistId(therapistId)
+    try {
+      const res = await fetch(`${API}/api/admin/therapists/${therapistId}/status`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+        body:    JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        setTherapistList(prev => prev.map(t =>
+          t._id === therapistId ? { ...t, status: newStatus } : t
+        ))
+        setTherapistCounts(prev => {
+          const next = { ...prev }
+          const found = therapistList.find(t => t._id === therapistId)
+          if (found) {
+            next[found.status] = Math.max(0, (next[found.status] || 0) - 1)
+            next[newStatus]    = (next[newStatus] || 0) + 1
+          }
+          return next
+        })
+      }
+    } catch { /* silently fail */ }
+    finally { setUpdatingTherapistId(null) }
+  }, [key, therapistList])
+
   // Must be before early returns — Rules of Hooks
   const filteredUsers = useMemo(() => {
     if (!data) return []
@@ -529,6 +585,13 @@ export default function AdminDashboardPage() {
     if (activeTab !== 'onboarding' || onboardingInitialized.current) return
     onboardingInitialized.current = true
     fetchOnboardingInsights(key)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch therapists exactly once when the tab first becomes active
+  useEffect(() => {
+    if (activeTab !== 'therapists' || therapistInitialized.current) return
+    therapistInitialized.current = true
+    fetchTherapists(key, therapistFilter)
   }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Lock screen ──────────────────────────────────────────────────────────────
@@ -1949,9 +2012,159 @@ export default function AdminDashboardPage() {
                 </>)}
 
               </>)}
+
             </section>
           )
         })()}
+
+        {activeTab === 'therapists' && (
+          <section style={{ padding: '0 0 40px' }}>
+            <>
+                {/* Count summary */}
+                <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Pending',  sk: 'pending',  color: C.gold },
+                    { label: 'Verified', sk: 'verified', color: C.sage },
+                    { label: 'Rejected', sk: 'rejected', color: C.red  },
+                  ].map(({ label, sk, color }) => (
+                    <div key={sk} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 100 }}>
+                      <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Lora",serif' }}>{therapistCounts[sk] ?? 0}</span>
+                      <span style={{ fontSize: 11.5, color: C.muted, fontFamily: '"DM Sans",sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Filter tabs */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+                  {['all', 'pending', 'verified', 'rejected'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => {
+                        setTherapistFilter(f)
+                        therapistInitialized.current = false
+                        fetchTherapists(key, f)
+                      }}
+                      style={{
+                        padding: '6px 16px', borderRadius: 99, fontSize: 12.5, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+                        background: therapistFilter === f ? C.tc : C.white,
+                        color:      therapistFilter === f ? '#fff' : C.ink,
+                        border:     `1px solid ${therapistFilter === f ? C.tc : C.border}`,
+                      }}
+                    >
+                      {f.charAt(0).toUpperCase() + f.slice(1)}
+                      {f !== 'all' && therapistCounts[f] != null && (
+                        <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.8 }}>({therapistCounts[f]})</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {therapistLoading ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[1,2,3].map(i => (
+                      <div key={i} style={{ height: 80, background: C.white, borderRadius: 12, border: `1px solid ${C.border}` }} className="animate-pulse" />
+                    ))}
+                  </div>
+                ) : therapistList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '60px 24px', color: C.muted, fontFamily: '"DM Sans",sans-serif', fontSize: 14 }}>
+                    No therapist applications found
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {therapistList.map(t => {
+                      const statusColors = { pending: C.gold, verified: C.sage, rejected: C.red }
+                      const sc = statusColors[t.status] ?? C.muted
+                      return (
+                        <div key={t._id} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+                            {/* Left: info */}
+                            <div style={{ flex: 1, minWidth: 200 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                {t.profileImage ? (
+                                  <img src={t.profileImage} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}` }} />
+                                ) : (
+                                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${C.tc}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: C.tc, fontFamily: '"DM Sans",sans-serif' }}>
+                                    {(t.firstName?.[0] ?? '') + (t.lastName?.[0] ?? '')}
+                                  </div>
+                                )}
+                                <div>
+                                  <div style={{ fontSize: 14.5, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>
+                                    {t.firstName} {t.lastName}
+                                  </div>
+                                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>{t.email}</div>
+                                </div>
+                                <span style={{ marginLeft: 4, fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 99, background: `${sc}18`, color: sc, border: `1px solid ${sc}40`, textTransform: 'capitalize', fontFamily: '"DM Sans",sans-serif' }}>
+                                  {t.status}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                                {t.location && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>📍 {t.location}</span>
+                                )}
+                                {t.licenseNumber && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>🪪 {t.licenseNumber}</span>
+                                )}
+                                {t.sessionType && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>🖥 {t.sessionType}</span>
+                                )}
+                                {t.submittedAt && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+                                    {new Date(t.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </span>
+                                )}
+                              </div>
+                              {t.specializations?.length > 0 && (
+                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                                  {t.specializations.map(s => (
+                                    <span key={s} style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: `${C.tc}10`, color: C.tc, border: `1px solid ${C.tc}25`, fontFamily: '"DM Sans",sans-serif' }}>{s}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Right: actions */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                              {t.about && (
+                                <details style={{ fontSize: 12, color: C.ink, fontFamily: '"DM Sans",sans-serif', maxWidth: 280, cursor: 'pointer', marginBottom: 4 }}>
+                                  <summary style={{ color: C.muted, listStyle: 'none', cursor: 'pointer' }}>View bio ▾</summary>
+                                  <div style={{ marginTop: 6, lineHeight: 1.55, color: C.ink }}>{t.about}</div>
+                                </details>
+                              )}
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                {t.status !== 'verified' && (
+                                  <button
+                                    disabled={updatingTherapistId === t._id}
+                                    onClick={() => updateTherapistStatus(t._id, 'verified')}
+                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: C.sage, color: '#fff', border: 'none', fontFamily: '"DM Sans",sans-serif', transition: 'opacity 0.15s' }}
+                                  >
+                                    {updatingTherapistId === t._id ? '…' : 'Verify'}
+                                  </button>
+                                )}
+                                {t.status !== 'rejected' && (
+                                  <button
+                                    disabled={updatingTherapistId === t._id}
+                                    onClick={() => updateTherapistStatus(t._id, 'rejected')}
+                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: '#f5f5f5', color: C.red, border: `1px solid ${C.red}40`, fontFamily: '"DM Sans",sans-serif', transition: 'opacity 0.15s' }}
+                                  >
+                                    {updatingTherapistId === t._id ? '…' : 'Reject'}
+                                  </button>
+                                )}
+                                {t.website && (
+                                  <a href={t.website} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 500, background: C.white, color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"DM Sans",sans-serif', textDecoration: 'none' }}>
+                                    Visit ↗
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+            </>
+          </section>
+        )}
 
       </div>
     </div>

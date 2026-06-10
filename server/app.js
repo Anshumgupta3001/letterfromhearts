@@ -20,6 +20,7 @@ import resendWebhookRoutes from './routes/resendWebhookRoutes.js'
 import notificationRoutes  from './routes/notificationRoutes.js'
 import reportRoutes        from './routes/reportRoutes.js'
 import onboardingRoutes    from './routes/onboardingRoutes.js'
+import therapistRoutes     from './routes/therapistRoutes.js'
 import { notFound, errorHandler } from './middlewares/errorHandler.js'
 import { guardMaliciousInput }    from './middlewares/sanitize.js'
 
@@ -105,6 +106,7 @@ app.use('/api/replies',        apiLimiter, replyRoutes)
 app.use('/api/notifications',  apiLimiter, notificationRoutes)
 app.use('/api/onboarding',     apiLimiter, onboardingRoutes)
 app.use('/api/report-issue',   apiLimiter, reportIssueRoutes)
+app.use('/api/therapists',     therapistRoutes)
 
 // Tracking — no rate limiter (email clients trigger opens/clicks automatically)
 app.use('/api/tracking', trackingRoutes)
