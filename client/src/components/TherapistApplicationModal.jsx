@@ -31,82 +31,167 @@ const LANGUAGE_OPTIONS = [
 
 const SESSION_TYPE_OPTIONS = ['In-person', 'Online', 'In-person & Online']
 
-function TagSelect({ options, selected, onChange, placeholder }) {
-  const [custom, setCustom] = useState('')
+function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
+  const [query,       setQuery]       = useState('')
+  const [open,        setOpen]        = useState(false)
+  const [customMode,  setCustomMode]  = useState(false)
+  const [customVal,   setCustomVal]   = useState('')
 
-  function toggle(val) {
-    if (selected.includes(val)) onChange(selected.filter(s => s !== val))
-    else onChange([...selected, val])
+  const suggestions = options.filter(
+    o => !selected.includes(o) && o.toLowerCase().includes(query.toLowerCase())
+  )
+
+  function add(val) {
+    const v = val.trim()
+    if (v && !selected.includes(v)) onChange([...selected, v])
+    setQuery('')
+    setOpen(false)
   }
 
   function addCustom(e) {
     e.preventDefault()
-    const v = custom.trim()
+    const v = customVal.trim()
     if (v && !selected.includes(v)) onChange([...selected, v])
-    setCustom('')
+    setCustomVal('')
+    setCustomMode(false)
+  }
+
+  function remove(val) {
+    onChange(selected.filter(s => s !== val))
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (suggestions.length > 0) add(suggestions[0])
+    }
+    if (e.key === 'Escape') setOpen(false)
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-        {options.map(opt => {
-          const active = selected.includes(opt)
-          return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => toggle(opt)}
+    <div style={{ position: 'relative' }}>
+      {selected.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+          {selected.map(s => (
+            <span
+              key={s}
               style={{
-                padding: '4px 12px', borderRadius: 100, fontSize: 12,
-                fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-                transition: 'all 0.12s',
-                background: active ? 'var(--tc)' : 'var(--paper)',
-                color: active ? '#fff' : 'var(--ink-soft)',
-                border: active ? '1.5px solid var(--tc)' : `1.5px solid ${BD}`,
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '4px 10px', borderRadius: 100, fontSize: 12,
+                fontFamily: '"DM Sans", sans-serif',
+                background: 'var(--tc)', color: '#fff',
+                border: '1.5px solid var(--tc)',
               }}
             >
-              {opt}
-            </button>
-          )
-        })}
-      </div>
-      {selected.filter(s => !options.includes(s)).map(s => (
-        <button
-          key={s}
-          type="button"
-          onClick={() => toggle(s)}
-          style={{
-            padding: '4px 12px', borderRadius: 100, fontSize: 12,
-            fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-            background: 'var(--tc)', color: '#fff',
-            border: '1.5px solid var(--tc)', marginRight: 6, marginBottom: 6,
-          }}
-        >
-          {s} ×
-        </button>
-      ))}
-      <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-        <input
-          type="text"
-          value={custom}
-          onChange={e => setCustom(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') addCustom(e) }}
-          placeholder={placeholder || 'Add custom…'}
-          style={{ ...INPUT_STYLE, flex: 1, padding: '7px 11px', fontSize: 12 }}
-        />
-        <button
-          type="button"
-          onClick={addCustom}
-          style={{
-            padding: '7px 14px', borderRadius: 10, fontSize: 12, cursor: 'pointer',
-            background: 'var(--paper)', border: `1.5px solid ${BD}`,
-            color: 'var(--ink-soft)', fontFamily: '"DM Sans", sans-serif',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          Add
-        </button>
-      </div>
+              {s}
+              <button
+                type="button"
+                onClick={() => remove(s)}
+                style={{
+                  background: 'none', border: 'none', color: '#fff',
+                  cursor: 'pointer', padding: 0, fontSize: 14, lineHeight: 1,
+                  opacity: 0.8, display: 'flex', alignItems: 'center',
+                }}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <input
+        type="text"
+        value={query}
+        onChange={e => { setQuery(e.target.value); setOpen(true) }}
+        onFocus={e => { setOpen(true); e.target.style.borderColor = 'rgba(196,99,58,0.45)' }}
+        onBlur={e => { e.target.style.borderColor = BD; setTimeout(() => setOpen(false), 150) }}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder || 'Type to search…'}
+        style={{ ...INPUT_STYLE, fontSize: 13 }}
+      />
+
+      {open && (suggestions.length > 0 || true) && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50,
+          background: 'var(--paper)', borderRadius: 10,
+          border: `1.5px solid rgba(196,99,58,0.3)`,
+          boxShadow: '0 8px 24px rgba(28,26,23,0.1)',
+          overflow: 'hidden',
+          maxHeight: 220, overflowY: 'auto',
+        }}>
+          {suggestions.map(s => (
+            <div
+              key={s}
+              onMouseDown={() => add(s)}
+              style={{
+                padding: '9px 13px', fontSize: 13, fontFamily: '"DM Sans", sans-serif',
+                color: 'var(--ink)', cursor: 'pointer',
+                borderBottom: `0.5px solid rgba(28,26,23,0.05)`,
+                transition: 'background 0.1s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(196,99,58,0.06)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {s}
+            </div>
+          ))}
+          <div
+            onMouseDown={e => { e.preventDefault(); setOpen(false); setCustomMode(true) }}
+            style={{
+              padding: '9px 13px', fontSize: 12.5, fontFamily: '"DM Sans", sans-serif',
+              color: 'var(--ink-muted)', cursor: 'pointer',
+              borderTop: suggestions.length > 0 ? `0.5px solid rgba(28,26,23,0.08)` : 'none',
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'background 0.1s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(196,99,58,0.06)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <span style={{ fontSize: 15, lineHeight: 1 }}>+</span>
+            Other — type your own
+          </div>
+        </div>
+      )}
+
+      {customMode && (
+        <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+          <input
+            type="text"
+            value={customVal}
+            onChange={e => setCustomVal(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') addCustom(e); if (e.key === 'Escape') { setCustomMode(false); setCustomVal('') } }}
+            placeholder="Type and click Add…"
+            autoFocus
+            style={{ ...INPUT_STYLE, flex: 1, padding: '8px 11px', fontSize: 12.5 }}
+            onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+            onBlur={e => e.target.style.borderColor = BD}
+          />
+          <button
+            type="button"
+            onClick={addCustom}
+            style={{
+              padding: '8px 16px', borderRadius: 10, fontSize: 12.5, cursor: 'pointer',
+              background: 'var(--tc)', border: 'none',
+              color: '#fff', fontFamily: '"DM Sans", sans-serif', whiteSpace: 'nowrap',
+              fontWeight: 500,
+            }}
+          >
+            Add
+          </button>
+          <button
+            type="button"
+            onClick={() => { setCustomMode(false); setCustomVal('') }}
+            style={{
+              padding: '8px 10px', borderRadius: 10, fontSize: 13, cursor: 'pointer',
+              background: 'var(--paper)', border: `1.5px solid ${BD}`,
+              color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -149,12 +234,19 @@ export default function TherapistApplicationModal({ onClose }) {
     e.preventDefault()
     setError('')
 
-    if (!form.firstName.trim())     return setError('First name is required.')
-    if (!form.lastName.trim())      return setError('Last name is required.')
-    if (!form.email.trim())         return setError('Email is required.')
-    if (!form.location.trim())      return setError('Location is required.')
-    if (!form.licenseNumber.trim()) return setError('License number is required.')
-    if (!form.about.trim())         return setError('Please tell us about your practice.')
+    if (!form.firstName.trim())           return setError('First name is required.')
+    if (!form.lastName.trim())            return setError('Last name is required.')
+    if (!form.email.trim())               return setError('Email is required.')
+    if (!form.phone.trim())               return setError('Phone number is required.')
+    if (!form.website.trim())             return setError('Website is required.')
+    if (!form.bookingLink.trim())         return setError('Booking link is required.')
+    if (!form.location.trim())            return setError('Location is required.')
+    if (!form.sessionType)                return setError('Please select a session type.')
+    if (!form.specializations.length)     return setError('Please select at least one specialization.')
+    if (!form.about.trim())               return setError('Please tell us about your practice.')
+    if (!form.quote.trim())               return setError('Your quote about Letter from Heart is required.')
+    if (!form.profileImage.trim())        return setError('Profile photo URL is required.')
+    if (!form.languages.length)           return setError('Please select at least one language.')
 
     setLoading(true)
     try {
@@ -331,7 +423,7 @@ export default function TherapistApplicationModal({ onClose }) {
                 />
               </div>
               <div>
-                <label style={LABEL_STYLE}>Phone</label>
+                <label style={LABEL_STYLE}>Phone *</label>
                 <input
                   style={INPUT_STYLE}
                   type="tel"
@@ -348,7 +440,7 @@ export default function TherapistApplicationModal({ onClose }) {
             {/* Website + Booking */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label style={LABEL_STYLE}>Website</label>
+                <label style={LABEL_STYLE}>Website *</label>
                 <input
                   style={INPUT_STYLE}
                   type="url"
@@ -361,7 +453,7 @@ export default function TherapistApplicationModal({ onClose }) {
                 />
               </div>
               <div>
-                <label style={LABEL_STYLE}>Booking Link</label>
+                <label style={LABEL_STYLE}>Booking Link *</label>
                 <input
                   style={INPUT_STYLE}
                   type="url"
@@ -391,7 +483,7 @@ export default function TherapistApplicationModal({ onClose }) {
                 />
               </div>
               <div>
-                <label style={LABEL_STYLE}>License Number *</label>
+                <label style={LABEL_STYLE}>License Number</label>
                 <input
                   style={INPUT_STYLE}
                   type="text"
@@ -407,7 +499,7 @@ export default function TherapistApplicationModal({ onClose }) {
 
             {/* Session type */}
             <div>
-              <label style={LABEL_STYLE}>Session Type</label>
+              <label style={LABEL_STYLE}>Session Type *</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {SESSION_TYPE_OPTIONS.map(opt => (
                   <button
@@ -430,23 +522,23 @@ export default function TherapistApplicationModal({ onClose }) {
 
             {/* Specializations */}
             <div>
-              <label style={LABEL_STYLE}>Specializations</label>
-              <TagSelect
+              <label style={LABEL_STYLE}>Specializations *</label>
+              <TypeaheadTagSelect
                 options={SPECIALIZATION_OPTIONS}
                 selected={form.specializations}
                 onChange={v => setForm(f => ({ ...f, specializations: v }))}
-                placeholder="Add specialization…"
+                placeholder="Select a specialization…"
               />
             </div>
 
             {/* Languages */}
             <div>
-              <label style={LABEL_STYLE}>Languages</label>
-              <TagSelect
+              <label style={LABEL_STYLE}>Languages *</label>
+              <TypeaheadTagSelect
                 options={LANGUAGE_OPTIONS}
                 selected={form.languages}
                 onChange={v => setForm(f => ({ ...f, languages: v }))}
-                placeholder="Add language…"
+                placeholder="Select a language…"
               />
             </div>
 
@@ -469,7 +561,7 @@ export default function TherapistApplicationModal({ onClose }) {
 
             {/* Quote about LFH */}
             <div>
-              <label style={LABEL_STYLE}>Your Quote About Letter from Heart</label>
+              <label style={LABEL_STYLE}>Your Quote About Letter from Heart *</label>
               <textarea
                 style={{ ...INPUT_STYLE, minHeight: 70, resize: 'vertical', lineHeight: 1.6 }}
                 value={form.quote}
@@ -484,9 +576,9 @@ export default function TherapistApplicationModal({ onClose }) {
               </div>
             </div>
 
-            {/* Profile image URL — commented out for now
+            {/* Profile photo */}
             <div>
-              <label style={LABEL_STYLE}>Profile Photo URL</label>
+              <label style={LABEL_STYLE}>Profile Photo URL *</label>
               <input
                 style={INPUT_STYLE}
                 type="url"
@@ -501,7 +593,6 @@ export default function TherapistApplicationModal({ onClose }) {
                 Link to a publicly accessible image (LinkedIn, your website, etc.)
               </p>
             </div>
-            */}
 
             {/* Error */}
             {error && (

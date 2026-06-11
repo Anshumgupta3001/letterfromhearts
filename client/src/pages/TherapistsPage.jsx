@@ -32,12 +32,10 @@ function TherapistsSidebar({ activeFilter, onFilter, specializations, stats, onA
       className="border-r hidden md:flex flex-col gap-5 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto"
       style={{ borderColor: BD, background: 'rgba(247,242,234,0.4)' }}
     >
-      {/* Section label */}
+      {/* Filter by specialty - re-enable when directory grows
       <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted">
         Filter by specialty
       </div>
-
-      {/* Filter list */}
       <div className="flex flex-col gap-0.5">
         {filters.map(f => {
           const id     = f === 'All' ? 'all' : f
@@ -61,8 +59,9 @@ function TherapistsSidebar({ activeFilter, onFilter, specializations, stats, onA
           )
         })}
       </div>
+      */}
 
-      {/* Stats mini-cards */}
+      {/* Stats mini-cards - re-enable when directory grows
       {stats && (
         <div className="mt-1">
           <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted mb-3">
@@ -86,19 +85,8 @@ function TherapistsSidebar({ activeFilter, onFilter, specializations, stats, onA
           </div>
         </div>
       )}
+      */}
 
-      {/* Apply CTA */}
-      <div
-        className="rounded-[12px] p-[14px] mt-auto cursor-pointer"
-        style={{ background: 'rgba(196,99,58,0.06)', border: '0.5px solid rgba(196,99,58,0.15)' }}
-        onClick={onApply}
-      >
-        <div className="text-[12px] font-medium text-ink mb-1">Are you a therapist?</div>
-        <div className="text-[11px] text-ink-muted font-light leading-[1.55] mb-3">
-          Join our growing network and connect with clients who write.
-        </div>
-        <div className="text-[11px] font-medium" style={{ color: 'var(--tc)' }}>Apply to join →</div>
-      </div>
     </div>
   )
 }
@@ -106,158 +94,140 @@ function TherapistsSidebar({ activeFilter, onFilter, specializations, stats, onA
 // ── Therapist Card ────────────────────────────────────────────────────────────
 function TherapistCard({ therapist }) {
   const { firstName, lastName, about, location, specializations,
-          languages, quote, website, bookingLink, licenseNumber,
-          sessionType, profileImage } = therapist
+          quote, website, bookingLink, sessionType, profileImage } = therapist
   const ac = avatarColor(`${firstName}${lastName}`)
 
   return (
     <div
-      className="letter-card rounded-[14px] overflow-hidden"
-      style={{ background: 'var(--paper)', border: `0.5px solid ${BD}`, padding: '20px 22px' }}
+      className="letter-card"
+      style={{
+        background: 'var(--paper)',
+        border: `0.5px solid ${BD}`,
+        borderRadius: 16,
+        overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(28,26,23,0.04)',
+        transition: 'box-shadow 0.2s',
+        padding: '22px 24px',
+      }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(28,26,23,0.08)'}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(28,26,23,0.04)'}
     >
-      {/* Top row */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
-        {/* Avatar */}
-        {profileImage ? (
-          <img
-            src={profileImage}
-            alt={`${firstName} ${lastName}`}
-            style={{ width: 58, height: 58, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `0.5px solid ${BD}` }}
-            onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
-          />
-        ) : null}
+      {/* Header: avatar + name/meta */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 15, marginBottom: 16 }}>
+        {profileImage
+          ? <img
+              src={profileImage}
+              alt={`${firstName} ${lastName}`}
+              style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `0.5px solid ${BD}` }}
+              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+            />
+          : null}
         <div
           style={{
-            width: 58, height: 58, borderRadius: '50%', flexShrink: 0,
+            width: 60, height: 60, borderRadius: '50%', flexShrink: 0,
             background: ac.bg, color: ac.color,
             display: profileImage ? 'none' : 'flex',
             alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+            fontSize: 19, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
           }}
         >
           {initials(firstName, lastName)}
         </div>
-
-        {/* Header info */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
-            {firstName} {lastName}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: '"Lora", serif', fontSize: 16.5, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.2px' }}>
+              {firstName} {lastName}
+            </span>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0,
+              fontSize: 10.5, fontWeight: 500, padding: '3px 9px', borderRadius: 100,
+              background: 'rgba(196,99,58,0.08)', color: 'var(--tc)',
+              border: '0.5px solid rgba(196,99,58,0.18)',
+              fontFamily: '"DM Sans", sans-serif',
+            }}>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Verified
+            </span>
           </div>
-          {about && (
-            <div style={{ fontSize: 12.5, color: 'var(--ink-muted)', marginBottom: 4, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.4 }}>
-              {about.length > 80 ? about.slice(0, 80) + '…' : about}
+          {(location || sessionType) && (
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 5 }}>
+              {location && (
+                <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {location}
+                </span>
+              )}
+              {location && sessionType && <span style={{ fontSize: 11, color: 'var(--ink-muted)', opacity: 0.4 }}>·</span>}
+              {sessionType && (
+                <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+                  {sessionType}
+                </span>
+              )}
             </div>
           )}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {location && (
-              <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', display: 'flex', alignItems: 'center', gap: 3 }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {location}
-              </span>
-            )}
-            {sessionType && (
-              <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
-                · {sessionType}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Verified badge */}
-        <div style={{
-          flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4,
-          fontSize: 11, fontWeight: 500, padding: '4px 10px', borderRadius: 100,
-          background: 'rgba(196,99,58,0.08)', color: 'var(--tc)',
-          border: '0.5px solid rgba(196,99,58,0.2)',
-          fontFamily: '"DM Sans", sans-serif',
-        }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Verified
         </div>
       </div>
 
-      {/* Divider */}
-      <div style={{ height: '0.5px', background: BD, margin: '0 0 14px' }} />
-
-      {/* Quote */}
-      {quote && (
-        <div style={{
-          borderLeft: '2.5px solid rgba(196,99,58,0.3)',
-          paddingLeft: 12, marginBottom: 14,
-          fontFamily: 'Lora, serif', fontStyle: 'italic',
-          fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.7,
+      {/* About */}
+      {about && (
+        <p style={{
+          fontSize: 13.5, color: 'var(--ink-soft)', lineHeight: 1.75,
+          fontFamily: '"DM Sans", sans-serif', margin: '0 0 14px',
         }}>
-          "{quote}"
-        </div>
+          {about}
+        </p>
       )}
-
-      {/* Details grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-        {licenseNumber && (
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 2 }}>License</div>
-            <div style={{ fontSize: 12.5, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>{licenseNumber}</div>
-          </div>
-        )}
-        {languages?.length > 0 && (
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 2 }}>Languages</div>
-            <div style={{ fontSize: 12.5, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>{languages.join(', ')}</div>
-          </div>
-        )}
-        {website && (
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 2 }}>Website</div>
-            <a href={website} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, color: 'var(--tc)', fontFamily: '"DM Sans", sans-serif', wordBreak: 'break-all' }}>
-              {website.replace(/^https?:\/\//, '')}
-            </a>
-          </div>
-        )}
-        {sessionType && (
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginBottom: 2 }}>Session type</div>
-            <div style={{ fontSize: 12.5, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>{sessionType}</div>
-          </div>
-        )}
-      </div>
 
       {/* Specialization tags */}
       {specializations?.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 14 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
           {specializations.map(s => (
-            <span
-              key={s}
-              style={{
-                fontSize: 11, padding: '3px 9px', borderRadius: 100,
-                background: 'rgba(28,26,23,0.05)', color: 'var(--ink-soft)',
-                border: `0.5px solid ${BD}`, fontFamily: '"DM Sans", sans-serif',
-              }}
-            >
+            <span key={s} style={{
+              fontSize: 11, padding: '3px 10px', borderRadius: 100,
+              background: 'rgba(28,26,23,0.04)', color: 'var(--ink-soft)',
+              border: `0.5px solid ${BD}`, fontFamily: '"DM Sans", sans-serif',
+            }}>
               {s}
             </span>
           ))}
         </div>
       )}
 
-      {/* Action buttons */}
+      {/* Quote — testimonial highlight */}
+      {quote && (
+        <div style={{
+          background: 'rgba(196,99,58,0.05)',
+          border: '0.5px solid rgba(196,99,58,0.22)',
+          borderLeft: '3px solid var(--tc)',
+          borderRadius: 10,
+          padding: '13px 16px',
+          marginBottom: 18,
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--tc)', fontFamily: '"DM Sans", sans-serif', marginBottom: 6, opacity: 0.75 }}>
+            Why I recommend Letter from Heart
+          </div>
+          <p style={{
+            fontFamily: 'Lora, serif', fontStyle: 'italic',
+            fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.75, margin: 0,
+          }}>
+            "{quote}"
+          </p>
+        </div>
+      )}
+
+      {/* Actions */}
       {(bookingLink || website) && (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           {bookingLink && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-              <span
-                style={{
-                  width: '100%', textAlign: 'center',
-                  padding: '9px 14px', borderRadius: 10,
-                  background: 'rgba(196,99,58,0.28)', color: 'rgba(255,255,255,0.55)',
-                  fontSize: 12.5, fontWeight: 500, fontFamily: '"DM Sans", sans-serif',
-                  display: 'block', cursor: 'not-allowed',
-                  userSelect: 'none',
-                }}
-              >
-                Book a session (coming soon)
-              </span>
-              
-            </div>
+            <span style={{
+              flex: '1 1 140px', textAlign: 'center',
+              padding: '9px 14px', borderRadius: 10,
+              background: 'rgba(196,99,58,0.28)', color: 'rgba(255,255,255,0.55)',
+              fontSize: 12.5, fontWeight: 500, fontFamily: '"DM Sans", sans-serif',
+              cursor: 'not-allowed', userSelect: 'none', display: 'block',
+            }}>
+              Book a session (coming soon)
+            </span>
           )}
           {website && (
             <a
@@ -265,14 +235,14 @@ function TherapistCard({ therapist }) {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                padding: '9px 14px', borderRadius: 10,
-                border: `0.5px solid ${BD}`, background: 'var(--paper)',
+                padding: '9px 15px', borderRadius: 10,
+                border: `0.5px solid ${BD}`, background: 'transparent',
                 color: 'var(--ink-soft)', fontSize: 12.5, fontFamily: '"DM Sans", sans-serif',
                 textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5,
                 transition: 'background 0.15s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--warm)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'var(--paper)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.04)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -339,7 +309,7 @@ export default function TherapistsPage() {
       if (tJson.success)    setTherapists(tJson.data)
       if (sJson.success)    setStats(sJson.data)
       if (specJson.success) setSpecializations(specJson.data)
-    } catch { /* network error — fail silently, show empty state */ }
+    } catch { /* network error - fail silently, show empty state */ }
     setLoading(false)
   }, [])
 
@@ -363,19 +333,10 @@ export default function TherapistsPage() {
 
   return (
     <>
-      <div className="md:grid min-h-[calc(100vh-56px)]" style={{ gridTemplateColumns: '220px 1fr' }}>
-
-        {/* Sidebar */}
-        <TherapistsSidebar
-          activeFilter={activeFilter}
-          onFilter={handleFilter}
-          specializations={specializations}
-          stats={stats}
-          onApply={() => setModalOpen(true)}
-        />
+      <div className="min-h-[calc(100vh-56px)]">
 
         {/* Main content */}
-        <div className="page-enter px-4 sm:px-6 md:px-8 py-6 md:py-8" style={{ minWidth: 0 }}>
+        <div className="page-enter px-4 sm:px-6 md:px-10 lg:px-16 py-6 md:py-8 max-w-3xl mx-auto" style={{ minWidth: 0 }}>
 
           {/* ── Hero ─────────────────────────────────────────────── */}
           <div style={{ marginBottom: 32 }}>
@@ -387,12 +348,12 @@ export default function TherapistsPage() {
               Therapists who recommend<br />Letter from Heart
             </h1>
             <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-soft)', lineHeight: 1.7, maxWidth: 480 }}>
-              These professionals use Letter from Heart as a complementary tool alongside their practice — for expressive writing, emotional processing, and human connection.
+              These professionals use Letter from Heart as a complementary tool alongside their practice - for expressive writing, emotional processing, and human connection.
             </p>
           </div>
 
-          {/* ── Stats row ────────────────────────────────────────── */}
-          {stats && (
+          {/* ── Stats row - re-enable when directory grows ──────────── */}
+          {/* {stats && (
             <div className="grid grid-cols-3 gap-3 mb-8">
               {[
                 { n: stats.verified,       l: 'Verified therapists' },
@@ -413,13 +374,13 @@ export default function TherapistsPage() {
                 </div>
               ))}
             </div>
-          )}
+          )} */}
 
           {/* ── Trust row ────────────────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
             {[
               { icon: '🔒', title: 'Manual verification', body: 'Every therapist is personally reviewed. We verify credentials and license numbers before any profile goes live.' },
-              { icon: '✦', title: 'Complementary care', body: 'These therapists actively recommend letter-writing as an expressive tool alongside professional therapy — not as a replacement.' },
+              { icon: '✦', title: 'Complementary care', body: 'These therapists actively recommend letter-writing as an expressive tool alongside professional therapy - not as a replacement.' },
             ].map(({ icon, title, body }) => (
               <div
                 key={title}
@@ -438,7 +399,7 @@ export default function TherapistsPage() {
             <div style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)' }}>
               Browse therapists
             </div>
-            <button
+            {/* <button
               onClick={() => setModalOpen(true)}
               style={{
                 padding: '8px 18px', borderRadius: 100, fontSize: 12.5,
@@ -451,7 +412,7 @@ export default function TherapistsPage() {
               onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(196,99,58,0.25)' }}
             >
               Apply to join
-            </button>
+            </button> */}
           </div>
 
           {/* Mobile filter pills */}
