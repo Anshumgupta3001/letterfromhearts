@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 import { MdReportProblem } from 'react-icons/md'
+import GlobalFocusPlayer from './GlobalFocusPlayer'
 
 const ISSUE_TYPES = [
   { value: 'bug',     label: 'Something is not working' },
@@ -995,6 +996,7 @@ function Navbar() {
     ...(canReadFeed ? [{ id: 'listenerread', label: 'Listen', badge: strangerLetters?.length || 0 }] : []),
     { id: 'connections', label: 'Connections' },
     { id: 'therapists',  label: 'Therapists' },
+    {id:'focus', label: 'Focus' },
   ]
 
   return (
@@ -1547,6 +1549,7 @@ export default function Layout({ children }) {
           {children}
         </div>
       )}
+      <GlobalFocusPlayer />  
     </div>
   )
 }

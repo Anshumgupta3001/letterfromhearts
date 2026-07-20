@@ -21,6 +21,8 @@ import AdminDashboardPage from './pages/AdminDashboardPage'
 import AuthPage from './pages/AuthPage'
 import OnboardingModal from './components/OnboardingModal'
 import { useApp } from './context/AppContext'
+import FocusPage from './pages/FocusPage'
+import { FocusPlayerProvider } from './context/FocusPlayerContext'
 
 // Only show onboarding for accounts created on or after this date.
 // Users who signed up before onboarding was launched are auto-skipped.
@@ -115,6 +117,8 @@ function PageRouter() {
         {currentPage === 'personalletters'&& <PersonalLettersPage />}
         {currentPage === 'caringstranger' && <CaringStrangerPage />}
         {currentPage === 'listenerread'   && <ListenerReadPage />}
+        {currentPage === 'therapists'     && <TherapistsPage />}
+{currentPage === 'focus'          && <FocusPage />}        
         {currentPage === 'reportissue'    && <ReportIssuePage />}
         {currentPage === 'therapists'     && <TherapistsPage />}
       </Layout>
@@ -131,7 +135,9 @@ export default function App() {
   return (
     <AppProvider>
       <div className="min-h-screen bg-cream font-sans">
+       <FocusPlayerProvider>      
         <PageRouter />
+      </FocusPlayerProvider>  
       </div>
     </AppProvider>
   )
