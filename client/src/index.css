@@ -1,23 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400..700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── "Sunrise" palette — warm, playful, premium SaaS. Var NAMES kept stable. ── */
 :root {
-  --cream: #F7F2EA;
-  --warm: #F2EBE0;
-  --paper: #FDF9F3;
-  --ink: #1C1A17;
-  --ink-soft: #4A4640;
-  --ink-muted: #8C8478;
-  --tc: #C4633A;
-  --tc-s: rgba(196, 99, 58, 0.08);
-  --sage: #7A9E8E;
-  --sage-s: rgba(122, 158, 142, 0.09);
-  --gold: #C9A84C;
-  --gold-s: rgba(201, 168, 76, 0.1);
-  --purple: #8B7EC8;
-  --purple-s: rgba(139, 126, 200, 0.09);
+  --cream: #FFFFFF;   /* base canvas, white */
+  --warm: #FBFAF8;    /* card / soft off-white */
+  --paper: #FFFFFF;   /* surface */
+  --card: #FBFAF8;    /* card surface */
+  --ink: #3B3663;     /* deep indigo text */
+  --ink-soft: #5A5580;
+  --ink-muted: #8B87A6;
+  --tc: #F4813F;      /* primary accent — sunrise orange */
+  --tc-2: #E06B28;    /* orange deep — hover */
+  --tc-s: rgba(244, 129, 63, 0.10);
+  --sage: #2E7D5B;    /* mint green — positive/new states */
+  --sage-s: rgba(46, 125, 91, 0.10);
+  --gold: #FFD166;    /* sunny yellow */
+  --gold-s: rgba(255, 209, 102, 0.16);
+  --purple: #5C4FA8;  /* lavender */
+  --purple-s: rgba(92, 79, 168, 0.10);
+  --clay: #E06B28;
+  /* Pastel tile / accent family */
+  --yellow: #FFD166;
+  --sky: #AFD5F2;
+  --mint: #BFE5D2;
+  --blush: #FBD9C6;
+  --lav: #DCD6F5;
+  --line: #F1EFEA;         /* soft warm border */
+  --line-strong: #EFEDE8;
 }
 
 html {
@@ -25,22 +37,18 @@ html {
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
   background: var(--cream);
   color: var(--ink);
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Paper grain overlay */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.5;
+.font-mono, .mono {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── ANIMATIONS ── */
@@ -87,9 +95,9 @@ body::after {
 .card-accent.mood-joy::before { background: var(--gold); }
 .card-accent.mood-love::before { background: var(--tc); }
 .card-accent.mood-grief::before { background: var(--sage); }
-.card-accent.mood-gratitude::before { background: #7A6E5C; }
+.card-accent.mood-gratitude::before { background: var(--gold); }
 .card-accent.mood-longing::before { background: var(--purple); }
-.card-accent.mood-anger::before { background: #B85450; }
+.card-accent.mood-anger::before { background: var(--clay); }
 
 /* New reply indicator (top-right dot) */
 .card-new-reply {
@@ -137,8 +145,8 @@ body::after {
   background-image: repeating-linear-gradient(
     transparent,
     transparent 31px,
-    rgba(28, 26, 23, 0.028) 31px,
-    rgba(28, 26, 23, 0.028) 32px
+    rgba(59,54,99,0.03) 31px,
+    rgba(59,54,99,0.03) 32px
   );
   background-position: 0 76px;
   pointer-events: none;
@@ -150,7 +158,7 @@ body::after {
   bottom: 0;
   left: 68px;
   width: 1px;
-  background: rgba(196, 99, 58, 0.1);
+  background: rgba(244,129,63,0.14);
   pointer-events: none;
 }
 
@@ -167,7 +175,7 @@ body::after {
 .toggle-track {
   width: 32px;
   height: 17px;
-  background: rgba(28, 26, 23, 0.1);
+  background: rgba(59,54,99, 0.1);
   border-radius: 100px;
   position: relative;
   transition: background 0.2s;
@@ -191,7 +199,7 @@ body::after {
 /* ── SCROLL CUSTOMIZATION ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(28, 26, 23, 0.15); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(59,54,99, 0.15); border-radius: 2px; }
 
 /* ── GLOBAL SOFT TRANSITIONS ── */
 button, a, input, textarea, select {
@@ -201,7 +209,7 @@ button, a, input, textarea, select {
 /* ── SECTION DIVIDER ── */
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(28,26,23,0.07) 20%, rgba(28,26,23,0.07) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(59,54,99,0.07) 20%, rgba(59,54,99,0.07) 80%, transparent);
 }
 
 /* ── LETTER CARD PAPER FEEL ── */
@@ -210,12 +218,12 @@ button, a, input, textarea, select {
 }
 .letter-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 36px rgba(28,26,23,0.1);
+  box-shadow: 0 12px 36px rgba(59,54,99,0.1);
 }
 
 /* ── SOFT FOCUS RING ── */
 input:focus, textarea:focus, select:focus {
-  box-shadow: 0 0 0 3px rgba(196,99,58,0.07);
+  box-shadow: 0 0 0 3px rgba(244,129,63,0.12);
 }
 
 /* ── PAGE FADE IN ── */
@@ -242,7 +250,7 @@ input:focus, textarea:focus, select:focus {
 }
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 42px rgba(28,26,23,0.1);
+  box-shadow: 0 16px 42px rgba(59,54,99,0.1);
 }
 
 /* ── NAV GROUP LABEL ── */
@@ -250,9 +258,9 @@ input:focus, textarea:focus, select:focus {
   font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(245,240,232,0.25);
+  color: rgba(234,240,243,0.28);
   padding: 0 10px 6px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
 }
 
@@ -263,8 +271,8 @@ input:focus, textarea:focus, select:focus {
   gap: 12px;
   padding: 16px 20px;
   border-radius: 14px;
-  background: rgba(139,126,200,0.06);
-  border: 1px solid rgba(139,126,200,0.18);
+  background: rgba(110,95,158,0.07);
+  border: 1px solid rgba(110,95,158,0.20);
   margin-bottom: 32px;
 }
 
@@ -283,7 +291,7 @@ input:focus, textarea:focus, select:focus {
   gap: 8px;
 }
 .page-header-title {
-  font-family: 'Lora', serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-weight: 700;
   color: var(--ink);
   line-height: 1.1;
@@ -291,7 +299,7 @@ input:focus, textarea:focus, select:focus {
   margin-bottom: 12px;
 }
 .page-header-sub {
-  font-family: Lora, serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-style: italic;
   color: var(--ink-soft);
   line-height: 1.65;

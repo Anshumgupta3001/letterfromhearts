@@ -3,15 +3,37 @@ import { FiRefreshCw } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 
-const BD = '#E0D4BC'
-const FT = '#F2EBE0'
+// ── Mood config (matches the real letter data) ────────────────────────────────
+const MOODS = [
+  { id: 'all',       emoji: '✨', label: 'All moods',     short: 'All',        tone: 'all'    },
+  { id: 'vent',      emoji: '🌧️', label: 'Need to vent',  short: 'Vent',       tone: 'sky'    },
+  { id: 'joy',       emoji: '🌟', label: 'Pure joy',      short: 'Joy',        tone: 'yellow' },
+  { id: 'love',      emoji: '💌', label: 'Love & warmth', short: 'Love',       tone: 'rose'   },
+  { id: 'grief',     emoji: '🕯️', label: 'Grief & loss',  short: 'Grief',      tone: 'lav'    },
+  { id: 'gratitude', emoji: '🌿', label: 'Gratitude',     short: 'Gratitude',  tone: 'mint'   },
+  { id: 'longing',   emoji: '🌙', label: 'Longing',       short: 'Longing',    tone: 'blush'  },
+]
+
+const MOOD_PILL = {
+  vent:      { bg: 'var(--sky)',    color: '#3E6FA8', emoji: '🌧️', label: 'Need to vent' },
+  joy:       { bg: 'var(--yellow)', color: '#8A6D1B', emoji: '🌟', label: 'Joy'          },
+  love:      { bg: '#FBD9E4',       color: '#A8437A', emoji: '💌', label: 'Love'         },
+  grief:     { bg: 'var(--lav)',    color: '#5C4FA8', emoji: '🕯️', label: 'Grief'        },
+  gratitude: { bg: 'var(--mint)',   color: '#2E7D5B', emoji: '🌿', label: 'Gratitude'    },
+  longing:   { bg: 'var(--blush)',  color: '#B05A1F', emoji: '🌙', label: 'Longing'      },
+  anger:     { bg: '#FBD9C6',       color: '#C74E3B', emoji: '🔥', label: 'Anger'        },
+}
+
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+}
 
 // ── Report Letter Modal ───────────────────────────────────────────────────────
 function ReportLetterModal({ letterId, onClose }) {
-  const [desc,      setDesc]      = useState('')
+  const [desc,       setDesc]       = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [done,       setDone]      = useState(false)
-  const [err,        setErr]       = useState('')
+  const [done,       setDone]       = useState(false)
+  const [err,        setErr]        = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -35,68 +57,31 @@ function ReportLetterModal({ letterId, onClose }) {
   }
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(28,26,23,0.45)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 9999, padding: 16,
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#fff', borderRadius: 16, padding: '28px 28px 24px',
-          width: '100%', maxWidth: 400,
-          boxShadow: '0 16px 48px rgba(28,26,23,0.16)',
-          border: '1px solid rgba(28,26,23,0.08)',
-        }}
-      >
+    <div className="lr-modal-bg" onClick={onClose}>
+      <div className="lr-modal" onClick={e => e.stopPropagation()}>
         {done ? (
-          <div style={{ textAlign: 'center', padding: '12px 0' }}>
-            <div style={{ fontSize: 28, marginBottom: 12 }}>✅</div>
-            <div style={{ fontFamily: '"Lora",serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
-              Report received
-            </div>
-            <p style={{ fontFamily: '"Lora",serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
-              Thank you for helping keep this a safe space. We'll review it shortly.
-            </p>
-            <button
-              onClick={onClose}
-              style={{ marginTop: 20, padding: '9px 24px', borderRadius: 8, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans",sans-serif', fontSize: 13, fontWeight: 500 }}
-            >
-              Close
-            </button>
+          <div className="lr-done">
+            <div className="lr-done-ico">✅</div>
+            <h3>Report received</h3>
+            <p>Thank you for helping keep this a safe space. We'll review it shortly.</p>
+            <button className="lr-btn-dark" onClick={onClose}>Close</button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div style={{ fontFamily: '"Lora",serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>
-              🚩 Report this letter
-            </div>
-            <p style={{ fontFamily: '"Lora",serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.6, marginBottom: 16 }}>
-              Let us know if this letter contains harmful, abusive, or inappropriate content.
-            </p>
+            <h3 className="lr-modal-title">🚩 Report this letter</h3>
+            <p className="lr-modal-sub">Let us know if this letter contains harmful, abusive, or inappropriate content.</p>
             <textarea
               value={desc}
               onChange={e => { setDesc(e.target.value); setErr('') }}
               placeholder="Describe what's wrong…"
               rows={4}
-              style={{
-                width: '100%', padding: '10px 12px', borderRadius: 9, fontSize: 13,
-                border: err ? '1.5px solid var(--tc)' : '1px solid rgba(28,26,23,0.14)',
-                outline: 'none', resize: 'vertical', fontFamily: '"DM Sans",sans-serif',
-                color: 'var(--ink)', lineHeight: 1.6, boxSizing: 'border-box',
-              }}
+              className={err ? 'lr-ta err' : 'lr-ta'}
             />
-            {err && <div style={{ fontSize: 12, color: 'var(--tc)', marginTop: 6 }}>{err}</div>}
-            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-              <button type="button" onClick={onClose}
-                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(28,26,23,0.14)', background: 'transparent', fontSize: 12.5, cursor: 'pointer', color: 'var(--ink-muted)', fontFamily: '"DM Sans",sans-serif' }}>
-                Cancel
-              </button>
-              <button type="submit" disabled={submitting}
-                style={{ padding: '8px 20px', borderRadius: 8, background: '#B85450', color: '#fff', border: 'none', fontSize: 12.5, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.6 : 1, fontFamily: '"DM Sans",sans-serif' }}>
-                {submitting ? 'Sending…' : 'Submit Report'}
+            {err && <div className="lr-err">{err}</div>}
+            <div className="lr-modal-actions">
+              <button type="button" className="lr-btn-ghost" onClick={onClose}>Cancel</button>
+              <button type="submit" className="lr-btn-danger" disabled={submitting}>
+                {submitting ? 'Sending…' : 'Submit report'}
               </button>
             </div>
           </form>
@@ -107,21 +92,12 @@ function ReportLetterModal({ letterId, onClose }) {
 }
 
 // ── Letter card ───────────────────────────────────────────────────────────────
-function LetterCard({ letter, onMarkRead, onOpen }) {
+function LetterCard({ letter, onMarkRead, onOpen, onReport }) {
   const [marking,   setMarking]   = useState(false)
   const [readError, setReadError] = useState('')
-  const [hov,       setHov]       = useState(false)
-  const [btnHov,    setBtnHov]    = useState(false)
-  const date = new Date(letter.createdAt).toLocaleDateString('en-IN', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  })
 
   async function handleOpen() {
-    // Already claimed by this user — open panel directly
-    if (letter.hasRead) {
-      onOpen(letter)
-      return
-    }
+    if (letter.hasRead) { onOpen(letter); return }
 
     setMarking(true)
     setReadError('')
@@ -135,12 +111,10 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
         onOpen(updated)
         return
       }
-
       if (res.status === 403) {
         setReadError('This letter has already been claimed by another listener.')
         return
       }
-
       setReadError(json.error || 'Could not open letter.')
     } catch {
       setReadError('Network error. Please try again.')
@@ -150,194 +124,73 @@ function LetterCard({ letter, onMarkRead, onOpen }) {
   }
 
   const isHeld = letter.hasRead
+  const pill = MOOD_PILL[letter.mood]
 
   return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: '#fff', borderRadius: 14, border: `1px solid ${BD}`,
-        overflow: 'hidden', position: 'relative',
-        display: 'flex', flexDirection: 'column',
-        transform: hov ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hov ? '0 10px 28px rgba(26,18,8,0.09)' : 'none',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-      }}
-    >
-      {/* Left accent bar */}
-      <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-        background: isHeld
-          ? 'linear-gradient(180deg, var(--purple), var(--gold))'
-          : 'linear-gradient(180deg, var(--sage), var(--gold))',
-        borderRadius: '4px 0 0 4px',
-      }} />
-
-      {/* Card body */}
-      <div style={{ padding: '18px 20px 14px 24px', flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 12 }}>
-          <h3 style={{
-            fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600,
-            color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px',
-          }}>
-            {letter.subject}
-          </h3>
-
-          {isHeld ? (
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              fontSize: 10, padding: '4px 11px', borderRadius: 20, fontWeight: 700,
-              letterSpacing: '0.8px', textTransform: 'uppercase', flexShrink: 0,
-              background: 'rgba(139,126,200,0.1)', color: 'var(--purple)',
-              border: '1px solid rgba(139,126,200,0.25)', fontFamily: '"DM Sans", sans-serif',
-            }}>
-              ✓ Held by you
-            </span>
-          ) : (
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              fontSize: 10, padding: '4px 11px', borderRadius: 20, fontWeight: 700,
-              letterSpacing: '0.8px', textTransform: 'uppercase', flexShrink: 0,
-              background: 'rgba(122,158,142,0.1)', color: 'var(--sage)',
-              border: '1px solid rgba(122,158,142,0.25)', fontFamily: '"DM Sans", sans-serif',
-            }}>
-              ● New
-            </span>
-          )}
-        </div>
-
-        <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', marginBottom: 10 }}>
-          🔒 anonymous · {date}
-          {letter.mood && (
-            <span style={{ marginLeft: 8, color: 'var(--sage)', textTransform: 'capitalize', fontSize: 12 }}>
-              · {letter.mood}
-            </span>
-          )}
-        </div>
-
-        {/* Replied badge — only shown on held letters where listener has replied */}
-        {isHeld && letter.hasReplied && (
-          <div style={{ marginBottom: 10 }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              fontSize: 10, padding: '3px 10px', borderRadius: 20, fontWeight: 600,
-              background: 'rgba(122,158,142,0.1)', color: 'var(--sage)',
-              border: '1px solid rgba(122,158,142,0.28)',
-              fontFamily: '"DM Sans", sans-serif', letterSpacing: '0.6px', textTransform: 'uppercase',
-            }}>
-              🌿 Replied
-            </span>
-          </div>
+    <div className={`card ${isHeld ? 'held' : ''}`} onClick={handleOpen}>
+      <div className="row">
+        {pill ? (
+          <span className="pill" style={{ background: pill.bg, color: pill.color }}>
+            {pill.emoji} {pill.label}
+          </span>
+        ) : (
+          <span className="pill pill-plain">Letter</span>
         )}
-
-        {/* Preview snippet */}
-        <p style={{
-          fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13,
-          color: 'var(--ink-muted)', lineHeight: 1.65, marginBottom: 0,
-          display: '-webkit-box', WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>
-          {letter.message}
-        </p>
-
-        {readError && (
-          <div style={{
-            fontSize: 11.5, marginTop: 12, padding: '8px 12px', borderRadius: 8,
-            color: 'var(--tc)', background: 'rgba(196,99,58,0.07)',
-            border: '1px solid rgba(196,99,58,0.15)', fontFamily: '"DM Sans", sans-serif',
-          }}>
-            {readError}
-          </div>
-        )}
+        <span className="time">{fmtDate(letter.createdAt)}</span>
       </div>
 
-      {/* Card footer */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-        padding: '10px 20px 10px 24px',
-        borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)',
-      }}>
-        <button
-          onClick={handleOpen}
-          disabled={marking}
-          onMouseEnter={() => setBtnHov(true)}
-          onMouseLeave={() => setBtnHov(false)}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '7px 17px', borderRadius: 8, fontSize: 12.5, fontWeight: 500,
-            cursor: marking ? 'default' : 'pointer', fontFamily: '"DM Sans", sans-serif',
-            transition: 'all 0.15s', opacity: marking ? 0.6 : 1,
-            border: isHeld
-              ? '1.5px solid rgba(139,126,200,0.4)'
-              : (btnHov ? '1.5px solid var(--sage)' : `1.5px solid ${BD}`),
-            color: isHeld ? 'var(--purple)' : (btnHov ? '#fff' : 'var(--sage)'),
-            background: isHeld ? 'rgba(139,126,200,0.07)' : (btnHov ? 'var(--sage)' : 'transparent'),
-          }}
-        >
-          {marking ? (
-            <>
-              <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
-                <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-              </svg>
-              Opening…
-            </>
-          ) : isHeld ? 'Read again →' : 'Open & hold →'}
-        </button>
-      </div>
+      <h3 className="card-title">{letter.subject || 'A letter from my heart'}</h3>
+      <p className="excerpt">{letter.message}</p>
 
+      {(isHeld || letter.hasReplied) && (
+        <div className="badges">
+          {isHeld && <span className="badge badge-held">✓ Held by you</span>}
+          {isHeld && letter.hasReplied && <span className="badge badge-replied">🌿 Replied</span>}
+        </div>
+      )}
+
+      {readError && <div className="card-err">{readError}</div>}
+
+      <div className="foot">
+        <span className="anon">🔒 Anonymous</span>
+        <div className="foot-right">
+          <button
+            className="report"
+            title="Report this letter"
+            onClick={e => { e.stopPropagation(); onReport(letter._id) }}
+          >
+            🚩
+          </button>
+          <button
+            className="hold"
+            disabled={marking}
+            onClick={e => { e.stopPropagation(); handleOpen() }}
+          >
+            {marking ? 'Opening…' : isHeld ? 'Read again →' : 'Hold this →'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
 
 // ── Listener onboarding banner ────────────────────────────────────────────────
 function ListenerBanner({ onDismiss }) {
+  const POINTS = [
+    'Each letter is from a real person. When you claim one, only you reply — it leaves the feed.',
+    "You don't need to fix anything. Just be present.",
+    "One letter at a time. Don't claim more than you can hold.",
+    "Meet people where they are, not where you'd like them to be.",
+    'If a letter is too heavy today, leave it for someone else.',
+  ]
   return (
-    <div style={{
-      marginBottom: 16,
-      padding: '12px 16px',
-      borderRadius: 10,
-      background: '#fff',
-      border: '0.5px solid rgba(28,26,23,0.1)',
-    }}>
-      <div style={{
-        fontFamily: '"Lora", serif', fontSize: 12,
-        color: 'var(--ink)', fontWeight: 600, marginBottom: 8,
-      }}>
-        You're a listener. Here's what that means.
-      </div>
-      <ul style={{ margin: '0 0 10px', padding: '0 0 0 16px', listStyle: 'disc' }}>
-        {[
-          'Each letter is from a real person. When you claim one, only you reply — it leaves the feed.',
-          'You don\'t need to fix anything. Just be present.',
-          'One letter at a time. Don\'t claim more than you can hold.',
-          'Meet people where they are, not where you\'d like them to be.',
-          'If a letter is too heavy today, leave it for someone else.',
-        ].map((item, i) => (
-          <li key={i} style={{
-            fontFamily: '"Lora", serif', fontStyle: 'italic',
-            fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.7,
-            marginBottom: 2,
-          }}>
-            {item}
-          </li>
-        ))}
+    <div className="banner">
+      <h3>You're a listener. Here's what that means.</h3>
+      <ul>
+        {POINTS.map((p, i) => <li key={i}>{p}</li>)}
       </ul>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button
-          onClick={onDismiss}
-          style={{
-            padding: '5px 14px', borderRadius: 100,
-            background: 'var(--ink)', color: 'var(--cream)',
-            border: 'none', cursor: 'pointer',
-            fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, fontWeight: 500,
-            letterSpacing: '0.1px', transition: 'background 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)' }}
-        >
-          Got it
-        </button>
+      <div className="banner-foot">
+        <button onClick={onDismiss}>Got it</button>
       </div>
     </div>
   )
@@ -347,10 +200,11 @@ function ListenerBanner({ onDismiss }) {
 export default function ListenerReadPage() {
   const { strangerLetters, refreshStrangerLetters, navigate, canReadFeed, openLetterPanel, refreshNotifications } = useApp()
   const [letters,    setLetters]    = useState(strangerLetters)
-  const [filter,     setFilter]     = useState('all')    // all | unread | held
-  const [sort,       setSort]       = useState('newest')  // newest | oldest
+  const [filter,     setFilter]     = useState('all')
+  const [sort,       setSort]       = useState('newest')
   const [refreshing, setRefreshing] = useState(false)
-  const [moodFilter, setMoodFilter] = useState('all')    // all | vent | joy | love | grief | gratitude | longing
+  const [moodFilter, setMoodFilter] = useState('all')
+  const [reportId,   setReportId]   = useState(null)
   const [showBanner, setShowBanner] = useState(() =>
     localStorage.getItem('listener_banner_seen') !== 'true'
   )
@@ -378,17 +232,6 @@ export default function ListenerReadPage() {
     openLetterPanel({ ...letter, type: letter.type || 'stranger' })
   }, [openLetterPanel])
 
-  const MOODS = [
-    { id: 'all',       emoji: '✨', label: 'All moods'    },
-    { id: 'vent',      emoji: '🌧️', label: 'Need to vent' },
-    { id: 'joy',       emoji: '🌟', label: 'Pure joy'     },
-    { id: 'love',      emoji: '💌', label: 'Love & warmth'},
-    { id: 'grief',     emoji: '🕯️', label: 'Grief & loss' },
-    { id: 'gratitude', emoji: '🌿', label: 'Gratitude'    },
-    { id: 'longing',   emoji: '🌙', label: 'Longing'      },
-  ]
-
-  // Count letters per mood (unclaimed only — exclude already-held ones from totals)
   const moodCounts = useMemo(() => {
     const counts = { all: letters.length }
     for (const l of letters) {
@@ -397,7 +240,6 @@ export default function ListenerReadPage() {
     return counts
   }, [letters])
 
-  // Filter + sort derived list
   const displayed = useMemo(() => {
     let list = letters
     if (filter === 'unread') list = letters.filter(l => !l.hasRead)
@@ -413,133 +255,73 @@ export default function ListenerReadPage() {
   // ── Access guard ──
   if (!canReadFeed) {
     return (
-      <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
-        <div className="w-full max-w-3xl lg:max-w-4xl">
-          <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
-            <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>🔒</div>
-            <div style={{ fontFamily: '"Lora", serif', fontSize: 24, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>This space is for listeners</div>
-            <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 320, margin: '0 auto 28px' }}>
-              Update your role in profile settings to access the listener feed.
-            </p>
-            <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
-              Go to Write →
-            </button>
+      <main className="sunrise-listen">
+        <div className="wrap">
+          <div className="empty">
+            <div className="empty-icon">🔒</div>
+            <h3 className="empty-title">This space is for listeners</h3>
+            <p className="empty-text">Update your role in profile settings to access the listener feed.</p>
+            <button className="empty-cta" onClick={() => navigate('write')}>Go to Write →</button>
           </div>
         </div>
+        <style>{SUNRISE_LISTEN_CSS}</style>
       </main>
     )
   }
 
-  const unread = letters.filter(l => !l.hasRead)
-  const read   = letters.filter(l =>  l.hasRead)
-
   return (
-    <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 56, paddingBottom: 80 }}>
-      <div className="w-full max-w-6xl flex gap-6 items-start">
+    <main className="sunrise-listen">
+      <div className="wrap">
 
-        {/* ── Mood sidebar — desktop only ── */}
-        <aside className="hidden lg:flex flex-col flex-shrink-0" style={{ width: 172, position: 'sticky', top: 72 }}>
-          <div style={{
-            fontFamily: '"DM Sans", sans-serif', fontSize: 10, fontWeight: 700,
-            letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--ink-muted)',
-            marginBottom: 10, paddingLeft: 4,
-          }}>
-            Filter by mood
-          </div>
-          {MOODS.map(m => {
-            const active = moodFilter === m.id
-            const count  = moodCounts[m.id] ?? 0
-            const empty  = m.id !== 'all' && count === 0
-            return (
-              <button
-                key={m.id}
-                onClick={() => !empty && setMoodFilter(m.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 9,
-                  width: '100%', padding: '8px 10px', borderRadius: 9, marginBottom: 2,
-                  background: active ? 'rgba(196,99,58,0.08)' : 'transparent',
-                  border: active ? '1px solid rgba(196,99,58,0.2)' : '1px solid transparent',
-                  cursor: empty ? 'default' : 'pointer', textAlign: 'left', transition: 'all 0.14s',
-                  opacity: empty ? 0.38 : 1,
-                }}
-                onMouseEnter={e => { if (!active && !empty) e.currentTarget.style.background = 'rgba(28,26,23,0.04)' }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
-              >
-                <span style={{ fontSize: 14, flexShrink: 0 }}>{m.emoji}</span>
-                <span style={{
-                  fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, flex: 1,
-                  fontWeight: active ? 600 : 400,
-                  color: active ? 'var(--tc)' : 'var(--ink-muted)',
-                  transition: 'color 0.14s',
-                }}>
-                  {m.label}
-                </span>
-                <span style={{
-                  fontFamily: '"DM Sans", sans-serif', fontSize: 10.5, fontWeight: 600,
-                  color: active ? 'var(--tc)' : 'rgba(28,26,23,0.3)',
-                  minWidth: 16, textAlign: 'right',
-                }}>
-                  {count}
-                </span>
-              </button>
-            )
-          })}
-        </aside>
+        <div className="chip fade">🎧 Open letters</div>
 
-        {/* ── Main content ── */}
-        <div className="flex-1 min-w-0">
+        <h1 className="l-h1 fade" style={{ animationDelay: '.07s' }}>
+          Letters waiting to be{' '}
+          <span className="hl">
+            heard
+            <svg viewBox="0 0 120 10" fill="none" preserveAspectRatio="none" className="underline">
+              <path d="M2 7 C 30 2, 60 9, 118 4" stroke="var(--yellow)" strokeWidth="5" strokeLinecap="round" />
+            </svg>
+          </span>
+        </h1>
 
-        {/* Mobile mood filter — horizontal scroll */}
-        <div className="flex lg:hidden gap-2 mb-4" style={{ overflowX: 'auto', paddingBottom: 4 }}>
-          {MOODS.map(m => {
-            const active = moodFilter === m.id
-            const count  = moodCounts[m.id] ?? 0
-            const empty  = m.id !== 'all' && count === 0
-            return (
-              <button
-                key={m.id}
-                onClick={() => !empty && setMoodFilter(m.id)}
-                style={{
-                  flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '5px 12px', borderRadius: 99, fontSize: 12,
-                  cursor: empty ? 'default' : 'pointer',
-                  fontFamily: '"DM Sans", sans-serif', fontWeight: active ? 600 : 400,
-                  background: active ? 'var(--tc)' : '#fff',
-                  color:      active ? '#fff' : 'var(--ink-muted)',
-                  border:     active ? '1px solid var(--tc)' : `1px solid ${BD}`,
-                  whiteSpace: 'nowrap', transition: 'all 0.14s',
-                  opacity: empty ? 0.38 : 1,
-                }}
-              >
-                {m.emoji} {m.id === 'all' ? 'All' : m.label}
-                <span style={{
-                  fontSize: 10, fontWeight: 700, marginLeft: 2,
-                  opacity: active ? 0.85 : 0.55,
-                }}>
-                  {count}
-                </span>
-              </button>
-            )
-          })}
+        <p className="l-sub fade" style={{ animationDelay: '.13s' }}>
+          Each one is a real person. Take your time before you choose. Your presence matters.
+        </p>
+
+        <div className="intent fade" style={{ animationDelay: '.18s' }}>
+          <span className="intent-ico">💛</span>
+          <p>You don't have to reply to everything. Read with care, respond when it feels right.</p>
         </div>
 
-        {/* ── Onboarding banner ── */}
-        {showBanner && <ListenerBanner onDismiss={dismissBanner} />}
+        {showBanner && (
+          <div className="fade" style={{ animationDelay: '.2s' }}>
+            <ListenerBanner onDismiss={dismissBanner} />
+          </div>
+        )}
 
-        {/* ── Page header ── */}
-        <div style={{ marginBottom: 20 }}>
-          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 5 }}>
-            🎧 Listener Feed
-          </h1>
-          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>
-            Real people shared something real. The first to open holds it.
-          </p>
+        {/* ── Mood pills ── */}
+        <div className="moods fade" style={{ animationDelay: '.24s' }}>
+          {MOODS.map(m => {
+            const count = moodCounts[m.id] ?? 0
+            const empty = m.id !== 'all' && count === 0
+            return (
+              <button
+                key={m.id}
+                className={`m m-${m.tone} ${moodFilter === m.id ? 'active' : ''} ${empty ? 'empty' : ''}`}
+                disabled={empty}
+                onClick={() => !empty && setMoodFilter(m.id)}
+              >
+                {m.emoji && <span>{m.emoji}</span>}{m.short}
+                <span className="n">{count}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* ── Filter + sort bar ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-          {/* Filter pills */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className="bar fade" style={{ animationDelay: '.27s' }}>
+          <div className="filters">
             {[
               { id: 'all',    label: 'All' },
               { id: 'unread', label: 'Unread' },
@@ -547,84 +329,164 @@ export default function ListenerReadPage() {
             ].map(f => (
               <button
                 key={f.id}
+                className={`f ${filter === f.id ? 'active' : ''}`}
                 onClick={() => setFilter(f.id)}
-                style={{
-                  padding: '5px 13px', borderRadius: 99, fontSize: 12, cursor: 'pointer',
-                  fontFamily: '"DM Sans", sans-serif', fontWeight: filter === f.id ? 600 : 400,
-                  background: filter === f.id ? 'var(--tc)' : '#fff',
-                  color:      filter === f.id ? '#fff' : 'var(--ink-muted)',
-                  border:     filter === f.id ? '1px solid var(--tc)' : `1px solid ${BD}`,
-                  transition: 'all 0.14s',
-                }}
               >
                 {f.label}
               </button>
             ))}
           </div>
-
-          {/* Sort + count + refresh */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
-              {displayed.length} letter{displayed.length !== 1 ? 's' : ''}
-            </span>
-            <select
-              value={sort}
-              onChange={e => setSort(e.target.value)}
-              style={{
-                padding: '5px 10px', borderRadius: 8, fontSize: 12,
-                border: `1px solid ${BD}`, background: '#fff',
-                color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif',
-                cursor: 'pointer', outline: 'none',
-              }}
-            >
+          <div className="bar-right">
+            <span className="count">{displayed.length} letter{displayed.length !== 1 ? 's' : ''}</span>
+            <select value={sort} onChange={e => setSort(e.target.value)} className="sort">
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
             </select>
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              title="Refresh letters"
-              style={{
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                width: 30, height: 30, borderRadius: 7,
-                border: `1px solid ${BD}`, background: '#fff',
-                color: 'var(--ink-muted)', cursor: refreshing ? 'default' : 'pointer',
-                transition: 'background 0.15s, color 0.15s',
-                flexShrink: 0,
-              }}
-              onMouseEnter={e => { if (!refreshing) { e.currentTarget.style.background = '#f5f0e8'; e.currentTarget.style.color = 'var(--ink)' } }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = 'var(--ink-muted)' }}
-            >
-              <FiRefreshCw size={13} style={{ transition: 'transform 0.3s' }} className={refreshing ? 'animate-spin' : ''} />
+            <button className="refresh" onClick={handleRefresh} disabled={refreshing} title="Refresh letters">
+              <FiRefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
             </button>
           </div>
         </div>
 
         {/* ── Content ── */}
         {letters.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
-            <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.35 }}>📭</div>
-            <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>The feed is quiet for now</div>
-            <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 280, margin: '0 auto' }}>
-              Someone out there is writing right now. Check back soon.
-            </p>
+          <div className="empty fade" style={{ animationDelay: '.3s' }}>
+            <div className="empty-icon">📭</div>
+            <h3 className="empty-title">The feed is quiet for now</h3>
+            <p className="empty-text">Someone out there is writing right now. Check back soon.</p>
           </div>
         ) : displayed.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
-            <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)' }}>
-              No letters match this filter.
-            </div>
+          <div className="empty fade" style={{ animationDelay: '.3s' }}>
+            <div className="empty-icon">🔍</div>
+            <h3 className="empty-title">No letters match this filter</h3>
+            <p className="empty-text">Try a different mood, or clear the filters to see everything.</p>
+            <button className="empty-cta" onClick={() => { setFilter('all'); setMoodFilter('all') }}>Clear filters</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid fade" style={{ animationDelay: '.3s' }}>
             {displayed.map(letter => (
-              <LetterCard key={letter._id} letter={letter} onMarkRead={handleMarkRead} onOpen={handleOpen} />
+              <LetterCard
+                key={letter._id}
+                letter={letter}
+                onMarkRead={handleMarkRead}
+                onOpen={handleOpen}
+                onReport={setReportId}
+              />
             ))}
           </div>
         )}
 
-        </div>{/* end flex-1 main content */}
+        {reportId && <ReportLetterModal letterId={reportId} onClose={() => setReportId(null)} />}
       </div>
+
+      <style>{SUNRISE_LISTEN_CSS}</style>
     </main>
   )
 }
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+const SUNRISE_LISTEN_CSS = `
+  .sunrise-listen{ background:var(--cream); min-height:100%; }
+  .sunrise-listen .wrap{ max-width:1040px; margin:0 auto; padding:52px 28px 120px; }
+
+  .sunrise-listen .chip{ display:inline-flex; align-items:center; gap:8px; background:var(--mint); color:#2E7D5B; font-size:12.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:8px 16px; border-radius:100px; margin-bottom:22px; }
+  .sunrise-listen .l-h1{ font-size:clamp(32px,4.6vw,50px); font-weight:800; line-height:1.14; letter-spacing:-.02em; max-width:16ch; color:var(--ink); margin:0; }
+  .sunrise-listen .l-h1 .hl{ color:var(--tc); position:relative; white-space:nowrap; }
+  .sunrise-listen .underline{ position:absolute; left:0; bottom:-8px; width:100%; height:9px; pointer-events:none; }
+  .sunrise-listen .l-sub{ margin-top:18px; font-size:16px; color:var(--ink-muted); font-weight:500; max-width:46ch; line-height:1.65; }
+
+  .sunrise-listen .intent{ margin-top:32px; background:#FFF7E3; border-radius:20px; padding:20px 26px; display:flex; align-items:flex-start; gap:14px; max-width:640px; }
+  .sunrise-listen .intent-ico{ font-size:20px; flex-shrink:0; }
+  .sunrise-listen .intent p{ font-size:14px; font-weight:600; color:#8A6D1B; line-height:1.6; margin:0; }
+
+  .sunrise-listen .banner{ margin-top:24px; background:var(--card); border:2px solid var(--line); border-radius:24px; padding:26px 28px; max-width:720px; }
+  .sunrise-listen .banner h3{ font-size:15.5px; font-weight:800; color:var(--ink); margin:0 0 14px; }
+  .sunrise-listen .banner ul{ margin:0 0 16px; padding:0 0 0 20px; display:flex; flex-direction:column; gap:7px; }
+  .sunrise-listen .banner li{ font-size:13.5px; font-weight:500; color:var(--ink-soft); line-height:1.65; }
+  .sunrise-listen .banner-foot{ display:flex; justify-content:flex-end; }
+  .sunrise-listen .banner-foot button{ background:var(--ink); color:#fff; border:none; border-radius:100px; padding:10px 22px; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; transition:background .2s; }
+  .sunrise-listen .banner-foot button:hover{ background:var(--tc); }
+
+  .sunrise-listen .moods{ margin-top:40px; display:flex; gap:8px; flex-wrap:wrap; }
+  .sunrise-listen .m{ border:2px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:100px; padding:10px 16px; font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all .2s; }
+  .sunrise-listen .m:hover:not(:disabled){ transform:translateY(-2px); }
+  .sunrise-listen .m .n{ font-size:11px; font-weight:800; color:var(--ink-muted); background:#fff; border-radius:100px; padding:2px 8px; }
+  .sunrise-listen .m.active{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .sunrise-listen .m.active .n{ background:rgba(255,255,255,.18); color:#fff; }
+  .sunrise-listen .m.empty{ opacity:.38; cursor:default; }
+  .sunrise-listen .m-lav:hover:not(.active):not(:disabled){ background:var(--lav); border-color:var(--lav); }
+  .sunrise-listen .m-sky:hover:not(.active):not(:disabled){ background:var(--sky); border-color:var(--sky); }
+  .sunrise-listen .m-blush:hover:not(.active):not(:disabled){ background:var(--blush); border-color:var(--blush); }
+  .sunrise-listen .m-mint:hover:not(.active):not(:disabled){ background:var(--mint); border-color:var(--mint); }
+  .sunrise-listen .m-rose:hover:not(.active):not(:disabled){ background:#FBD9E4; border-color:#FBD9E4; }
+  .sunrise-listen .m-yellow:hover:not(.active):not(:disabled){ background:var(--yellow); border-color:var(--yellow); }
+
+  .sunrise-listen .bar{ margin-top:22px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .sunrise-listen .filters{ display:flex; gap:8px; flex-wrap:wrap; }
+  .sunrise-listen .f{ border:2px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:100px; padding:9px 16px; font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; transition:all .2s; }
+  .sunrise-listen .f:hover{ border-color:var(--yellow); background:#FFF7E3; }
+  .sunrise-listen .f.active{ background:var(--tc); border-color:var(--tc); color:#fff; }
+  .sunrise-listen .bar-right{ display:flex; align-items:center; gap:10px; }
+  .sunrise-listen .count{ font-size:12.5px; font-weight:700; color:var(--ink-muted); white-space:nowrap; }
+  .sunrise-listen .sort{ border:2px solid var(--line); background:var(--card); color:var(--ink); border-radius:100px; padding:9px 14px; font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; outline:none; }
+  .sunrise-listen .sort:focus{ border-color:var(--tc); }
+  .sunrise-listen .refresh{ width:38px; height:38px; border-radius:50%; border:2px solid var(--line); background:var(--card); color:var(--ink-soft); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; flex-shrink:0; }
+  .sunrise-listen .refresh:hover:not(:disabled){ background:var(--yellow); border-color:var(--yellow); color:var(--ink); }
+
+  .sunrise-listen .grid{ margin-top:32px; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+  .sunrise-listen .card{ background:var(--card); border:2px solid var(--line); border-radius:24px; padding:26px; cursor:pointer; transition:transform .25s cubic-bezier(.2,.8,.3,1.2), border-color .25s, box-shadow .25s; display:flex; flex-direction:column; gap:11px; }
+  .sunrise-listen .card:hover{ transform:translateY(-6px) rotate(-.4deg); border-color:var(--tc); box-shadow:0 18px 44px rgba(59,54,99,.12); }
+  .sunrise-listen .card.held{ background:#F4F1FC; border-color:#E3DCF6; }
+  .sunrise-listen .card.held:hover{ border-color:var(--purple); }
+  .sunrise-listen .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .sunrise-listen .pill{ font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:6px 13px; border-radius:100px; white-space:nowrap; }
+  .sunrise-listen .pill-plain{ background:#fff; color:var(--ink-muted); }
+  .sunrise-listen .time{ font-size:12px; font-weight:700; color:var(--ink-muted); white-space:nowrap; }
+  .sunrise-listen .card-title{ font-size:17.5px; font-weight:700; line-height:1.35; color:var(--ink); margin:0; }
+  .sunrise-listen .excerpt{ font-size:13.5px; font-weight:500; color:var(--ink-soft); line-height:1.65; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin:0; }
+  .sunrise-listen .badges{ display:flex; gap:6px; flex-wrap:wrap; }
+  .sunrise-listen .badge{ font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:5px 11px; border-radius:100px; }
+  .sunrise-listen .badge-held{ background:var(--lav); color:#5C4FA8; }
+  .sunrise-listen .badge-replied{ background:var(--mint); color:#2E7D5B; }
+  .sunrise-listen .card-err{ font-size:12px; font-weight:600; color:#C74E3B; background:#FDEAE5; border-radius:12px; padding:9px 13px; line-height:1.5; }
+  .sunrise-listen .foot{ margin-top:auto; padding-top:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .sunrise-listen .anon{ font-size:12px; font-weight:700; color:var(--ink-muted); }
+  .sunrise-listen .foot-right{ display:flex; align-items:center; gap:8px; }
+  .sunrise-listen .report{ background:transparent; border:none; font-size:13px; cursor:pointer; opacity:.35; padding:4px; border-radius:50%; transition:opacity .2s, background .2s; }
+  .sunrise-listen .report:hover{ opacity:1; background:#FDEAE5; }
+  .sunrise-listen .hold{ background:var(--ink); color:#fff; border:none; border-radius:100px; padding:9px 16px; font-family:inherit; font-size:12px; font-weight:800; cursor:pointer; transition:background .2s, transform .2s; white-space:nowrap; }
+  .sunrise-listen .hold:hover:not(:disabled){ background:var(--tc); transform:scale(1.05); }
+  .sunrise-listen .hold:disabled{ opacity:.6; cursor:default; }
+
+  .sunrise-listen .empty{ margin-top:32px; background:var(--card); border:2px dashed var(--line-strong); border-radius:24px; padding:56px 32px; text-align:center; }
+  .sunrise-listen .empty-icon{ font-size:40px; margin-bottom:14px; opacity:.5; }
+  .sunrise-listen .empty-title{ font-size:19px; font-weight:800; color:var(--ink); margin:0 0 8px; }
+  .sunrise-listen .empty-text{ font-size:14px; color:var(--ink-muted); font-weight:500; line-height:1.7; max-width:330px; margin:0 auto; }
+  .sunrise-listen .empty-cta{ margin-top:22px; background:var(--tc); color:#fff; border:none; border-radius:100px; padding:13px 24px; font-family:inherit; font-size:13.5px; font-weight:800; cursor:pointer; transition:transform .2s, box-shadow .2s; }
+  .sunrise-listen .empty-cta:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(244,129,63,.35); }
+
+  .sunrise-listen .lr-modal-bg{ position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(59,54,99,.45); backdrop-filter:blur(4px); }
+  .sunrise-listen .lr-modal{ background:#fff; border-radius:28px; padding:30px; width:100%; max-width:440px; box-shadow:0 30px 70px rgba(59,54,99,.25); }
+  .sunrise-listen .lr-modal-title{ font-size:19px; font-weight:800; color:var(--ink); margin:0 0 8px; }
+  .sunrise-listen .lr-modal-sub{ font-size:13.5px; font-weight:500; color:var(--ink-muted); line-height:1.6; margin:0 0 18px; }
+  .sunrise-listen .lr-ta{ width:100%; font-family:inherit; font-size:14px; font-weight:500; color:var(--ink); background:var(--card); border:2px solid var(--line); border-radius:14px; padding:12px 14px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; }
+  .sunrise-listen .lr-ta:focus{ border-color:var(--tc); box-shadow:0 0 0 4px rgba(244,129,63,.12); }
+  .sunrise-listen .lr-ta.err{ border-color:#C74E3B; }
+  .sunrise-listen .lr-err{ font-size:12.5px; font-weight:600; color:#C74E3B; margin-top:8px; }
+  .sunrise-listen .lr-modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
+  .sunrise-listen .lr-btn-ghost{ background:var(--card); border:2px solid var(--line); color:var(--ink-soft); border-radius:100px; padding:11px 22px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+  .sunrise-listen .lr-btn-ghost:hover{ border-color:var(--ink-muted); }
+  .sunrise-listen .lr-btn-danger{ background:#C74E3B; color:#fff; border:none; border-radius:100px; padding:11px 22px; font-family:inherit; font-size:13px; font-weight:800; cursor:pointer; }
+  .sunrise-listen .lr-btn-danger:disabled{ opacity:.6; cursor:default; }
+  .sunrise-listen .lr-btn-dark{ margin-top:20px; background:var(--ink); color:#fff; border:none; border-radius:100px; padding:11px 26px; font-family:inherit; font-size:13px; font-weight:800; cursor:pointer; }
+  .sunrise-listen .lr-btn-dark:hover{ background:var(--tc); }
+  .sunrise-listen .lr-done{ text-align:center; padding:8px 0; }
+  .sunrise-listen .lr-done-ico{ font-size:32px; margin-bottom:12px; }
+  .sunrise-listen .lr-done h3{ font-size:19px; font-weight:800; color:var(--ink); margin:0 0 10px; }
+  .sunrise-listen .lr-done p{ font-size:13.5px; font-weight:500; color:var(--ink-muted); line-height:1.65; margin:0; }
+
+  .sunrise-listen .fade{ opacity:0; transform:translateY(16px); animation:sunFade .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes sunFade{ to{ opacity:1; transform:none } }
+  @media (prefers-reduced-motion:reduce){ .sunrise-listen .fade{ animation:none; opacity:1; transform:none } }
+  @media (max-width:560px){ .sunrise-listen .wrap{ padding:36px 20px 90px; } }
+`

@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 
 const ROLE_META = {
-  seeker:   { label: 'Seeker',            color: 'var(--tc)',     bg: 'rgba(196,99,58,0.1)',   border: 'rgba(196,99,58,0.25)'   },
-  listener: { label: 'Listener',          color: 'var(--sage)',   bg: 'rgba(122,158,142,0.1)', border: 'rgba(122,158,142,0.25)' },
-  both:     { label: 'Seeker + Listener', color: 'var(--purple)', bg: 'rgba(139,126,200,0.1)', border: 'rgba(139,126,200,0.25)' },
+  seeker:   { label: 'Seeker',            color: 'var(--tc)',     bg: 'rgba(244,129,63,0.1)',   border: 'rgba(244,129,63,0.25)'   },
+  listener: { label: 'Listener',          color: 'var(--sage)',   bg: 'rgba(46,125,91,0.1)', border: 'rgba(46,125,91,0.25)' },
+  both:     { label: 'Seeker + Listener', color: 'var(--purple)', bg: 'rgba(92,79,168,0.1)', border: 'rgba(92,79,168,0.25)' },
 }
 
 export default function Navbar() {
@@ -63,17 +63,23 @@ export default function Navbar() {
     <>
       <nav
         className="sticky top-0 z-[200] h-14"
-        style={{ background: 'rgba(247,242,234,0.97)', backdropFilter: 'blur(12px)', borderBottom: '0.5px solid rgba(28,26,23,0.08)' }}
+        style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px) saturate(1.3)', WebkitBackdropFilter: 'blur(12px) saturate(1.3)', borderBottom: '1px solid var(--line)' }}
       >
         <div className="h-full flex items-center justify-between px-5 gap-3">
 
           {/* ── Logo ─────────────────────────────────────────────────── */}
           <div
-            className="font-playfair text-[17px] italic text-ink whitespace-nowrap cursor-pointer flex-shrink-0"
-            style={{ fontStyle: 'italic' }}
+            className="flex items-center gap-2 whitespace-nowrap cursor-pointer flex-shrink-0"
             onClick={() => go('home')}
           >
-            Letter from <span style={{ color: 'var(--gold)' }}>Heart</span>
+            <span className="flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26, borderRadius: 7, background: 'var(--tc)' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 6h16v12H4z"/><path d="M4 6l8 7 8-7"/>
+              </svg>
+            </span>
+            <span className="text-[15px] font-bold tracking-tight" style={{ color: 'var(--ink)' }}>
+              Letter From Heart
+            </span>
           </div>
 
           {/* ── Center tabs (desktop) ─────────────────────────────────── */}
@@ -129,17 +135,17 @@ export default function Navbar() {
                 className="relative flex items-center justify-center w-8 h-8 rounded-full cursor-pointer border-none transition-all duration-150"
                 style={{
                   color:      bellOpen ? 'var(--tc)'  : 'var(--ink)',
-                  background: bellOpen ? 'rgba(196,99,58,0.08)' : 'rgba(28,26,23,0.06)',
+                  background: bellOpen ? 'rgba(244,129,63,0.08)' : 'rgba(59,54,99,0.06)',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.1)'; e.currentTarget.style.color = 'var(--ink)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = bellOpen ? 'rgba(196,99,58,0.08)' : 'rgba(28,26,23,0.06)'; e.currentTarget.style.color = bellOpen ? 'var(--tc)' : 'var(--ink)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,54,99,0.1)'; e.currentTarget.style.color = 'var(--ink)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = bellOpen ? 'rgba(244,129,63,0.08)' : 'rgba(59,54,99,0.06)'; e.currentTarget.style.color = bellOpen ? 'var(--tc)' : 'var(--ink)' }}
                 aria-label="Notifications"
               >
                 <BellIcon />
                 {unreadCount > 0 && (
                   <span
                     className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold rounded-full px-1 leading-none pointer-events-none"
-                    style={{ background: 'var(--tc)', color: '#fff', fontFamily: '"DM Sans", sans-serif' }}
+                    style={{ background: 'var(--tc)', color: '#fff', fontFamily: '"Inter", system-ui, sans-serif' }}
                   >
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
@@ -150,10 +156,10 @@ export default function Navbar() {
               {bellOpen && (
                 <div
                   className="absolute right-0 top-[calc(100%+8px)] w-[320px] rounded-[14px] overflow-hidden animate-fade-up z-[300]"
-                  style={{ background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 12px 40px rgba(28,26,23,0.15)' }}
+                  style={{ background: 'var(--cream)', border: '0.5px solid rgba(59,54,99,0.1)', boxShadow: '0 12px 40px rgba(59,54,99,0.15)' }}
                 >
                   {/* Panel header */}
-                  <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+                  <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '0.5px solid rgba(59,54,99,0.07)' }}>
                     <span className="text-[13px] font-semibold text-ink font-sans">Notifications</span>
                     {notifications.length > 0 && (
                       <span className="text-[10px] text-ink-muted font-sans">{notifications.filter(n => !n.isRead).length === 0 ? 'All caught up' : `${unreadCount} new`}</span>
@@ -166,7 +172,7 @@ export default function Navbar() {
                       <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
                         <span className="text-[28px] mb-2 opacity-40">🔔</span>
                         <p className="text-[12px] text-ink-muted font-sans">No notifications yet</p>
-                        <p className="text-[11px] text-ink-muted font-sans mt-0.5" style={{ fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+                        <p className="text-[11px] text-ink-muted font-sans mt-0.5" style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic' }}>
                           We'll let you know when something happens
                         </p>
                       </div>
@@ -193,14 +199,14 @@ export default function Navbar() {
                 color: '#fff',
                 padding: '7px 15px',
                 borderRadius: 100,
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"Inter", system-ui, sans-serif',
                 fontSize: 12,
                 fontWeight: 600,
                 letterSpacing: '0.1px',
-                boxShadow: '0 2px 10px rgba(28,18,8,0.18)',
+                boxShadow: '0 2px 10px rgba(59,54,99,0.18)',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,99,58,0.28)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = currentPage === 'write' ? 'var(--tc)' : 'var(--ink)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(28,18,8,0.18)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(244,129,63,0.28)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = currentPage === 'write' ? 'var(--tc)' : 'var(--ink)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(59,54,99,0.18)' }}
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
                 <path d="M5 1v8M1 5h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
@@ -227,8 +233,8 @@ export default function Navbar() {
       {/* ── Mobile drawer ─────────────────────────────────────────────────── */}
       {mobileOpen && (
         <>
-          <div className="fixed inset-0 z-[190]" style={{ background: 'rgba(28,26,23,0.25)', backdropFilter: 'blur(2px)' }} onClick={() => setMobileOpen(false)} />
-          <div className="fixed top-14 left-0 right-0 z-[195] animate-fade-up" style={{ background: 'var(--cream)', borderBottom: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 8px 32px rgba(28,26,23,0.12)' }}>
+          <div className="fixed inset-0 z-[190]" style={{ background: 'rgba(59,54,99,0.25)', backdropFilter: 'blur(2px)' }} onClick={() => setMobileOpen(false)} />
+          <div className="fixed top-14 left-0 right-0 z-[195] animate-fade-up" style={{ background: 'var(--cream)', borderBottom: '0.5px solid rgba(59,54,99,0.1)', boxShadow: '0 8px 32px rgba(59,54,99,0.12)' }}>
             <div className="px-5 py-4 flex flex-col gap-1">
               {/* Role badge mobile */}
               <div className="flex items-center gap-2 px-4 py-2 mb-1">
@@ -242,16 +248,16 @@ export default function Navbar() {
                     key={tab.id}
                     onClick={() => go(tab.id)}
                     className="flex items-center justify-between w-full px-4 py-[11px] rounded-[10px] text-[13px] font-sans text-left cursor-pointer border-none outline-none transition-all duration-150"
-                    style={{ background: isActive ? 'rgba(196,99,58,0.07)' : 'transparent', color: isActive ? 'var(--tc)' : 'var(--ink-soft)' }}
+                    style={{ background: isActive ? 'rgba(244,129,63,0.07)' : 'transparent', color: isActive ? 'var(--tc)' : 'var(--ink-soft)' }}
                   >
                     <span>{tab.label}</span>
                     {isActive && <span className="w-[5px] h-[5px] rounded-full flex-shrink-0" style={{ background: 'var(--tc)' }} />}
                   </button>
                 )
               })}
-              <div className="h-px my-2" style={{ background: 'rgba(28,26,23,0.08)' }} />
+              <div className="h-px my-2" style={{ background: 'rgba(59,54,99,0.08)' }} />
               {/* User identity */}
-              <div className="px-4 py-3 rounded-[10px] mb-1" style={{ background: 'rgba(28,26,23,0.03)', border: '0.5px solid rgba(28,26,23,0.07)' }}>
+              <div className="px-4 py-3 rounded-[10px] mb-1" style={{ background: 'rgba(59,54,99,0.03)', border: '0.5px solid rgba(59,54,99,0.07)' }}>
                 <div className="text-[13px] font-semibold text-ink leading-tight">{authUser?.name || 'User'}</div>
                 <div className="text-[11px] text-ink-muted mt-0.5 font-light truncate">{authUser?.email}</div>
                 <div className="text-[10px] mt-1.5 font-semibold uppercase tracking-wide" style={{ color: roleMeta.color }}>{roleMeta.label}</div>
@@ -282,7 +288,7 @@ function AvatarMenu({ authUser, initials, logout }) {
       <div className="flex items-center gap-1.5 cursor-pointer rounded-full px-1.5 py-1 transition-all duration-200 hover:bg-warm">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-medium flex-shrink-0"
-          style={{ background: 'rgba(196,99,58,0.15)', color: 'var(--tc)', border: '0.5px solid rgba(196,99,58,0.2)' }}
+          style={{ background: 'rgba(244,129,63,0.15)', color: 'var(--tc)', border: '0.5px solid rgba(244,129,63,0.2)' }}
         >
           {initials}
         </div>
@@ -293,14 +299,14 @@ function AvatarMenu({ authUser, initials, logout }) {
       {/* Dropdown */}
       <div
         className="absolute right-0 top-full mt-1.5 rounded-[12px] invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50"
-        style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 8px 28px rgba(28,26,23,0.13)', minWidth: 210 }}
+        style={{ background: 'var(--paper)', border: '0.5px solid rgba(59,54,99,0.1)', boxShadow: '0 8px 28px rgba(59,54,99,0.13)', minWidth: 210 }}
       >
         {/* Identity block */}
-        <div className="px-4 pt-4 pb-3" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+        <div className="px-4 pt-4 pb-3" style={{ borderBottom: '0.5px solid rgba(59,54,99,0.07)' }}>
           <div className="flex items-center gap-3 mb-2.5">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold flex-shrink-0"
-              style={{ background: 'rgba(196,99,58,0.15)', color: 'var(--tc)', border: '1px solid rgba(196,99,58,0.2)' }}
+              style={{ background: 'rgba(244,129,63,0.15)', color: 'var(--tc)', border: '1px solid rgba(244,129,63,0.2)' }}
             >
               {initials}
             </div>
@@ -327,7 +333,7 @@ function AvatarMenu({ authUser, initials, logout }) {
             onClick={logout}
             className="w-full text-left px-4 py-2.5 text-[12.5px] font-sans cursor-pointer bg-transparent border-none transition-all duration-150 flex items-center gap-2"
             style={{ color: 'var(--tc)' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(196,99,58,0.06)'}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,129,63,0.06)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -367,8 +373,8 @@ function NotificationItem({ item, isLast }) {
     <div
       className="flex items-start gap-3 px-4 py-3 transition-colors duration-150"
       style={{
-        background: !item.isRead ? 'rgba(196,99,58,0.04)' : 'transparent',
-        borderBottom: isLast ? 'none' : '0.5px solid rgba(28,26,23,0.05)',
+        background: !item.isRead ? 'rgba(244,129,63,0.04)' : 'transparent',
+        borderBottom: isLast ? 'none' : '0.5px solid rgba(59,54,99,0.05)',
       }}
     >
       {/* Type icon */}

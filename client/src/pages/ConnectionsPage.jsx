@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 
-const BD = '#E0D4BC'
-const FT = '#F2EBE0'
-
 const SMTP_PRESETS = {
   '':        { label: 'Custom',               host: '',                                   port: '587', secure: false },
   gmail:     { label: 'Gmail',                host: 'smtp.gmail.com',                    port: '587', secure: false },
@@ -17,24 +14,50 @@ const SMTP_PRESETS = {
 
 const PROVIDER_ICON = { gmail: '📧', zoho: '📮', outlook: '📨', smtp: '📬', sendgrid: '📤', ses: '📡', godaddy: '🌐' }
 
-const INPUT_STYLE = {
-  width: '100%', padding: '10px 13px', borderRadius: 10,
-  fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)',
-  outline: 'none', background: 'rgba(248,244,239,0.9)',
-  border: '1.5px solid rgba(224,212,188,0.8)',
-  transition: 'border-color 0.18s', boxSizing: 'border-box',
-}
-const LABEL_STYLE = {
-  fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px',
-  fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+// Provider setup guides
+const GUIDES = {
+  gmail: {
+    label: '📧 Gmail',
+    steps: [
+      'Go to your Google Account → Security',
+      'Enable 2-Step Verification (if not already on)',
+      'Search "App Passwords" in the search bar',
+      'Create an app password → select "Mail"',
+      'Copy the 16-char password and paste it in the form',
+    ],
+    smtp: { host: 'smtp.gmail.com', port: '587', password: 'Your App Password' },
+  },
+  outlook: {
+    label: '📨 Outlook',
+    steps: [
+      'Go to account.microsoft.com → Security',
+      'Enable two-step verification',
+      'Go to "App passwords" and create one',
+      'Use your full email as the username',
+      'Paste the app password into the form',
+    ],
+    smtp: { host: 'smtp.office365.com', port: '587', password: 'Your App Password' },
+  },
+  zoho: {
+    label: '📮 Zoho',
+    steps: [
+      'Log in to mail.zoho.com → Settings',
+      'Go to Mail Accounts → SMTP',
+      'Enable SMTP access for your account',
+      'Use your Zoho email as username',
+      'Use your Zoho password (or app-specific password)',
+    ],
+    smtp: { host: 'smtp.zoho.com', port: '587', password: 'Your Zoho password' },
+    note: 'Indian accounts may use smtp.zoho.in — we try both automatically.',
+  },
 }
 
 function Toast({ msg, type, onDone }) {
   useEffect(() => { const t = setTimeout(onDone, 3200); return () => clearTimeout(t) }, [onDone])
   return (
     <div
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-pill text-[13px] font-sans font-medium text-cream shadow-xl animate-fade-up"
-      style={{ background: type === 'error' ? '#c4633a' : '#7a9e8e', border: '0.5px solid rgba(255,255,255,0.15)', pointerEvents: 'none' }}
+      className="conn-toast"
+      style={{ background: type === 'error' ? '#C74E3B' : '#2E7D5B' }}
     >
       {type === 'error' ? '✗ ' : '✓ '}{msg}
     </div>
@@ -45,19 +68,19 @@ function Toast({ msg, type, onDone }) {
 export default function ConnectionsPage() {
   const { emailAccounts, setEmailAccounts, refreshEmailAccounts } = useApp()
 
-  const [activeTab, setActiveTab]      = useState('accounts')
-  const [guideTab, setGuideTab]        = useState('gmail')
-  const [preset, setPreset]            = useState('')
-  const [host, setHost]                = useState('')
-  const [port, setPort]                = useState('587')
-  const [secure, setSecure]            = useState(false)
-  const [username, setUsername]        = useState('')
-  const [password, setPassword]        = useState('')
-  const [connecting, setConnecting]    = useState(false)
-  const [deleteId, setDeleteId]        = useState(null)
-  const [deleting, setDeleting]        = useState(false)
-  const [toast, setToast]              = useState(null)
-  const [emailFrom, setEmailFrom]      = useState('')
+  const [activeTab, setActiveTab]   = useState('accounts')
+  const [guideTab, setGuideTab]     = useState('gmail')
+  const [preset, setPreset]         = useState('')
+  const [host, setHost]             = useState('')
+  const [port, setPort]             = useState('587')
+  const [secure, setSecure]         = useState(false)
+  const [username, setUsername]     = useState('')
+  const [password, setPassword]     = useState('')
+  const [connecting, setConnecting] = useState(false)
+  const [deleteId, setDeleteId]     = useState(null)
+  const [deleting, setDeleting]     = useState(false)
+  const [toast, setToast]           = useState(null)
+  const [emailFrom, setEmailFrom]   = useState('')
 
   function showToast(msg, type = 'success') { setToast({ msg, type }) }
 
@@ -66,11 +89,7 @@ export default function ConnectionsPage() {
   useEffect(() => {
     apiFetch('/api/send-email/system-info')
       .then(r => r.json())
-      .then(j => {
-        if (j.success) {
-          if (j.emailFrom)   setEmailFrom(j.emailFrom)
-        }
-      })
+      .then(j => { if (j.success && j.emailFrom) setEmailFrom(j.emailFrom) })
       .catch(() => {})
   }, [])
 
@@ -81,7 +100,14 @@ export default function ConnectionsPage() {
     setHost(p.host); setPort(p.port); setSecure(p.secure)
   }
 
-  function resetForm() { setPreset(''); setHost(''); setPort('587'); setSecure(false); setUsername(''); setPassword('') }
+  function resetForm() {
+    setPreset(''); setHost(''); setPort('587'); setSecure(false); setUsername(''); setPassword('')
+  }
+
+  function switchTab(id) {
+    setActiveTab(id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   async function handleConnectSmtp() {
     if (!host.trim())                 return showToast('SMTP host is required.', 'error')
@@ -93,14 +119,18 @@ export default function ConnectionsPage() {
     try {
       const res  = await apiFetch('/api/email-accounts/smtp', {
         method: 'POST',
-        body: JSON.stringify({ provider: preset || 'smtp', emailAddress: username.trim(), host: host.trim(), port: Number(port), secure, username: username.trim(), password, defaultFrom: username.trim() }),
+        body: JSON.stringify({
+          provider: preset || 'smtp', emailAddress: username.trim(),
+          host: host.trim(), port: Number(port), secure,
+          username: username.trim(), password, defaultFrom: username.trim(),
+        }),
       })
       const json = await res.json()
       if (!res.ok) { showToast(json.error || 'Failed to connect.', 'error'); return }
       showToast('Email account connected!')
       resetForm()
       await refreshEmailAccounts()
-      setActiveTab('accounts') // switch to accounts tab after success
+      setActiveTab('accounts')
     } catch (e) { showToast(e.message || 'Network error.', 'error') }
     finally { setConnecting(false) }
   }
@@ -117,285 +147,151 @@ export default function ConnectionsPage() {
     finally { setDeleting(false); setDeleteId(null) }
   }
 
-  return (
-    <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ paddingTop: 52, paddingBottom: 72 }}>
-      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
-      <div className="w-full max-w-3xl lg:max-w-4xl">
+  const guide = GUIDES[guideTab]
 
-      {/* ── Page header ──────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 5 }}>
+  return (
+    <main className="sunrise-conn">
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+
+      <div className="wrap">
+
+        <h1 className="c-h1 fade">
           Connections
+          <svg viewBox="0 0 120 10" fill="none" preserveAspectRatio="none" className="underline">
+            <path d="M2 6 C 35 2, 70 9, 118 4" stroke="var(--sky)" strokeWidth="5" strokeLinecap="round" />
+          </svg>
         </h1>
-        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>
+        <p className="c-sub fade" style={{ animationDelay: '.06s' }}>
           Choose how your letters travel — from your inbox, or ours.
         </p>
-      </div>
 
-      {/* ── Tabs ─────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 0, borderBottom: `1.5px solid ${BD}`, marginBottom: 24 }}>
-        {[
-          { id: 'accounts', label: 'Connected' },
-          { id: 'setup',    label: 'Add Email' },
-        ].map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            style={{
-              padding: '10px 22px',
-              fontFamily: '"DM Sans", sans-serif',
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: 'pointer',
-              border: 'none',
-              background: 'transparent',
-              color: activeTab === t.id ? 'var(--tc)' : 'var(--ink-muted)',
-              borderBottom: activeTab === t.id ? '2px solid var(--tc)' : '2px solid transparent',
-              marginBottom: '-1.5px',
-              transition: 'color 0.18s, border-color 0.18s',
-              outline: 'none',
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+        {/* ── Tabs ── */}
+        <div className="tabs fade" style={{ animationDelay: '.12s' }}>
+          {[
+            { id: 'accounts', label: 'Connected' },
+            { id: 'setup',    label: 'Add Email' },
+          ].map(t => (
+            <button
+              key={t.id}
+              className={`tab ${activeTab === t.id ? 'active' : ''}`}
+              onClick={() => switchTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {/* TAB 1 — CONNECTED ACCOUNTS                                    */}
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'accounts' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-
-          {/* ── How letters are sent ───────────────────────────────── */}
-          <section>
-            <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 14, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>
-              Email Settings
-            </div>
-
-            {/* Intro blurb */}
-            <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, margin: '0 0 14px' }}>
+        {/* ══ TAB 1: CONNECTED ══ */}
+        {activeTab === 'accounts' && (
+          <div className="panel">
+            <div className="kicker fade" style={{ animationDelay: '.18s' }}>Email settings</div>
+            <p className="blurb fade" style={{ animationDelay: '.2s' }}>
               Your letters are sent securely using our platform email — no setup needed.
             </p>
 
-            {/* Sending-from card */}
-            <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden', position: 'relative', marginBottom: 10 }}>
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'linear-gradient(180deg, var(--sage), var(--gold))', borderRadius: '4px 0 0 4px' }} />
-              <div style={{ padding: '16px 20px 16px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>📮</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', marginBottom: 4 }}>
-                    Sending from
-                  </div>
-                  <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>
-                    {emailFrom || 'noreply@letterfromheart.com'}
-                  </div>
-                  <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)' }}>
-                    Always available · No configuration required
-                  </div>
-                </div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.3)', flexShrink: 0, fontFamily: '"DM Sans", sans-serif' }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--sage)' }} />
-                  Default
-                </span>
+            <div className="acc system fade" style={{ animationDelay: '.24s' }}>
+              <div className="acc-ico">📮</div>
+              <div className="acc-info">
+                <div className="acc-lbl">Sending from</div>
+                <div className="acc-mail">{emailFrom || 'noreply@letterfromheart.com'}</div>
+                <div className="acc-note">Always available · No configuration required</div>
               </div>
+              <span className="status st-default">Default</span>
             </div>
 
-          </section>
-
-          {/* ── User connected accounts ────────────────────────────── */}
-          <section>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 16, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 4, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>My Connected Accounts</div>
-                <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>
-                  {emailAccounts.length === 0 ? 'No personal accounts connected yet.' : `${emailAccounts.length} account${emailAccounts.length !== 1 ? 's' : ''} connected.`}
+            <div className="sec-row fade" style={{ animationDelay: '.3s' }}>
+              <div className="sec-left">
+                <div className="kicker">My connected accounts</div>
+                <p>
+                  {emailAccounts.length === 0
+                    ? 'No personal accounts connected yet.'
+                    : `${emailAccounts.length} account${emailAccounts.length !== 1 ? 's' : ''} connected.`}
                 </p>
               </div>
-              <button
-                onClick={() => setActiveTab('setup')}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(26,18,8,0.18)', transition: 'all 0.2s', flexShrink: 0 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#2a2016'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)'; e.currentTarget.style.transform = 'translateY(0)' }}
-              >
-                + Connect Account
-              </button>
+              <button className="connect-btn" onClick={() => switchTab('setup')}>+ Connect Account</button>
             </div>
 
             {emailAccounts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 32px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
-                <div style={{ fontSize: 38, marginBottom: 14, opacity: 0.35 }}>📭</div>
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>No personal account connected</div>
-                <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 280, margin: '0 auto 20px' }}>
-                  Connect Gmail, Zoho, or any SMTP — your email will be used for reply identification.
-                </p>
-                <button
-                  onClick={() => setActiveTab('setup')}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(139,58,42,0.22)', transition: 'all 0.2s' }}
-                >
-                  ✦ Connect your first account
-                </button>
+              <div className="empty fade" style={{ animationDelay: '.34s' }}>
+                <div className="empty-ico">📭</div>
+                <h3>No personal account connected</h3>
+                <p>Connect Gmail, Zoho, or any SMTP — your email will be used for reply identification.</p>
+                <button className="connect-btn" onClick={() => switchTab('setup')}>✦ Connect your first account</button>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="stackgap fade" style={{ animationDelay: '.34s' }}>
                 {emailAccounts.map(acc => {
                   const isOk = acc.status === 'connected'
                   return (
-                    <div key={acc.id} style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: isOk ? 'linear-gradient(180deg, var(--sage), var(--gold))' : 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px' }} />
-                      <div style={{ padding: '18px 20px 16px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                        <div style={{ fontSize: 22, flexShrink: 0 }}>{PROVIDER_ICON[acc.provider] || '📬'}</div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{acc.emailAddress}</div>
-                          <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)' }}>{acc.provider} · connected {new Date(acc.connectedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    <div key={acc.id} className="acc">
+                      <div className="acc-ico">{PROVIDER_ICON[acc.provider] || '📬'}</div>
+                      <div className="acc-info">
+                        <div className="acc-mail">{acc.emailAddress}</div>
+                        <div className="acc-note">
+                          {acc.provider} · connected {new Date(acc.connectedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </div>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: isOk ? 'rgba(122,158,142,0.1)' : 'rgba(196,99,58,0.1)', color: isOk ? 'var(--sage)' : 'var(--tc)', border: `1px solid ${isOk ? 'rgba(122,158,142,0.3)' : 'rgba(196,99,58,0.3)'}`, flexShrink: 0, fontFamily: '"DM Sans", sans-serif' }}>
-                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: isOk ? 'var(--sage)' : 'var(--tc)' }} />
-                          {isOk ? 'Connected' : 'Error'}
-                        </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 20px 8px 24px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
-                        <button
-                          onClick={() => setDeleteId(acc.id)}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 13px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: '1.5px solid #f5d4ce', color: 'var(--tc)', background: 'transparent' }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1.5px solid var(--tc)' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--tc)'; e.currentTarget.style.border = '1.5px solid #f5d4ce' }}
-                        >
-                          ✕ Remove
-                        </button>
-                      </div>
+                      <span className={`status ${isOk ? 'st-ok' : 'st-err'}`}>{isOk ? 'Connected' : 'Error'}</span>
+                      <button className="remove" onClick={() => setDeleteId(acc.id)}>✕ Remove</button>
                     </div>
                   )
                 })}
               </div>
             )}
-          </section>
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {/* TAB 2 — EMAIL SETUP                                           */}
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'setup' && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-7 items-start">
+        {/* ══ TAB 2: ADD EMAIL ══ */}
+        {activeTab === 'setup' && (
+          <div className="panel">
+            <div className="setup fade" style={{ animationDelay: '.18s' }}>
 
-          {/* ── Form column ────────────────────────────────────────── */}
-          <section>
-            <div style={{ marginBottom: 22 }}>
-              <h2 style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px', marginBottom: 5 }}>Add Email Account</h2>
-              <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.6, margin: 0 }}>
-                Connect via SMTP — your email will appear as the reply address on letters you send.
-              </p>
-            </div>
+              {/* ── Form ── */}
+              <div className="form-card">
+                <h2>Add Email Account</h2>
+                <p className="fsub">Connect via SMTP — your email will appear as the reply address on letters you send.</p>
 
-            <div style={{ background: '#fff', borderRadius: 16, border: `1px solid ${BD}`, padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-              {/* Provider preset */}
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={LABEL_STYLE}>Provider</span>
-                <select
-                  value={preset}
-                  onChange={e => applyPreset(e.target.value)}
-                  style={INPUT_STYLE}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
-                >
-                  {Object.entries(SMTP_PRESETS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                </select>
-              </label>
-
-              {/* Host + Port */}
-              <div style={{ display: 'flex', gap: 10 }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
-                  <span style={LABEL_STYLE}>SMTP Host</span>
-                  <input
-                    value={host}
-                    onChange={e => setHost(e.target.value)}
-                    placeholder="smtp.example.com"
-                    style={INPUT_STYLE}
-                    onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
-                    onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
-                  />
-                </label>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 5, width: 88 }}>
-                  <span style={LABEL_STYLE}>Port</span>
-                  <input
-                    value={port}
-                    onChange={e => setPort(e.target.value)}
-                    placeholder="587"
-                    style={INPUT_STYLE}
-                    onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
-                    onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
-                  />
-                </label>
-              </div>
-
-              {/* SSL toggle */}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
-                <div
-                  onClick={() => setSecure(s => !s)}
-                  className="toggle-track"
-                  style={{ background: secure ? 'var(--sage)' : 'rgba(28,26,23,0.14)' }}
-                >
-                  <div className="toggle-thumb" style={{ transform: secure ? 'translateX(18px)' : 'translateX(2px)' }} />
+                <div className="field">
+                  <label htmlFor="conn-provider">Provider</label>
+                  <select id="conn-provider" value={preset} onChange={e => applyPreset(e.target.value)}>
+                    {Object.entries(SMTP_PRESETS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  </select>
                 </div>
-                <span style={{ fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)' }}>Use SSL/TLS (port 465)</span>
-              </label>
 
-              {/* Username */}
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={LABEL_STYLE}>Username / Email</span>
-                <input
-                  type="email"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  placeholder="you@example.com"
-                  style={INPUT_STYLE}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
-                />
-              </label>
+                <div className="two">
+                  <div className="field">
+                    <label htmlFor="conn-host">SMTP Host</label>
+                    <input id="conn-host" value={host} onChange={e => setHost(e.target.value)} placeholder="smtp.example.com" />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="conn-port">Port</label>
+                    <input id="conn-port" value={port} onChange={e => setPort(e.target.value)} placeholder="587" />
+                  </div>
+                </div>
 
-              {/* Password */}
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={LABEL_STYLE}>Password / App Password</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  style={INPUT_STYLE}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
-                />
-              </label>
+                <button type="button" className="toggle-row" onClick={() => setSecure(s => !s)} aria-pressed={secure}>
+                  <span className={`track ${secure ? 'on' : ''}`}><span className="thumb" /></span>
+                  <span className="toggle-label">Use SSL/TLS (port 465)</span>
+                </button>
 
-              {/* Connect button */}
-              <button
-                onClick={handleConnectSmtp}
-                disabled={connecting}
-                style={{ marginTop: 4, width: '100%', padding: '13px 0', borderRadius: 100, border: 'none', cursor: connecting ? 'not-allowed' : 'pointer', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 600, color: '#fff', background: connecting ? 'rgba(28,26,23,0.35)' : 'linear-gradient(135deg, #1c1a17 0%, #3d3020 100%)', boxShadow: connecting ? 'none' : '0 4px 18px rgba(28,18,8,0.22)', opacity: connecting ? 0.75 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                onMouseEnter={e => { if (!connecting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(28,18,8,0.28)' } }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = connecting ? 'none' : '0 4px 18px rgba(28,18,8,0.22)' }}
-              >
-                {connecting && (
-                  <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25"/>
-                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-                  </svg>
-                )}
-                {connecting ? 'Verifying & Connecting…' : '✦ Connect SMTP Account'}
-              </button>
+                <div className="field">
+                  <label htmlFor="conn-user">Username / Email</label>
+                  <input id="conn-user" type="email" value={username} onChange={e => setUsername(e.target.value)} placeholder="you@example.com" />
+                </div>
 
-              {/* Gmail OAuth — disabled */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4, borderTop: `1px solid ${FT}` }}>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>OAuth (Coming Soon)</div>
-                <div style={{ position: 'relative', display: 'inline-block' }} className="group">
-                  <button
-                    disabled
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderRadius: 100, background: '#fff', color: '#3c4043', border: '1.5px solid #dadce0', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'not-allowed', opacity: 0.45, width: '100%', justifyContent: 'center' }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <div className="field">
+                  <label htmlFor="conn-pass">Password / App Password</label>
+                  <input id="conn-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••••••" />
+                </div>
+
+                <button className="submit" onClick={handleConnectSmtp} disabled={connecting}>
+                  {connecting ? 'Verifying & connecting…' : '✦ Connect SMTP Account'}
+                </button>
+
+                <div className="oauth">
+                  <div className="oauth-lbl">OAuth <span className="soon">Coming soon</span></div>
+                  <button className="goog" disabled title="Coming soon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -403,193 +299,208 @@ export default function ConnectionsPage() {
                     </svg>
                     Sign in with Google
                   </button>
-                  <span
-                    className="group-hover:opacity-100 group-hover:visible"
-                    style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', background: '#1c1a17', color: '#fff', fontSize: 11, padding: '4px 10px', borderRadius: 6, whiteSpace: 'nowrap', opacity: 0, visibility: 'hidden', transition: 'opacity 0.15s', pointerEvents: 'none', fontFamily: '"DM Sans", sans-serif' }}
-                  >
-                    Coming Soon
-                  </span>
                 </div>
               </div>
-            </div>
-          </section>
 
-          {/* ── Guide column ───────────────────────────────────────── */}
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 80 }}>
+              {/* ── Guide ── */}
+              <aside className="guide">
+                <div className="howto">
+                  <div className="howto-t">🧠 How to connect</div>
+                  {[
+                    'Enable IMAP/SMTP in your email settings',
+                    'Generate an App Password (not your main password)',
+                    "Copy your provider's SMTP details below",
+                    'Paste them into the form and connect',
+                  ].map((s, i) => (
+                    <div className="step" key={i}>
+                      <span className="n">{i + 1}</span>
+                      <p>{s}</p>
+                    </div>
+                  ))}
+                </div>
 
-            {/* How to connect */}
-            <div style={{ background: 'rgba(122,158,142,0.06)', borderRadius: 14, border: '1px solid rgba(122,158,142,0.22)', padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <span style={{ fontSize: 16 }}>🧠</span>
-                <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, fontWeight: 600, color: 'var(--sage)', textTransform: 'uppercase', letterSpacing: '1px' }}>How to connect</span>
-              </div>
-              <ol style={{ margin: 0, padding: '0 0 0 16px', display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {[
-                  'Enable IMAP/SMTP in your email settings',
-                  'Generate an App Password (not your main password)',
-                  'Copy your provider\'s SMTP details below',
-                  'Paste them into the form and connect',
-                ].map((step, i) => (
-                  <li key={i} style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{step}</li>
-                ))}
-              </ol>
-            </div>
-
-            {/* Provider setup guide — tabbed */}
-            <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden' }}>
-              {/* Tab bar */}
-              <div style={{ display: 'flex', borderBottom: `1px solid ${FT}` }}>
-                {[
-                  { id: 'gmail',   label: '📧 Gmail' },
-                  { id: 'outlook', label: '📨 Outlook' },
-                  { id: 'zoho',    label: '📮 Zoho' },
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setGuideTab(t.id)}
-                    style={{
-                      flex: 1, padding: '9px 4px', border: 'none', background: 'transparent', cursor: 'pointer',
-                      fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, fontWeight: guideTab === t.id ? 600 : 400,
-                      color: guideTab === t.id ? 'var(--tc)' : 'var(--ink-muted)',
-                      borderBottom: guideTab === t.id ? '2px solid var(--tc)' : '2px solid transparent',
-                      marginBottom: '-1px', transition: 'color 0.15s, border-color 0.15s',
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab content */}
-              <div style={{ padding: '18px 20px' }}>
-                {guideTab === 'gmail' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Gmail Setup</div>
-                    {[
-                      { n: 1, text: 'Go to your Google Account → Security' },
-                      { n: 2, text: 'Enable 2-Step Verification (if not already on)' },
-                      { n: 3, text: 'Search "App Passwords" in the search bar' },
-                      { n: 4, text: 'Create an app password → select "Mail"' },
-                      { n: 5, text: 'Copy the 16-char password and paste it above' },
-                    ].map(s => (
-                      <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
-                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
+                <div className="gcard">
+                  <div className="gtabs">
+                    {Object.entries(GUIDES).map(([k, g]) => (
+                      <button
+                        key={k}
+                        className={`gtab ${guideTab === k ? 'active' : ''}`}
+                        onClick={() => setGuideTab(k)}
+                      >
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="gbody">
+                    {guide.steps.map((s, i) => (
+                      <div className="step" key={i}>
+                        <span className="n">{i + 1}</span>
+                        <p>{s}</p>
                       </div>
                     ))}
-                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
-                        <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.gmail.com</span></div>
-                        <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
-                        <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your App Password</span></div>
-                      </div>
+                    <div className="smtpbox">
+                      <div className="smtpbox-t">SMTP settings to use</div>
+                      <div>Host: <b>{guide.smtp.host}</b></div>
+                      <div>Port: <b>{guide.smtp.port}</b></div>
+                      <div>Password: <b>{guide.smtp.password}</b></div>
                     </div>
+                    {guide.note && <p className="gnote">{guide.note}</p>}
                   </div>
-                )}
+                </div>
+              </aside>
 
-                {guideTab === 'outlook' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Outlook / Microsoft 365</div>
-                    {[
-                      { n: 1, text: 'Go to account.microsoft.com → Security' },
-                      { n: 2, text: 'Enable two-step verification' },
-                      { n: 3, text: 'Go to "App passwords" and create one' },
-                      { n: 4, text: 'Use your full email as the username' },
-                      { n: 5, text: 'Paste the app password into the form above' },
-                    ].map(s => (
-                      <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
-                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
-                      </div>
-                    ))}
-                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
-                        <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.office365.com</span></div>
-                        <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
-                        <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your App Password</span></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {guideTab === 'zoho' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Zoho Mail</div>
-                    {[
-                      { n: 1, text: 'Log in to mail.zoho.com → Settings' },
-                      { n: 2, text: 'Go to Mail Accounts → SMTP' },
-                      { n: 3, text: 'Enable SMTP access for your account' },
-                      { n: 4, text: 'Use your Zoho email as username' },
-                      { n: 5, text: 'Use your Zoho password (or app-specific password)' },
-                    ].map(s => (
-                      <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
-                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
-                      </div>
-                    ))}
-                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
-                        <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.zoho.com</span></div>
-                        <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
-                        <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your Zoho password</span></div>
-                      </div>
-                    </div>
-                    <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-muted)', lineHeight: 1.5, marginTop: 2 }}>
-                      Indian accounts may use smtp.zoho.in — we try both automatically.
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
+          </div>
+        )}
 
-          </aside>
-        </div>
-      )}
-
-      {/* ── Delete confirm dialog ───────────────────────────────────── */}
-      {deleteId && (
-        <div
-          className="fixed inset-0 z-[600] flex items-center justify-center px-4"
-          style={{ background: 'rgba(28,18,8,0.32)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
-          onClick={e => { if (e.target === e.currentTarget) setDeleteId(null) }}
-        >
-          <div
-            className="w-full max-w-[360px] animate-fade-up"
-            style={{ background: 'linear-gradient(150deg, #ffffff 0%, #faf7f2 100%)', borderRadius: 20, border: `1px solid ${BD}`, boxShadow: '0 24px 60px rgba(28,18,8,0.18)', overflow: 'hidden' }}
-          >
-            <div style={{ padding: '32px 28px 28px', textAlign: 'center' }}>
-              <div style={{ fontSize: 36, marginBottom: 14 }}>🗑️</div>
-              <h3 style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 700, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.3px' }}>Remove account?</h3>
-              <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 24 }}>
-                This email account will be disconnected.<br />You can reconnect any time.
-              </p>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                <button
-                  onClick={() => setDeleteId(null)}
-                  style={{ padding: '10px 22px', borderRadius: 100, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: 'var(--ink-muted)', border: `1.5px solid rgba(224,212,188,0.9)`, transition: 'all 0.18s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.05)'; e.currentTarget.style.color = 'var(--ink)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-muted)' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDelete(deleteId)}
-                  disabled={deleting}
-                  style={{ padding: '10px 22px', borderRadius: 100, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, cursor: deleting ? 'not-allowed' : 'pointer', border: 'none', background: 'linear-gradient(135deg, #c4633a, #a84d28)', color: '#fff', boxShadow: '0 4px 14px rgba(196,99,58,0.3)', opacity: deleting ? 0.6 : 1, transition: 'all 0.18s' }}
-                  onMouseEnter={e => { if (!deleting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(196,99,58,0.38)' } }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.3)' }}
-                >
-                  {deleting ? 'Removing…' : 'Yes, Remove'}
+        {/* ── Delete confirm ── */}
+        {deleteId && (
+          <div className="conn-modal-bg" onClick={e => { if (e.target === e.currentTarget) setDeleteId(null) }}>
+            <div className="conn-modal">
+              <div className="conn-del-ico">🗑️</div>
+              <h3>Remove account?</h3>
+              <p>This email account will be disconnected.<br />You can reconnect any time.</p>
+              <div className="conn-modal-actions">
+                <button className="conn-cancel" onClick={() => setDeleteId(null)}>Cancel</button>
+                <button className="conn-danger" onClick={() => handleDelete(deleteId)} disabled={deleting}>
+                  {deleting ? 'Removing…' : 'Yes, remove'}
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
       </div>
+
+      <style>{`
+        .sunrise-conn{ background:var(--cream); min-height:100%; }
+        .sunrise-conn .wrap{ max-width:980px; margin:0 auto; padding:52px 28px 120px; }
+
+        .sunrise-conn .c-h1{ font-size:clamp(30px,4.2vw,44px); font-weight:800; letter-spacing:-.02em; position:relative; display:inline-block; color:var(--ink); margin:0; }
+        .sunrise-conn .underline{ position:absolute; left:0; bottom:-8px; width:72%; height:9px; pointer-events:none; }
+        .sunrise-conn .c-sub{ margin-top:16px; font-size:15.5px; color:var(--ink-muted); font-weight:500; }
+
+        .sunrise-conn .tabs{ margin-top:38px; display:flex; gap:8px; flex-wrap:wrap; }
+        .sunrise-conn .tab{ border:2px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:100px; padding:11px 22px; font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .sunrise-conn .tab:hover{ border-color:var(--yellow); background:#FFF7E3; }
+        .sunrise-conn .tab.active{ background:var(--ink); border-color:var(--ink); color:#fff; }
+        .sunrise-conn .panel{ margin-top:32px; }
+
+        .sunrise-conn .kicker{ font-size:11.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:14px; }
+        .sunrise-conn .blurb{ font-size:14px; font-weight:500; color:var(--ink-muted); line-height:1.6; margin-bottom:16px; }
+
+        /* Account rows */
+        .sunrise-conn .acc{ background:var(--card); border:2px solid var(--line); border-radius:22px; padding:22px 24px; display:flex; align-items:center; gap:16px; transition:transform .25s, border-color .25s, box-shadow .25s; flex-wrap:wrap; }
+        .sunrise-conn .acc:hover{ transform:translateY(-3px); box-shadow:0 14px 36px rgba(59,54,99,.1); }
+        .sunrise-conn .acc.system{ background:#EAF6EF; border-color:#D4EBDD; }
+        .sunrise-conn .acc-ico{ width:48px; height:48px; border-radius:16px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+        .sunrise-conn .acc-info{ flex:1; min-width:0; }
+        .sunrise-conn .acc-lbl{ font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:4px; }
+        .sunrise-conn .acc-mail{ font-size:15.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink); }
+        .sunrise-conn .acc-note{ font-size:12.5px; font-weight:500; color:var(--ink-muted); margin-top:3px; }
+        .sunrise-conn .status{ font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:7px 14px; border-radius:100px; flex-shrink:0; display:inline-flex; align-items:center; gap:6px; }
+        .sunrise-conn .status::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+        .sunrise-conn .st-ok, .sunrise-conn .st-default{ background:#fff; color:#2E7D5B; }
+        .sunrise-conn .st-err{ background:#fff; color:#C74E3B; }
+        .sunrise-conn .remove{ background:#fff; border:2px solid var(--line); border-radius:100px; font-family:inherit; font-size:12px; font-weight:800; color:#C74E3B; cursor:pointer; padding:9px 16px; flex-shrink:0; transition:all .2s; }
+        .sunrise-conn .remove:hover{ background:#C74E3B; border-color:#C74E3B; color:#fff; }
+
+        .sunrise-conn .sec-row{ margin:44px 0 16px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+        .sunrise-conn .sec-left .kicker{ margin-bottom:5px; }
+        .sunrise-conn .sec-left p{ font-size:13.5px; font-weight:600; color:var(--ink-soft); margin:0; }
+        .sunrise-conn .connect-btn{ background:var(--tc); color:#fff; border:none; border-radius:100px; padding:13px 24px; font-family:inherit; font-size:13.5px; font-weight:800; cursor:pointer; transition:transform .2s, box-shadow .2s; white-space:nowrap; }
+        .sunrise-conn .connect-btn:hover{ transform:scale(1.05); box-shadow:0 10px 26px rgba(244,129,63,.4); }
+        .sunrise-conn .stackgap{ display:flex; flex-direction:column; gap:12px; }
+
+        /* Empty */
+        .sunrise-conn .empty{ background:var(--card); border:3px dashed var(--blush); border-radius:28px; padding:52px 32px; text-align:center; }
+        .sunrise-conn .empty-ico{ width:64px; height:64px; border-radius:50%; background:var(--blush); display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 18px; }
+        .sunrise-conn .empty h3{ font-size:19px; font-weight:800; margin:0 0 8px; color:var(--ink); }
+        .sunrise-conn .empty p{ font-size:13.5px; font-weight:500; color:var(--ink-muted); line-height:1.6; max-width:34ch; margin:0 auto 22px; }
+
+        /* Setup */
+        .sunrise-conn .setup{ display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
+        .sunrise-conn .form-card{ background:var(--card); border:2px solid var(--line); border-radius:26px; padding:30px; }
+        .sunrise-conn .form-card h2{ font-size:21px; font-weight:800; letter-spacing:-.01em; margin:0 0 6px; color:var(--ink); }
+        .sunrise-conn .fsub{ font-size:13px; font-weight:500; color:var(--ink-muted); line-height:1.6; margin:0 0 24px; }
+        .sunrise-conn .field{ margin-bottom:16px; }
+        .sunrise-conn .field label{ display:block; font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:7px; }
+        .sunrise-conn .field input, .sunrise-conn .field select{ width:100%; padding:13px 16px; border-radius:14px; border:2px solid var(--line); background:#fff; font-family:inherit; font-size:13.5px; font-weight:600; color:var(--ink); outline:none; transition:border-color .2s, box-shadow .2s; }
+        .sunrise-conn .field input:focus, .sunrise-conn .field select:focus{ border-color:var(--tc); box-shadow:0 0 0 4px rgba(244,129,63,.12); }
+        .sunrise-conn .field input::placeholder{ color:#C4C1D4; font-weight:500; }
+        .sunrise-conn .two{ display:grid; grid-template-columns:1fr 100px; gap:12px; }
+
+        .sunrise-conn .toggle-row{ display:flex; align-items:center; gap:12px; margin-bottom:16px; cursor:pointer; user-select:none; background:none; border:none; padding:0; font-family:inherit; }
+        .sunrise-conn .track{ width:46px; height:26px; border-radius:100px; background:#E5E2EF; position:relative; transition:background .2s; flex-shrink:0; display:block; }
+        .sunrise-conn .track.on{ background:var(--mint); }
+        .sunrise-conn .thumb{ position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.15); transition:transform .2s; display:block; }
+        .sunrise-conn .track.on .thumb{ transform:translateX(20px); }
+        .sunrise-conn .toggle-label{ font-size:13px; font-weight:600; color:var(--ink-soft); }
+
+        .sunrise-conn .submit{ width:100%; background:var(--ink); color:#fff; border:none; border-radius:100px; padding:16px; font-family:inherit; font-size:14.5px; font-weight:800; cursor:pointer; transition:background .2s, transform .2s; }
+        .sunrise-conn .submit:hover:not(:disabled){ background:var(--tc); transform:translateY(-2px); }
+        .sunrise-conn .submit:disabled{ opacity:.6; cursor:default; }
+
+        .sunrise-conn .oauth{ margin-top:22px; padding-top:22px; border-top:2px solid var(--line); }
+        .sunrise-conn .oauth-lbl{ font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:10px; }
+        .sunrise-conn .soon{ display:inline-block; margin-left:6px; background:var(--yellow); color:var(--ink); font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:100px; }
+        .sunrise-conn .goog{ width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:2px solid var(--line); border-radius:100px; padding:13px; font-family:inherit; font-size:13px; font-weight:700; color:var(--ink-soft); cursor:not-allowed; opacity:.5; }
+
+        /* Guide */
+        .sunrise-conn .guide{ display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
+        .sunrise-conn .howto{ background:#EAF6EF; border-radius:22px; padding:24px; }
+        .sunrise-conn .howto-t{ font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#2E7D5B; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .sunrise-conn .step{ display:flex; gap:12px; margin-bottom:12px; }
+        .sunrise-conn .step:last-child{ margin-bottom:0; }
+        .sunrise-conn .step .n{ width:24px; height:24px; border-radius:50%; background:#fff; color:#2E7D5B; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .sunrise-conn .step p{ font-size:13px; font-weight:600; color:#3D6B52; line-height:1.55; margin:0; }
+
+        .sunrise-conn .gcard{ background:var(--card); border:2px solid var(--line); border-radius:22px; overflow:hidden; }
+        .sunrise-conn .gtabs{ display:flex; border-bottom:2px solid var(--line); }
+        .sunrise-conn .gtab{ flex:1; background:none; border:none; padding:13px 4px; font-family:inherit; font-size:12px; font-weight:700; color:var(--ink-muted); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all .2s; }
+        .sunrise-conn .gtab.active{ color:var(--tc-2); border-bottom-color:var(--tc); }
+        .sunrise-conn .gbody{ padding:20px 22px; }
+        .sunrise-conn .gbody .step .n{ background:var(--blush); color:#B05A1F; }
+        .sunrise-conn .gbody .step p{ color:var(--ink-soft); }
+        .sunrise-conn .smtpbox{ margin-top:14px; background:#FFF7E3; border-radius:16px; padding:14px 16px; }
+        .sunrise-conn .smtpbox-t{ font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#8A6D1B; margin-bottom:8px; }
+        .sunrise-conn .smtpbox div{ font-size:12.5px; font-weight:600; color:var(--ink-muted); line-height:1.9; }
+        .sunrise-conn .smtpbox b{ color:var(--ink); font-weight:800; }
+        .sunrise-conn .gnote{ margin-top:10px; font-size:11.5px; font-weight:500; color:var(--ink-muted); line-height:1.5; }
+
+        /* Toast */
+        .sunrise-conn .conn-toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:9999; padding:13px 22px; border-radius:100px; font-size:13px; font-weight:700; color:#fff; box-shadow:0 14px 36px rgba(59,54,99,.25); pointer-events:none; animation:connToast .4s cubic-bezier(.2,.8,.3,1.2); }
+        @keyframes connToast{ from{ opacity:0; transform:translateX(-50%) translateY(12px) } to{ opacity:1; transform:translateX(-50%) translateY(0) } }
+
+        /* Delete modal */
+        .sunrise-conn .conn-modal-bg{ position:fixed; inset:0; z-index:600; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(59,54,99,.4); backdrop-filter:blur(6px); }
+        .sunrise-conn .conn-modal{ background:#fff; border-radius:28px; padding:36px 32px 30px; width:100%; max-width:400px; text-align:center; box-shadow:0 30px 70px rgba(59,54,99,.25); animation:connPop .3s cubic-bezier(.2,.8,.3,1.2); }
+        @keyframes connPop{ from{ opacity:0; transform:scale(.94) } to{ opacity:1; transform:none } }
+        .sunrise-conn .conn-del-ico{ font-size:36px; margin-bottom:14px; }
+        .sunrise-conn .conn-modal h3{ font-size:20px; font-weight:800; color:var(--ink); margin:0 0 10px; }
+        .sunrise-conn .conn-modal p{ font-size:13.5px; font-weight:500; color:var(--ink-muted); line-height:1.65; margin:0 0 24px; }
+        .sunrise-conn .conn-modal-actions{ display:flex; gap:10px; justify-content:center; }
+        .sunrise-conn .conn-cancel{ padding:13px 24px; border-radius:100px; border:2px solid var(--line); background:#fff; color:var(--ink-soft); font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; transition:background .2s; }
+        .sunrise-conn .conn-cancel:hover{ background:var(--card); }
+        .sunrise-conn .conn-danger{ padding:13px 26px; border-radius:100px; border:none; background:#C74E3B; color:#fff; font-family:inherit; font-size:13.5px; font-weight:800; cursor:pointer; transition:transform .2s; }
+        .sunrise-conn .conn-danger:hover:not(:disabled){ transform:translateY(-2px); }
+        .sunrise-conn .conn-danger:disabled{ opacity:.6; cursor:default; }
+
+        .sunrise-conn .fade{ opacity:0; transform:translateY(16px); animation:sunFade .6s cubic-bezier(.2,.7,.2,1) forwards; }
+        @keyframes sunFade{ to{ opacity:1; transform:none } }
+        @media (prefers-reduced-motion:reduce){
+          .sunrise-conn .fade{ animation:none; opacity:1; transform:none }
+          .sunrise-conn .conn-toast, .sunrise-conn .conn-modal{ animation:none }
+        }
+        @media (max-width:860px){
+          .sunrise-conn .setup{ grid-template-columns:1fr; }
+          .sunrise-conn .guide{ position:static; }
+        }
+        @media (max-width:560px){
+          .sunrise-conn .wrap{ padding:36px 20px 90px; }
+          .sunrise-conn .form-card{ padding:24px 20px; }
+        }
+      `}</style>
     </main>
   )
 }

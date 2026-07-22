@@ -2,252 +2,77 @@ import { useState, useEffect, useCallback } from 'react'
 import TherapistApplicationModal from '../components/TherapistApplicationModal'
 
 const API = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '')
-const BD = 'rgba(28,26,23,0.08)'
 
-// ── Avatar helpers ────────────────────────────────────────────────────────────
-const AVATAR_COLORS = [
-  { bg: 'rgba(196,99,58,0.12)',  color: 'var(--tc)'     },
-  { bg: 'rgba(122,158,142,0.15)',color: 'var(--sage)'   },
-  { bg: 'rgba(139,126,200,0.12)',color: 'var(--purple)' },
-  { bg: 'rgba(201,168,76,0.13)', color: 'var(--gold)'   },
-  { bg: 'rgba(74,70,64,0.1)',    color: 'var(--ink-soft)'},
-]
+// ── Avatar tones (cycled by name hash, like the reference's av-1/2/3) ─────────
+const AVATAR_TONES = ['av-1', 'av-2', 'av-3', 'av-4']
 
-function avatarColor(name = '') {
+function avatarTone(name = '') {
   let sum = 0
   for (const c of name) sum += c.charCodeAt(0)
-  return AVATAR_COLORS[sum % AVATAR_COLORS.length]
+  return AVATAR_TONES[sum % AVATAR_TONES.length]
 }
 
 function initials(firstName = '', lastName = '') {
   return `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase()
 }
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-function TherapistsSidebar({ activeFilter, onFilter, specializations, stats, onApply }) {
-  const filters = ['All', ...specializations]
-
-  return (
-    <div
-      className="border-r hidden md:flex flex-col gap-5 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto"
-      style={{ borderColor: BD, background: 'rgba(247,242,234,0.4)' }}
-    >
-      {/* Filter by specialty - re-enable when directory grows
-      <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted">
-        Filter by specialty
-      </div>
-      <div className="flex flex-col gap-0.5">
-        {filters.map(f => {
-          const id     = f === 'All' ? 'all' : f
-          const active = activeFilter === id
-          return (
-            <div
-              key={id}
-              onClick={() => onFilter(id)}
-              className="flex items-center gap-2 px-[11px] py-[9px] rounded-lg cursor-pointer transition-all duration-150 select-none text-[13px] text-ink-soft"
-              style={{
-                background:  active ? 'var(--paper)' : 'transparent',
-                border:      active ? '0.5px solid rgba(28,26,23,0.07)' : '0.5px solid transparent',
-              }}
-            >
-              <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ background: active ? 'var(--tc)' : 'var(--ink-muted)', opacity: active ? 1 : 0.4 }}
-              />
-              {f}
-            </div>
-          )
-        })}
-      </div>
-      */}
-
-      {/* Stats mini-cards - re-enable when directory grows
-      {stats && (
-        <div className="mt-1">
-          <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted mb-3">
-            Network
-          </div>
-          <div className="flex flex-col gap-2">
-            {[
-              { value: stats.verified,       label: 'Verified therapists' },
-              { value: stats.regions,        label: 'Regions covered'     },
-              { value: stats.specializations,label: 'Specializations'     },
-            ].map(({ value, label }) => (
-              <div
-                key={label}
-                className="rounded-[10px] px-[11px] py-[10px]"
-                style={{ background: 'var(--paper)', border: `0.5px solid ${BD}` }}
-              >
-                <div className="font-lora text-[22px] font-medium text-ink leading-none">{value}</div>
-                <div className="text-[11px] text-ink-muted font-light mt-1">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      */}
-
-    </div>
-  )
-}
-
-// ── Therapist Card ────────────────────────────────────────────────────────────
+// ── Therapist card ────────────────────────────────────────────────────────────
 function TherapistCard({ therapist }) {
   const { firstName, lastName, about, location, specializations,
           quote, website, bookingLink, sessionType, profileImage } = therapist
-  const ac = avatarColor(`${firstName}${lastName}`)
+  const tone = avatarTone(`${firstName}${lastName}`)
 
   return (
-    <div
-      className="letter-card"
-      style={{
-        background: 'var(--paper)',
-        border: `0.5px solid ${BD}`,
-        borderRadius: 14,
-        overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(28,26,23,0.04)',
-        transition: 'box-shadow 0.2s',
-        padding: '14px 18px',
-      }}
-      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(28,26,23,0.08)'}
-      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(28,26,23,0.04)'}
-    >
-      {/* Header: avatar + name/meta */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-        {profileImage
-          ? <img
-              src={profileImage}
-              alt={`${firstName} ${lastName}`}
-              style={{ width: 46, height: 46, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `0.5px solid ${BD}` }}
-              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
-            />
-          : null}
-        <div
-          style={{
-            width: 46, height: 46, borderRadius: '50%', flexShrink: 0,
-            background: ac.bg, color: ac.color,
-            display: profileImage ? 'none' : 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-          }}
-        >
+    <div className="card">
+      <div className="top">
+        {profileImage ? (
+          <img
+            className="avatar-img"
+            src={profileImage}
+            alt={`${firstName} ${lastName}`}
+            onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+          />
+        ) : null}
+        <div className={`avatar ${tone}`} style={{ display: profileImage ? 'none' : 'flex' }}>
           {initials(firstName, lastName)}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: '"Lora", serif', fontSize: 15.5, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.2px' }}>
-              {firstName} {lastName}
-            </span>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0,
-              fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 100,
-              background: 'rgba(196,99,58,0.08)', color: 'var(--tc)',
-              border: '0.5px solid rgba(196,99,58,0.18)',
-              fontFamily: '"DM Sans", sans-serif',
-            }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Verified
-            </span>
+
+        <div className="who">
+          <div className="name-row">
+            <span className="name">{firstName} {lastName}</span>
+            <span className="verified">✓ Verified</span>
           </div>
           {(location || sessionType) && (
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-              {location && (
-                <span style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {location}
-                </span>
-              )}
-              {location && sessionType && <span style={{ fontSize: 11, color: 'var(--ink-muted)', opacity: 0.4 }}>·</span>}
-              {sessionType && (
-                <span style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
-                  {sessionType}
-                </span>
-              )}
+            <div className="meta">
+              {location && <span>📍 {location}</span>}
+              {location && sessionType && <span className="dot">·</span>}
+              {sessionType && <span>{sessionType}</span>}
             </div>
           )}
         </div>
       </div>
 
-      {/* About */}
-      {about && (
-        <p style={{
-          fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.65,
-          fontFamily: '"DM Sans", sans-serif', margin: '0 0 10px',
-        }}>
-          {about}
-        </p>
-      )}
+      {about && <p className="about">{about}</p>}
 
-      {/* Specialization tags */}
       {specializations?.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-          {specializations.map(s => (
-            <span key={s} style={{
-              fontSize: 10.5, padding: '2px 9px', borderRadius: 100,
-              background: 'rgba(28,26,23,0.04)', color: 'var(--ink-soft)',
-              border: `0.5px solid ${BD}`, fontFamily: '"DM Sans", sans-serif',
-            }}>
-              {s}
-            </span>
-          ))}
+        <div className="tags">
+          {specializations.map(s => <span key={s} className="tag">{s}</span>)}
         </div>
       )}
 
-      {/* Quote — testimonial highlight */}
       {quote && (
-        <div style={{
-          background: 'rgba(196,99,58,0.05)',
-          border: '0.5px solid rgba(196,99,58,0.22)',
-          borderLeft: '3px solid var(--tc)',
-          borderRadius: 9,
-          padding: '9px 13px',
-          marginBottom: 12,
-        }}>
-          <div style={{ fontSize: 9.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--tc)', fontFamily: '"DM Sans", sans-serif', marginBottom: 4, opacity: 0.75 }}>
-            Why I recommend Letter from Heart
-          </div>
-          <p style={{
-            fontFamily: 'Lora, serif', fontStyle: 'italic',
-            fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.65, margin: 0,
-          }}>
-            "{quote}"
-          </p>
+        <div className="quote">
+          <div className="qt">Why I recommend Letter from Heart</div>
+          <p>"{quote}"</p>
         </div>
       )}
 
-      {/* Actions */}
       {(bookingLink || website) && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          {bookingLink && (
-            <span style={{
-              flex: '1 1 130px', textAlign: 'center',
-              padding: '7px 12px', borderRadius: 9,
-              background: 'rgba(196,99,58,0.28)', color: 'rgba(255,255,255,0.55)',
-              fontSize: 12, fontWeight: 500, fontFamily: '"DM Sans", sans-serif',
-              cursor: 'not-allowed', userSelect: 'none', display: 'block',
-            }}>
-              Book a session (coming soon)
-            </span>
-          )}
+        <div className="actions">
+          {bookingLink && <span className="book">Book a session (coming soon)</span>}
           {website && (
-            <a
-              href={website}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                padding: '7px 13px', borderRadius: 9,
-                border: `0.5px solid ${BD}`, background: 'transparent',
-                color: 'var(--ink-soft)', fontSize: 12, fontFamily: '"DM Sans", sans-serif',
-                textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5,
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.04)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              Website
+            <a className="website" href={website} target="_blank" rel="noopener noreferrer">
+              🌐 Website
             </a>
           )}
         </div>
@@ -256,46 +81,14 @@ function TherapistCard({ therapist }) {
   )
 }
 
-// ── Empty state ───────────────────────────────────────────────────────────────
-function EmptyTherapists({ filter, onClear }) {
-  return (
-    <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-      <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.35 }}>🔍</div>
-      <div style={{ fontFamily: '"Lora", serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>
-        {filter === 'all' ? 'No therapists yet' : `No therapists for "${filter}"`}
-      </div>
-      <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.65, maxWidth: 300, margin: '0 auto 16px' }}>
-        {filter === 'all'
-          ? 'We\'re building our network. Check back soon.'
-          : 'Try a different specialization or view all.'}
-      </p>
-      {filter !== 'all' && (
-        <button
-          onClick={onClear}
-          style={{
-            padding: '7px 18px', borderRadius: 100, fontSize: 12,
-            fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-            background: 'transparent', color: 'var(--tc)',
-            border: '0.5px solid rgba(196,99,58,0.3)',
-          }}
-        >
-          View all therapists
-        </button>
-      )}
-    </div>
-  )
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function TherapistsPage() {
-  const [therapists,     setTherapists]     = useState([])
-  const [specializations,setSpecializations]= useState([])
-  const [stats,          setStats]          = useState(null)
-  const [activeFilter,   setActiveFilter]   = useState('all')
-  const [loading,        setLoading]        = useState(true)
-  const [modalOpen,      setModalOpen]      = useState(false)
-
-  const BD_LINE = '#E0D4BC'
+  const [therapists,      setTherapists]      = useState([])
+  const [specializations, setSpecializations] = useState([])
+  const [stats,           setStats]           = useState(null)
+  const [activeFilter,    setActiveFilter]    = useState('all')
+  const [loading,         setLoading]         = useState(true)
+  const [modalOpen,       setModalOpen]       = useState(false)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -309,7 +102,7 @@ export default function TherapistsPage() {
       if (tJson.success)    setTherapists(tJson.data)
       if (sJson.success)    setStats(sJson.data)
       if (specJson.success) setSpecializations(specJson.data)
-    } catch { /* network error - fail silently, show empty state */ }
+    } catch { /* network error — fail silently, show empty state */ }
     setLoading(false)
   }, [])
 
@@ -318,7 +111,9 @@ export default function TherapistsPage() {
   const fetchFiltered = useCallback(async (filter) => {
     setLoading(true)
     try {
-      const url = filter === 'all' ? `${API}/api/therapists` : `${API}/api/therapists?specialization=${encodeURIComponent(filter)}`
+      const url = filter === 'all'
+        ? `${API}/api/therapists`
+        : `${API}/api/therapists?specialization=${encodeURIComponent(filter)}`
       const res  = await fetch(url)
       const json = await res.json()
       if (json.success) setTherapists(json.data)
@@ -331,169 +126,204 @@ export default function TherapistsPage() {
     fetchFiltered(f)
   }
 
+  const filters = ['All', ...specializations]
+
   return (
-    <>
-      <main className="page-enter w-full flex justify-center px-4 sm:px-6" style={{ minHeight: 'calc(100vh - 56px)', paddingTop: 24, paddingBottom: 48 }}>
-        <div className="w-full max-w-3xl lg:max-w-4xl" style={{ minWidth: 0 }}>
+    <main className="sunrise-therapists">
+      <div className="wrap">
 
-          {/* ── Hero ─────────────────────────────────────────────── */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, fontFamily: '"DM Sans", sans-serif', fontWeight: 600 }}>
-              <span style={{ width: 18, height: 1, background: BD_LINE, display: 'inline-block' }} />
-              For professionals
+        <div className="chip fade">✦ For professionals</div>
+
+        <h1 className="t-h1 fade" style={{ animationDelay: '.07s' }}>
+          Therapists who recommend{' '}
+          <span className="hl">
+            Letter from Heart
+            <svg viewBox="0 0 200 10" fill="none" preserveAspectRatio="none" className="underline">
+              <path d="M2 7 C 50 2, 100 9, 198 4" stroke="var(--yellow)" strokeWidth="5" strokeLinecap="round" />
+            </svg>
+          </span>
+        </h1>
+
+        <p className="t-sub fade" style={{ animationDelay: '.13s' }}>
+          These professionals use Letter from Heart as a complementary tool alongside their practice — for
+          expressive writing, emotional processing, and human connection.
+        </p>
+
+        {/* ── Trust cards ── */}
+        <div className="trust fade" style={{ animationDelay: '.2s' }}>
+          <div className="tcard a">
+            <div className="ico">🔒</div>
+            <h3>Manual verification</h3>
+            <p>Every therapist is personally reviewed. We verify credentials and license numbers before any profile goes live.</p>
+          </div>
+          <div className="tcard b">
+            <div className="ico">✦</div>
+            <h3>Complementary care</h3>
+            <p>These therapists actively recommend letter-writing as an expressive tool alongside professional therapy — not as a replacement.</p>
+          </div>
+        </div>
+
+        {/* ── Directory header + filters ── */}
+        <div className="dir-head fade" style={{ animationDelay: '.28s' }}>
+          <h2 className="dir-title">
+            Browse therapists
+            <svg viewBox="0 0 120 10" fill="none" preserveAspectRatio="none" className="underline">
+              <path d="M2 6 C 35 2, 70 9, 118 4" stroke="var(--lav)" strokeWidth="5" strokeLinecap="round" />
+            </svg>
+          </h2>
+          {specializations.length > 0 && (
+            <div className="filters">
+              {filters.map(f => {
+                const id = f === 'All' ? 'all' : f
+                return (
+                  <button
+                    key={id}
+                    className={`f ${activeFilter === id ? 'active' : ''}`}
+                    onClick={() => handleFilter(id)}
+                  >
+                    {f}
+                  </button>
+                )
+              })}
             </div>
-            <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 7 }}>
-              Therapists who recommend<br />Letter from Heart
-            </h1>
-            <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 480 }}>
-              These professionals use Letter from Heart as a complementary tool alongside their practice - for expressive writing, emotional processing, and human connection.
-            </p>
-          </div>
+          )}
+        </div>
 
-          {/* ── Stats row - re-enable when directory grows ──────────── */}
-          {/* {stats && (
-            <div className="grid grid-cols-3 gap-3 mb-8">
-              {[
-                { n: stats.verified,       l: 'Verified therapists' },
-                { n: stats.regions,        l: 'Regions covered'     },
-                { n: stats.specializations,l: 'Specializations'     },
-              ].map(({ n, l }) => (
-                <div
-                  key={l}
-                  className="stat-card rounded-[12px] p-4 text-center"
-                  style={{ background: 'var(--paper)', border: `0.5px solid ${BD}` }}
-                >
-                  <div className="font-lora text-[26px] md:text-[30px] font-medium text-ink leading-none mb-1">
-                    {n}
-                  </div>
-                  <div className="text-[11px] text-ink-muted" style={{ fontFamily: '"DM Sans", sans-serif' }}>
-                    {l}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )} */}
-
-          {/* ── Trust row ────────────────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
-            {[
-              { icon: '🔒', title: 'Manual verification', body: 'Every therapist is personally reviewed. We verify credentials and license numbers before any profile goes live.' },
-              { icon: '✦', title: 'Complementary care', body: 'These therapists actively recommend letter-writing as an expressive tool alongside professional therapy - not as a replacement.' },
-            ].map(({ icon, title, body }) => (
-              <div
-                key={title}
-                className="rounded-[11px] p-3"
-                style={{ background: 'rgba(28,26,23,0.025)', border: `0.5px solid ${BD}` }}
-              >
-                <div style={{ fontSize: 16, marginBottom: 4 }}>{icon}</div>
-                <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink)', marginBottom: 2, fontFamily: '"DM Sans", sans-serif' }}>{title}</div>
-                <div style={{ fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.5, fontFamily: '"DM Sans", sans-serif' }}>{body}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* ── Directory header + filter pills ──────────────────── */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
-            <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>
-              Browse therapists
-            </div>
-            {/* <button
-              onClick={() => setModalOpen(true)}
-              style={{
-                padding: '8px 18px', borderRadius: 100, fontSize: 12.5,
-                fontFamily: '"DM Sans", sans-serif', fontWeight: 500, cursor: 'pointer',
-                background: 'var(--tc)', color: '#fff', border: 'none',
-                boxShadow: '0 2px 10px rgba(196,99,58,0.25)',
-                transition: 'opacity 0.15s, box-shadow 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,99,58,0.32)' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(196,99,58,0.25)' }}
-            >
-              Apply to join
-            </button> */}
-          </div>
-
-          {/* Mobile filter pills */}
-          <div className="flex md:hidden gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
-            {['All', ...specializations].map(f => {
-              const id     = f === 'All' ? 'all' : f
-              const active = activeFilter === id
-              return (
-                <button
-                  key={id}
-                  onClick={() => handleFilter(id)}
-                  style={{
-                    padding: '5px 12px', borderRadius: 100, fontSize: 11.5, whiteSpace: 'nowrap',
-                    fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-                    border: `1px solid ${active ? 'var(--tc)' : 'rgba(28,26,23,0.12)'}`,
-                    background: active ? 'rgba(196,99,58,0.1)' : 'transparent',
-                    color: active ? 'var(--tc)' : 'var(--ink-muted)',
-                    flexShrink: 0,
-                  }}
-                >
-                  {f}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* ── Therapist directory ───────────────────────────────── */}
+        {/* ── Directory ── */}
+        <div className="fade" style={{ animationDelay: '.34s' }}>
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[1, 2, 3].map(i => (
-                <div
-                  key={i}
-                  className="rounded-[12px] animate-pulse"
-                  style={{ height: 160, background: 'rgba(28,26,23,0.04)', border: `0.5px solid ${BD}` }}
-                />
-              ))}
+            <div className="grid">
+              {[1, 2, 3].map(i => <div key={i} className="skeleton" />)}
             </div>
           ) : therapists.length === 0 ? (
-            <EmptyTherapists filter={activeFilter} onClear={() => handleFilter('all')} />
+            <div className="empty">
+              <div className="empty-icon">🔍</div>
+              <h3 className="empty-title">
+                {activeFilter === 'all' ? 'No therapists yet' : `No therapists for "${activeFilter}"`}
+              </h3>
+              <p className="empty-text">
+                {activeFilter === 'all'
+                  ? "We're building our network. Check back soon."
+                  : 'Try a different specialization, or view everyone.'}
+              </p>
+              {activeFilter !== 'all' && (
+                <button className="empty-cta" onClick={() => handleFilter('all')}>View all therapists</button>
+              )}
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {therapists.map(t => (
-                <TherapistCard key={t._id} therapist={t} />
-              ))}
+            <div className="grid">
+              {therapists.map(t => <TherapistCard key={t._id} therapist={t} />)}
             </div>
           )}
-
-          {/* ── Apply CTA banner ─────────────────────────────────── */}
-          {!loading && (
-            <div
-              className="rounded-[12px] mt-5 p-4 sm:p-5 flex items-center justify-between gap-4 flex-wrap"
-              style={{ background: 'rgba(196,99,58,0.05)', border: '0.5px solid rgba(196,99,58,0.18)' }}
-            >
-              <div>
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>
-                  Are you a therapist?
-                </div>
-                <div style={{ fontSize: 12.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', lineHeight: 1.5 }}>
-                  Join our growing network of professionals who recommend Letter from Heart alongside their practice.
-                </div>
-              </div>
-              <button
-                onClick={() => setModalOpen(true)}
-                style={{
-                  flexShrink: 0, padding: '8px 20px', borderRadius: 100,
-                  background: 'var(--tc)', color: '#fff',
-                  fontSize: 12.5, fontWeight: 500, fontFamily: '"DM Sans", sans-serif',
-                  border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                  transition: 'opacity 0.15s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-              >
-                Apply to join
-              </button>
-            </div>
-          )}
-
         </div>
-      </main>
 
-      {/* Application Modal */}
+        {/* ── Apply CTA ── */}
+        {!loading && (
+          <div className="cta fade" style={{ animationDelay: '.42s' }}>
+            <div className="cta-sun" aria-hidden="true" />
+            <div className="cta-copy">
+              <h3>Are you a therapist?</h3>
+              <p>Join our growing network of professionals who recommend Letter from Heart alongside their practice.</p>
+            </div>
+            <button className="cta-btn" onClick={() => setModalOpen(true)}>Apply to join →</button>
+          </div>
+        )}
+
+      </div>
+
       {modalOpen && <TherapistApplicationModal onClose={() => setModalOpen(false)} />}
-    </>
+
+      <style>{`
+        .sunrise-therapists{ background:var(--cream); min-height:100%; }
+        .sunrise-therapists .wrap{ max-width:920px; margin:0 auto; padding:52px 28px 120px; }
+
+        .sunrise-therapists .chip{ display:inline-flex; align-items:center; gap:8px; background:var(--lav); color:#5C4FA8; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:8px 16px; border-radius:100px; margin-bottom:22px; }
+        .sunrise-therapists .t-h1{ font-size:clamp(28px,4vw,42px); font-weight:800; line-height:1.14; letter-spacing:-.02em; max-width:18ch; color:var(--ink); margin:0; }
+        .sunrise-therapists .t-h1 .hl{ color:var(--tc); position:relative; white-space:nowrap; }
+        .sunrise-therapists .underline{ position:absolute; left:0; bottom:-8px; width:100%; height:9px; pointer-events:none; }
+        .sunrise-therapists .t-sub{ margin-top:18px; font-size:15.5px; color:var(--ink-muted); font-weight:500; max-width:56ch; line-height:1.65; }
+
+        /* Trust cards */
+        .sunrise-therapists .trust{ margin-top:36px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .sunrise-therapists .tcard{ border-radius:22px; padding:24px; border:2px solid transparent; }
+        .sunrise-therapists .tcard.a{ background:#EAF6EF; } .sunrise-therapists .tcard.b{ background:#FDEFE4; }
+        .sunrise-therapists .tcard .ico{ width:44px; height:44px; border-radius:14px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px; }
+        .sunrise-therapists .tcard h3{ font-size:15px; font-weight:800; margin:0 0 6px; color:var(--ink); }
+        .sunrise-therapists .tcard p{ font-size:13px; font-weight:500; color:var(--ink-soft); line-height:1.6; margin:0; }
+
+        /* Directory header */
+        .sunrise-therapists .dir-head{ margin-top:48px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+        .sunrise-therapists .dir-title{ font-size:22px; font-weight:800; letter-spacing:-.01em; position:relative; display:inline-block; color:var(--ink); margin:0; }
+        .sunrise-therapists .dir-title .underline{ width:60%; }
+        .sunrise-therapists .filters{ display:flex; gap:8px; flex-wrap:wrap; }
+        .sunrise-therapists .f{ border:2px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:100px; padding:9px 16px; font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .sunrise-therapists .f:hover{ transform:translateY(-2px); }
+        .sunrise-therapists .f.active{ background:var(--ink); border-color:var(--ink); color:#fff; }
+
+        /* Cards */
+        .sunrise-therapists .grid{ display:flex; flex-direction:column; gap:16px; }
+        .sunrise-therapists .card{ background:var(--card); border:2px solid var(--line); border-radius:24px; padding:26px; transition:transform .25s, border-color .25s, box-shadow .25s; }
+        .sunrise-therapists .card:hover{ transform:translateY(-4px); border-color:var(--lav); box-shadow:0 16px 40px rgba(59,54,99,.1); }
+        .sunrise-therapists .top{ display:flex; align-items:flex-start; gap:16px; margin-bottom:14px; }
+        .sunrise-therapists .avatar,
+        .sunrise-therapists .avatar-img{ width:56px; height:56px; border-radius:20px; flex-shrink:0; }
+        .sunrise-therapists .avatar{ display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:800; }
+        .sunrise-therapists .avatar-img{ object-fit:cover; }
+        .sunrise-therapists .av-1{ background:var(--blush); color:#B05A1F; }
+        .sunrise-therapists .av-2{ background:var(--mint);  color:#2E7D5B; }
+        .sunrise-therapists .av-3{ background:var(--lav);   color:#5C4FA8; }
+        .sunrise-therapists .av-4{ background:var(--sky);   color:#3E6FA8; }
+        .sunrise-therapists .who{ flex:1; min-width:0; }
+        .sunrise-therapists .name-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:5px; }
+        .sunrise-therapists .name{ font-size:18px; font-weight:800; letter-spacing:-.01em; color:var(--ink); }
+        .sunrise-therapists .verified{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:4px 11px; border-radius:100px; background:var(--mint); color:#2E7D5B; }
+        .sunrise-therapists .meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; font-weight:600; color:var(--ink-muted); }
+        .sunrise-therapists .meta .dot{ opacity:.4; }
+        .sunrise-therapists .about{ font-size:14px; font-weight:500; color:var(--ink-soft); line-height:1.65; margin:0 0 14px; }
+        .sunrise-therapists .tags{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px; }
+        .sunrise-therapists .tag{ font-size:11px; font-weight:700; padding:6px 13px; border-radius:100px; background:#fff; border:2px solid var(--line); color:var(--ink-soft); }
+        .sunrise-therapists .quote{ background:#FFF7E3; border-radius:16px; padding:16px 18px; margin-bottom:16px; }
+        .sunrise-therapists .quote .qt{ font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#8A6D1B; margin-bottom:7px; }
+        .sunrise-therapists .quote p{ font-size:14px; font-weight:500; font-style:italic; color:var(--ink-soft); line-height:1.65; margin:0; }
+        .sunrise-therapists .actions{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .sunrise-therapists .book{ flex:1 1 160px; text-align:center; padding:12px; border-radius:100px; background:var(--blush); color:#C89372; font-size:12.5px; font-weight:800; cursor:not-allowed; user-select:none; }
+        .sunrise-therapists .website{ display:inline-flex; align-items:center; gap:6px; padding:12px 20px; border-radius:100px; border:2px solid var(--line); background:#fff; color:var(--ink-soft); font-size:12.5px; font-weight:700; text-decoration:none; transition:all .2s; }
+        .sunrise-therapists .website:hover{ border-color:var(--tc); color:var(--tc-2); }
+
+        /* Skeleton */
+        .sunrise-therapists .skeleton{ height:200px; border-radius:24px; background:var(--card); border:2px solid var(--line); animation:tSkel 1.4s ease-in-out infinite; }
+        @keyframes tSkel{ 0%,100%{ opacity:1 } 50%{ opacity:.55 } }
+
+        /* Empty */
+        .sunrise-therapists .empty{ background:var(--card); border:2px dashed var(--line-strong); border-radius:24px; padding:56px 32px; text-align:center; }
+        .sunrise-therapists .empty-icon{ font-size:40px; margin-bottom:14px; opacity:.5; }
+        .sunrise-therapists .empty-title{ font-size:19px; font-weight:800; color:var(--ink); margin:0 0 8px; }
+        .sunrise-therapists .empty-text{ font-size:14px; color:var(--ink-muted); font-weight:500; line-height:1.7; max-width:330px; margin:0 auto; }
+        .sunrise-therapists .empty-cta{ margin-top:22px; background:var(--tc); color:#fff; border:none; border-radius:100px; padding:13px 24px; font-family:inherit; font-size:13.5px; font-weight:800; cursor:pointer; transition:transform .2s, box-shadow .2s; }
+        .sunrise-therapists .empty-cta:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(244,129,63,.35); }
+
+        /* CTA banner */
+        .sunrise-therapists .cta{ margin-top:32px; background:var(--tc); border-radius:28px; padding:32px 36px; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; position:relative; overflow:hidden; color:#fff; }
+        .sunrise-therapists .cta-sun{ position:absolute; right:-50px; top:-70px; width:220px; height:220px; border-radius:50%; background:var(--yellow); opacity:.85; }
+        .sunrise-therapists .cta-sun::after{ content:''; position:absolute; inset:30px; border-radius:50%; background:var(--tc); opacity:.25; }
+        .sunrise-therapists .cta-copy{ position:relative; }
+        .sunrise-therapists .cta h3{ font-size:22px; font-weight:800; letter-spacing:-.01em; margin:0 0 6px; }
+        .sunrise-therapists .cta p{ font-size:14px; font-weight:500; opacity:.95; max-width:44ch; line-height:1.55; margin:0; }
+        .sunrise-therapists .cta-btn{ position:relative; background:#fff; color:var(--tc-2); border:none; border-radius:100px; padding:15px 28px; font-family:inherit; font-size:14px; font-weight:800; cursor:pointer; transition:transform .2s, box-shadow .2s; flex-shrink:0; }
+        .sunrise-therapists .cta-btn:hover{ transform:scale(1.05); box-shadow:0 12px 30px rgba(0,0,0,.2); }
+
+        .sunrise-therapists .fade{ opacity:0; transform:translateY(16px); animation:sunFade .6s cubic-bezier(.2,.7,.2,1) forwards; }
+        @keyframes sunFade{ to{ opacity:1; transform:none } }
+        @media (prefers-reduced-motion:reduce){
+          .sunrise-therapists .fade{ animation:none; opacity:1; transform:none }
+          .sunrise-therapists .skeleton{ animation:none }
+        }
+        @media (max-width:640px){
+          .sunrise-therapists .wrap{ padding:36px 20px 90px; }
+          .sunrise-therapists .trust{ grid-template-columns:1fr; }
+          .sunrise-therapists .cta{ padding:28px 24px; }
+        }
+      `}</style>
+    </main>
   )
 }

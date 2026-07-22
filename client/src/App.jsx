@@ -118,9 +118,8 @@ function PageRouter() {
         {currentPage === 'caringstranger' && <CaringStrangerPage />}
         {currentPage === 'listenerread'   && <ListenerReadPage />}
         {currentPage === 'therapists'     && <TherapistsPage />}
-{currentPage === 'focus'          && <FocusPage />}        
+        {currentPage === 'focus'          && <FocusPage />}
         {currentPage === 'reportissue'    && <ReportIssuePage />}
-        {currentPage === 'therapists'     && <TherapistsPage />}
       </Layout>
       <Drawer />
       <LetterDrawer />

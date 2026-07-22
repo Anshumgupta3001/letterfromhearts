@@ -62,14 +62,14 @@ export default function GoogleRoleSetupModal() {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ background: 'rgba(28,26,23,0.5)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(59,54,99,0.5)', backdropFilter: 'blur(4px)' }}
     >
       <div
         className="w-full max-w-[420px] rounded-[20px] px-7 py-7"
         style={{
           background: 'var(--paper)',
-          border: '0.5px solid rgba(28,26,23,0.1)',
-          boxShadow: '0 24px 64px rgba(28,26,23,0.18)',
+          border: '0.5px solid rgba(59,54,99,0.1)',
+          boxShadow: '0 24px 64px rgba(59,54,99,0.18)',
         }}
       >
         {/* Header */}
@@ -95,9 +95,9 @@ export default function GoogleRoleSetupModal() {
                 disabled={loading}
                 className="flex items-start gap-3 px-4 py-3 rounded-[11px] text-left cursor-pointer border-none outline-none transition-all duration-200 disabled:opacity-60"
                 style={{
-                  background: active ? 'rgba(196,99,58,0.06)' : r.recommended ? 'rgba(196,99,58,0.02)' : 'var(--cream)',
-                  border: `1px solid ${active ? 'var(--tc)' : r.recommended ? 'rgba(196,99,58,0.22)' : 'rgba(28,26,23,0.1)'}`,
-                  boxShadow: active ? '0 0 0 3px rgba(196,99,58,0.07)' : 'none',
+                  background: active ? 'rgba(244,129,63,0.06)' : r.recommended ? 'rgba(244,129,63,0.02)' : 'var(--cream)',
+                  border: `1px solid ${active ? 'var(--tc)' : r.recommended ? 'rgba(244,129,63,0.22)' : 'rgba(59,54,99,0.1)'}`,
+                  boxShadow: active ? '0 0 0 3px rgba(244,129,63,0.07)' : 'none',
                 }}
               >
                 <span className="text-[17px] flex-shrink-0 mt-0.5">{r.icon}</span>
@@ -110,7 +110,7 @@ export default function GoogleRoleSetupModal() {
                       <span
                         className="text-[9.5px] font-medium font-sans uppercase tracking-[0.6px] px-[7px] py-[2px] rounded-full flex-shrink-0"
                         style={{
-                          background: active ? 'rgba(196,99,58,0.14)' : 'rgba(196,99,58,0.09)',
+                          background: active ? 'rgba(244,129,63,0.14)' : 'rgba(244,129,63,0.09)',
                           color: 'var(--tc)',
                         }}
                       >
@@ -135,7 +135,7 @@ export default function GoogleRoleSetupModal() {
         {error && (
           <div
             className="text-[12px] px-3 py-2.5 rounded-[9px] font-sans mb-4"
-            style={{ background: 'rgba(196,99,58,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(196,99,58,0.2)' }}
+            style={{ background: 'rgba(244,129,63,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(244,129,63,0.2)' }}
           >
             {error}
           </div>
@@ -146,7 +146,7 @@ export default function GoogleRoleSetupModal() {
           onClick={handleSave}
           disabled={loading || !role}
           className="w-full py-[13px] rounded-[10px] font-sans text-[14px] font-medium border-none cursor-pointer transition-all duration-200 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 14px rgba(28,26,23,0.18)' }}
+          style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 14px rgba(59,54,99,0.18)' }}
         >
           {loading && <Spinner />}
           {loading ? 'Saving…' : 'Get Started →'}

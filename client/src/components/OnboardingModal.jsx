@@ -176,16 +176,16 @@ export default function OnboardingModal() {
           to   { opacity: 1; transform: translateY(0); }
         }
         .lfh-question-card { animation: lfh-slide-in 0.28s cubic-bezier(0.22,1,0.36,1) both; }
-        .lfh-opt:hover { background: rgba(196,99,58,0.06) !important; border-color: rgba(196,99,58,0.35) !important; }
+        .lfh-opt:hover { background: rgba(244,129,63,0.06) !important; border-color: rgba(244,129,63,0.35) !important; }
         .lfh-opt:active { transform: scale(0.985); }
-        .lfh-skip:hover { background: rgba(28,26,23,0.04) !important; border-color: rgba(28,26,23,0.35) !important; }
+        .lfh-skip:hover { background: rgba(59,54,99,0.04) !important; border-color: rgba(59,54,99,0.35) !important; }
       `}</style>
 
       {/* Backdrop */}
       <div
         style={{
           position: 'fixed', inset: 0, zIndex: 999,
-          background: 'rgba(28,26,23,0.55)',
+          background: 'rgba(59,54,99,0.55)',
           backdropFilter: 'blur(6px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '16px',
@@ -196,14 +196,14 @@ export default function OnboardingModal() {
             width: '100%', maxWidth: 520,
             background: 'var(--paper)',
             borderRadius: 24,
-            boxShadow: '0 32px 80px rgba(28,26,23,0.22)',
+            boxShadow: '0 32px 80px rgba(59,54,99,0.22)',
             overflow: 'hidden',
             display: 'flex', flexDirection: 'column',
             maxHeight: 'calc(100dvh - 32px)',
           }}
         >
           {/* ── Progress bar ── */}
-          <div style={{ height: 4, background: 'rgba(28,26,23,0.07)', flexShrink: 0, position: 'relative' }}>
+          <div style={{ height: 4, background: 'rgba(59,54,99,0.07)', flexShrink: 0, position: 'relative' }}>
             <div
               style={{
                 height: '100%',
@@ -227,7 +227,7 @@ export default function OnboardingModal() {
             >
               <div
                 style={{
-                  fontSize: 11, fontFamily: '"DM Sans", sans-serif',
+                  fontSize: 11, fontFamily: '"Inter", system-ui, sans-serif',
                   fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase',
                   color: 'var(--tc)',
                 }}
@@ -236,7 +236,7 @@ export default function OnboardingModal() {
               </div>
               <div
                 style={{
-                  fontSize: 11, fontFamily: '"DM Sans", sans-serif',
+                  fontSize: 11, fontFamily: '"Inter", system-ui, sans-serif',
                   color: 'var(--ink-muted)', letterSpacing: '0.3px',
                 }}
               >
@@ -248,7 +248,7 @@ export default function OnboardingModal() {
             <div key={animKey} className="lfh-question-card">
               <h2
                 style={{
-                  fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 500,
+                  fontFamily: '"Inter", system-ui, sans-serif', fontSize: 22, fontWeight: 500,
                   color: 'var(--ink)', lineHeight: 1.4, marginBottom: 24,
                 }}
               >
@@ -267,12 +267,12 @@ export default function OnboardingModal() {
                       style={{
                         width: '100%', textAlign: 'left', cursor: 'pointer',
                         padding: '13px 16px', borderRadius: 12,
-                        fontFamily: '"DM Sans", sans-serif', fontSize: 13.5, lineHeight: 1.55,
+                        fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13.5, lineHeight: 1.55,
                         fontWeight: selected ? 500 : 400,
                         color: selected ? 'var(--tc)' : 'var(--ink)',
-                        background: selected ? 'rgba(196,99,58,0.07)' : 'var(--cream)',
-                        border: `1px solid ${selected ? 'var(--tc)' : 'rgba(28,26,23,0.12)'}`,
-                        boxShadow: selected ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
+                        background: selected ? 'rgba(244,129,63,0.07)' : 'var(--cream)',
+                        border: `1px solid ${selected ? 'var(--tc)' : 'rgba(59,54,99,0.12)'}`,
+                        boxShadow: selected ? '0 0 0 3px rgba(244,129,63,0.08)' : 'none',
                         transition: 'all 0.15s ease',
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         gap: 10,
@@ -304,7 +304,7 @@ export default function OnboardingModal() {
             style={{
               padding: '14px 28px 22px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              borderTop: '0.5px solid rgba(28,26,23,0.07)', flexShrink: 0,
+              borderTop: '0.5px solid rgba(59,54,99,0.07)', flexShrink: 0,
               gap: 12,
             }}
           >
@@ -314,7 +314,7 @@ export default function OnboardingModal() {
                 onClick={back}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: '"DM Sans", sans-serif', fontSize: 13,
+                  fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13,
                   color: 'var(--ink-muted)',
                   display: 'flex', alignItems: 'center', gap: 5, padding: '6px 0',
                   flexShrink: 0,
@@ -327,7 +327,7 @@ export default function OnboardingModal() {
               </button>
             ) : (
               /* Spacer so Skip stays on the right when Back is hidden */
-              <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', flexShrink: 0 }}>
+              <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif', flexShrink: 0 }}>
                 Select an option above
               </div>
             )}
@@ -339,11 +339,11 @@ export default function OnboardingModal() {
               disabled={loading}
               style={{
                 background: 'none',
-                border: '1px solid rgba(28,26,23,0.22)',
+                border: '1px solid rgba(59,54,99,0.22)',
                 borderRadius: 99,
                 padding: '8px 20px',
                 fontSize: 12.5,
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"Inter", system-ui, sans-serif',
                 fontWeight: 500,
                 color: loading ? 'var(--ink-muted)' : 'var(--ink)',
                 cursor: loading ? 'default' : 'pointer',

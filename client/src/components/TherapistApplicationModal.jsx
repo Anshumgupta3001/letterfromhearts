@@ -3,19 +3,19 @@ import { useApp } from '../context/AppContext'
 
 const API = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '')
 
-const BD = 'rgba(28,26,23,0.1)'
+const BD = '#F1EFEA'
 
 const INPUT_STYLE = {
-  width: '100%', padding: '10px 13px', borderRadius: 10,
-  fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)',
-  outline: 'none', background: 'rgba(253,249,243,0.95)',
-  border: `1.5px solid ${BD}`,
-  transition: 'border-color 0.18s', boxSizing: 'border-box',
+  width: '100%', padding: '13px 16px', borderRadius: 14,
+  fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13.5, fontWeight: 600, color: 'var(--ink)',
+  outline: 'none', background: 'var(--card)',
+  border: `2px solid ${BD}`,
+  transition: 'border-color 0.2s', boxSizing: 'border-box',
 }
 const LABEL_STYLE = {
-  fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px',
-  fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
-  marginBottom: 6, display: 'block',
+  fontSize: 11, textTransform: 'uppercase', letterSpacing: '.1em',
+  fontWeight: 800, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif',
+  marginBottom: 7, display: 'block',
 }
 
 const SPECIALIZATION_OPTIONS = [
@@ -78,7 +78,7 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '4px 10px', borderRadius: 100, fontSize: 12,
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"Inter", system-ui, sans-serif',
                 background: 'var(--tc)', color: '#fff',
                 border: '1.5px solid var(--tc)',
               }}
@@ -104,7 +104,7 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
         type="text"
         value={query}
         onChange={e => { setQuery(e.target.value); setOpen(true) }}
-        onFocus={e => { setOpen(true); e.target.style.borderColor = 'rgba(196,99,58,0.45)' }}
+        onFocus={e => { setOpen(true); e.target.style.borderColor = 'var(--tc)' }}
         onBlur={e => { e.target.style.borderColor = BD; setTimeout(() => setOpen(false), 150) }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder || 'Type to search…'}
@@ -114,9 +114,9 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
       {open && (suggestions.length > 0 || true) && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50,
-          background: 'var(--paper)', borderRadius: 10,
-          border: `1.5px solid rgba(196,99,58,0.3)`,
-          boxShadow: '0 8px 24px rgba(28,26,23,0.1)',
+          background: '#fff', borderRadius: 16,
+          border: '2px solid #F1EFEA',
+          boxShadow: '0 8px 24px rgba(59,54,99,0.1)',
           overflow: 'hidden',
           maxHeight: 220, overflowY: 'auto',
         }}>
@@ -125,12 +125,12 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
               key={s}
               onMouseDown={() => add(s)}
               style={{
-                padding: '9px 13px', fontSize: 13, fontFamily: '"DM Sans", sans-serif',
+                padding: '9px 13px', fontSize: 13, fontFamily: '"Inter", system-ui, sans-serif',
                 color: 'var(--ink)', cursor: 'pointer',
-                borderBottom: `0.5px solid rgba(28,26,23,0.05)`,
+                borderBottom: `0.5px solid rgba(59,54,99,0.05)`,
                 transition: 'background 0.1s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(196,99,58,0.06)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,129,63,0.06)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               {s}
@@ -139,13 +139,13 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
           <div
             onMouseDown={e => { e.preventDefault(); setOpen(false); setCustomMode(true) }}
             style={{
-              padding: '9px 13px', fontSize: 12.5, fontFamily: '"DM Sans", sans-serif',
+              padding: '9px 13px', fontSize: 12.5, fontFamily: '"Inter", system-ui, sans-serif',
               color: 'var(--ink-muted)', cursor: 'pointer',
-              borderTop: suggestions.length > 0 ? `0.5px solid rgba(28,26,23,0.08)` : 'none',
+              borderTop: suggestions.length > 0 ? `0.5px solid rgba(59,54,99,0.08)` : 'none',
               display: 'flex', alignItems: 'center', gap: 6,
               transition: 'background 0.1s',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(196,99,58,0.06)'}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,129,63,0.06)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <span style={{ fontSize: 15, lineHeight: 1 }}>+</span>
@@ -164,7 +164,7 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
             placeholder="Type and click Add…"
             autoFocus
             style={{ ...INPUT_STYLE, flex: 1, padding: '8px 11px', fontSize: 12.5 }}
-            onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+            onFocus={e => e.target.style.borderColor = 'var(--tc)'}
             onBlur={e => e.target.style.borderColor = BD}
           />
           <button
@@ -173,7 +173,7 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
             style={{
               padding: '8px 16px', borderRadius: 10, fontSize: 12.5, cursor: 'pointer',
               background: 'var(--tc)', border: 'none',
-              color: '#fff', fontFamily: '"DM Sans", sans-serif', whiteSpace: 'nowrap',
+              color: '#fff', fontFamily: '"Inter", system-ui, sans-serif', whiteSpace: 'nowrap',
               fontWeight: 500,
             }}
           >
@@ -185,7 +185,7 @@ function TypeaheadTagSelect({ options, selected, onChange, placeholder }) {
             style={{
               padding: '8px 10px', borderRadius: 10, fontSize: 13, cursor: 'pointer',
               background: 'var(--paper)', border: `1.5px solid ${BD}`,
-              color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+              color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif',
             }}
           >
             ×
@@ -279,7 +279,7 @@ export default function TherapistApplicationModal({ onClose }) {
         onClick={handleOverlayClick}
         style={{
           position: 'fixed', inset: 0, zIndex: 600,
-          background: 'rgba(28,26,23,0.45)',
+          background: 'rgba(59,54,99,0.45)',
           backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '16px',
@@ -288,27 +288,27 @@ export default function TherapistApplicationModal({ onClose }) {
         <div
           className="animate-fade-up"
           style={{
-            background: 'var(--paper)', borderRadius: 18,
-            border: '0.5px solid rgba(28,26,23,0.09)',
-            boxShadow: '0 24px 72px rgba(28,26,23,0.18)',
+            background: '#fff', borderRadius: 28,
+            border: 'none',
+            boxShadow: '0 24px 72px rgba(59,54,99,0.18)',
             maxWidth: 420, width: '100%',
             padding: '48px 32px', textAlign: 'center',
           }}
         >
           <div style={{ fontSize: 40, marginBottom: 18 }}>💌</div>
-          <h2 style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.3px' }}>
+          <h2 style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.3px' }}>
             Application received
           </h2>
-          <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 28 }}>
+          <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 28 }}>
             Thank you for joining our therapist network. We'll review your application and reach out within a few business days.
           </p>
           <button
             onClick={onClose}
             style={{
-              padding: '11px 28px', borderRadius: 100,
-              background: 'var(--tc)', color: '#fff',
+              padding: '14px 30px', borderRadius: 100,
+              background: 'var(--ink)', color: '#fff',
               border: 'none', cursor: 'pointer',
-              fontSize: 13.5, fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+              fontSize: 13.5, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 800,
             }}
           >
             Done
@@ -324,7 +324,7 @@ export default function TherapistApplicationModal({ onClose }) {
       onClick={handleOverlayClick}
       style={{
         position: 'fixed', inset: 0, zIndex: 600,
-        background: 'rgba(28,26,23,0.45)',
+        background: 'rgba(59,54,99,0.45)',
         backdropFilter: 'blur(4px)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
         overflowY: 'auto', padding: '24px 16px',
@@ -333,9 +333,9 @@ export default function TherapistApplicationModal({ onClose }) {
       <div
         className="animate-fade-up"
         style={{
-          background: 'var(--paper)', borderRadius: 18,
-          border: '0.5px solid rgba(28,26,23,0.09)',
-          boxShadow: '0 24px 72px rgba(28,26,23,0.18)',
+          background: '#fff', borderRadius: 28,
+          border: 'none',
+          boxShadow: '0 24px 72px rgba(59,54,99,0.18)',
           width: '100%', maxWidth: 620,
           marginBottom: 24,
         }}
@@ -345,16 +345,16 @@ export default function TherapistApplicationModal({ onClose }) {
         <div style={{
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
           padding: '22px 24px 18px',
-          borderBottom: '0.5px solid rgba(28,26,23,0.07)',
+          borderBottom: '0.5px solid rgba(59,54,99,0.07)',
         }}>
           <div>
-            <div style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--tc)', marginBottom: 6, fontFamily: '"DM Sans", sans-serif', fontWeight: 600 }}>
+            <div style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--tc)', marginBottom: 6, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 600 }}>
               For professionals
             </div>
-            <h2 style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px', margin: 0 }}>
+            <h2 style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 20, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px', margin: 0 }}>
               Apply to join our therapist network
             </h2>
-            <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', lineHeight: 1.5 }}>
+            <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1.5 }}>
               Applications are reviewed manually. Approved therapists appear in the public directory.
             </p>
           </div>
@@ -362,9 +362,9 @@ export default function TherapistApplicationModal({ onClose }) {
             onClick={onClose}
             style={{
               flexShrink: 0, marginLeft: 16,
-              width: 32, height: 32, borderRadius: 8,
-              border: '0.5px solid rgba(28,26,23,0.1)',
-              background: 'rgba(28,26,23,0.04)', color: 'var(--ink-muted)',
+              width: 36, height: 36, borderRadius: '50%',
+              border: 'none',
+              background: 'var(--card)', color: 'var(--ink-soft)',
               cursor: 'pointer', display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontSize: 20, lineHeight: 1,
             }}
@@ -388,7 +388,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('firstName')}
                   placeholder="Sarah"
                   maxLength={60}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -401,7 +401,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('lastName')}
                   placeholder="Reynolds"
                   maxLength={60}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -418,7 +418,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('email')}
                   placeholder="you@practice.com"
                   maxLength={120}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -431,7 +431,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('phone')}
                   placeholder="+1 (555) 000-0000"
                   maxLength={30}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -448,7 +448,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('website')}
                   placeholder="https://yourpractice.com"
                   maxLength={200}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -461,7 +461,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('bookingLink')}
                   placeholder="https://calendly.com/you"
                   maxLength={200}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -478,7 +478,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('location')}
                   placeholder="New York, NY"
                   maxLength={100}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -491,7 +491,7 @@ export default function TherapistApplicationModal({ onClose }) {
                   onChange={set('licenseNumber')}
                   placeholder="NY Lic. #PSY-00000"
                   maxLength={80}
-                  onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                  onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                   onBlur={e => e.target.style.borderColor = BD}
                 />
               </div>
@@ -508,7 +508,7 @@ export default function TherapistApplicationModal({ onClose }) {
                     onClick={() => setForm(f => ({ ...f, sessionType: opt }))}
                     style={{
                       padding: '6px 16px', borderRadius: 100, fontSize: 12,
-                      fontFamily: '"DM Sans", sans-serif', cursor: 'pointer', transition: 'all 0.12s',
+                      fontFamily: '"Inter", system-ui, sans-serif', cursor: 'pointer', transition: 'all 0.12s',
                       background: form.sessionType === opt ? 'var(--tc)' : 'var(--paper)',
                       color: form.sessionType === opt ? '#fff' : 'var(--ink-soft)',
                       border: form.sessionType === opt ? '1.5px solid var(--tc)' : `1.5px solid ${BD}`,
@@ -551,10 +551,10 @@ export default function TherapistApplicationModal({ onClose }) {
                 onChange={set('about')}
                 placeholder="Describe your background, approach, and how you support clients…"
                 maxLength={1200}
-                onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                 onBlur={e => e.target.style.borderColor = BD}
               />
-              <div style={{ textAlign: 'right', fontSize: 10.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginTop: 3 }}>
+              <div style={{ textAlign: 'right', fontSize: 10.5, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif', marginTop: 3 }}>
                 {form.about.length}/1200
               </div>
             </div>
@@ -568,10 +568,10 @@ export default function TherapistApplicationModal({ onClose }) {
                 onChange={set('quote')}
                 placeholder="How do you recommend Letter from Heart to your clients?"
                 maxLength={400}
-                onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                 onBlur={e => e.target.style.borderColor = BD}
               />
-              <div style={{ textAlign: 'right', fontSize: 10.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', marginTop: 3 }}>
+              <div style={{ textAlign: 'right', fontSize: 10.5, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif', marginTop: 3 }}>
                 {form.quote.length}/400
               </div>
             </div>
@@ -586,10 +586,10 @@ export default function TherapistApplicationModal({ onClose }) {
                 onChange={set('profileImage')}
                 placeholder="https://… (link to a professional headshot)"
                 maxLength={500}
-                onFocus={e => e.target.style.borderColor = 'rgba(196,99,58,0.45)'}
+                onFocus={e => e.target.style.borderColor = 'var(--tc)'}
                 onBlur={e => e.target.style.borderColor = BD}
               />
-              <p style={{ margin: '5px 0 0', fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+              <p style={{ margin: '5px 0 0', fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif' }}>
                 Link to a publicly accessible image (LinkedIn, your website, etc.)
               </p>
             </div>
@@ -597,17 +597,17 @@ export default function TherapistApplicationModal({ onClose }) {
             {/* Error */}
             {error && (
               <div style={{
-                background: 'rgba(196,99,58,0.07)', border: '0.5px solid rgba(196,99,58,0.25)',
-                borderRadius: 10, padding: '11px 14px',
-                fontSize: 13, color: 'var(--tc)', fontFamily: '"DM Sans", sans-serif',
+                background: '#FDEAE5', border: 'none',
+                borderRadius: 14, padding: '13px 16px',
+                fontSize: 13, fontWeight: 600, color: '#C74E3B', fontFamily: '"Inter", system-ui, sans-serif',
               }}>
                 {error}
               </div>
             )}
 
             {/* Footer */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', paddingTop: 8, borderTop: '0.5px solid rgba(28,26,23,0.07)' }}>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', lineHeight: 1.55 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', paddingTop: 8, borderTop: '0.5px solid rgba(59,54,99,0.07)' }}>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1.55 }}>
                 🔒 Your application is reviewed privately. We'll email you once a decision is made.
               </p>
               <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
@@ -615,10 +615,10 @@ export default function TherapistApplicationModal({ onClose }) {
                   type="button"
                   onClick={onClose}
                   style={{
-                    padding: '10px 20px', borderRadius: 100, fontSize: 13,
-                    fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-                    background: 'transparent', color: 'var(--ink-muted)',
-                    border: '0.5px solid rgba(28,26,23,0.15)',
+                    padding: '13px 24px', borderRadius: 100, fontSize: 13.5, fontWeight: 700,
+                    fontFamily: '"Inter", system-ui, sans-serif', cursor: 'pointer',
+                    background: '#fff', color: 'var(--ink-soft)',
+                    border: '2px solid #F1EFEA',
                   }}
                 >
                   Cancel
@@ -627,10 +627,10 @@ export default function TherapistApplicationModal({ onClose }) {
                   type="submit"
                   disabled={loading}
                   style={{
-                    padding: '10px 26px', borderRadius: 100, fontSize: 13,
-                    fontFamily: '"DM Sans", sans-serif', fontWeight: 500, cursor: loading ? 'default' : 'pointer',
-                    background: loading ? 'rgba(196,99,58,0.5)' : 'var(--tc)', color: '#fff',
-                    border: 'none', transition: 'background 0.15s',
+                    padding: '13px 28px', borderRadius: 100, fontSize: 13.5,
+                    fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 800, cursor: loading ? 'default' : 'pointer',
+                    background: loading ? 'rgba(59,54,99,0.5)' : 'var(--ink)', color: '#fff',
+                    border: 'none', transition: 'background 0.2s, transform 0.2s',
                   }}
                 >
                   {loading ? 'Submitting…' : 'Submit application'}

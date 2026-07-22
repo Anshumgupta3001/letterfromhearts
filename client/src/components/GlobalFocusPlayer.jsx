@@ -20,7 +20,7 @@ function IconButton({ onClick, label, children, size = 30 }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'background 0.15s, color 0.15s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.06)'; e.currentTarget.style.color = 'var(--ink)' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,54,99,0.06)'; e.currentTarget.style.color = 'var(--ink)' }}
       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-soft)' }}
     >
       {children}
@@ -48,11 +48,11 @@ export default function GlobalFocusPlayer() {
       <div style={{
         pointerEvents: 'auto',
         width: '100%', maxWidth: 640,
-        background: 'rgba(253,249,243,0.88)',
+        background: 'rgba(255,255,255,0.88)',
         backdropFilter: 'blur(18px) saturate(1.3)', WebkitBackdropFilter: 'blur(18px) saturate(1.3)',
-        border: '1px solid rgba(28,26,23,0.1)',
+        border: '1px solid rgba(59,54,99,0.1)',
         borderRadius: 20,
-        boxShadow: '0 14px 44px rgba(28,26,23,0.16)',
+        boxShadow: '0 14px 44px rgba(59,54,99,0.16)',
         padding: '10px 14px 12px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -75,13 +75,13 @@ export default function GlobalFocusPlayer() {
           {/* Title */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500,
+              fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13, fontWeight: 500,
               color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {currentTrack.title}
             </div>
             <div style={{
-              fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 11,
+              fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 11,
               color: 'var(--ink-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {isPlaying ? 'Playing — stays with you everywhere' : 'Paused'}
@@ -117,10 +117,10 @@ export default function GlobalFocusPlayer() {
               background: 'var(--tc)', color: '#fff',
               border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(196,99,58,0.3)',
+              boxShadow: '0 4px 14px rgba(244,129,63,0.3)',
               transition: 'transform 0.15s, background 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.07)'; e.currentTarget.style.background = '#D97040' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.07)'; e.currentTarget.style.background = '#E06B28' }}
             onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.background = 'var(--tc)' }}
           >
             {isPlaying ? (
@@ -147,7 +147,7 @@ export default function GlobalFocusPlayer() {
           style={{ marginTop: 9, padding: '3px 0', cursor: 'pointer' }}
           aria-label="Seek"
         >
-          <div style={{ height: 3, borderRadius: 3, background: 'rgba(28,26,23,0.08)', overflow: 'hidden' }}>
+          <div style={{ height: 3, borderRadius: 3, background: 'rgba(59,54,99,0.08)', overflow: 'hidden' }}>
             <div style={{
               height: '100%', width: `${progress * 100}%`, borderRadius: 3,
               background: 'linear-gradient(90deg, var(--tc), var(--gold))',

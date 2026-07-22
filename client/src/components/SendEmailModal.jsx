@@ -107,10 +107,10 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
     >
       <div
         className="relative rounded-[14px] w-full max-w-[480px] mx-4 animate-fade-up flex flex-col"
-        style={{ background: 'var(--cream)', border: '0.5px solid rgba(28,26,23,0.1)', boxShadow: '0 24px 64px rgba(28,26,23,0.25)', maxHeight: 'calc(100dvh - 32px)', overflow: 'hidden' }}
+        style={{ background: 'var(--cream)', border: '0.5px solid rgba(59,54,99,0.1)', boxShadow: '0 24px 64px rgba(59,54,99,0.25)', maxHeight: 'calc(100dvh - 32px)', overflow: 'hidden' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: '0.5px solid rgba(28,26,23,0.07)' }}>
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: '0.5px solid rgba(59,54,99,0.07)' }}>
           <span className="font-lora text-[18px] font-medium text-ink">Send your letter</span>
           <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer bg-transparent border-none text-[18px]">×</button>
         </div>
@@ -169,26 +169,26 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                   onClick={() => setSender('system')}
                   className="flex items-center gap-3 w-full text-left rounded-[10px] px-3 py-[10px] transition-all duration-150 border-none cursor-pointer"
                   style={sender === 'system'
-                    ? { background: 'rgba(122,158,142,0.08)', border: '1.5px solid rgba(122,158,142,0.45)' }
-                    : { background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)' }
+                    ? { background: 'rgba(46,125,91,0.08)', border: '1.5px solid rgba(46,125,91,0.45)' }
+                    : { background: 'var(--paper)', border: '0.5px solid rgba(59,54,99,0.12)' }
                   }
                 >
                   <div
                     className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-                    style={{ border: `2px solid ${sender === 'system' ? 'var(--sage)' : 'rgba(28,26,23,0.25)'}` }}
+                    style={{ border: `2px solid ${sender === 'system' ? 'var(--sage)' : 'rgba(59,54,99,0.25)'}` }}
                   >
                     {sender === 'system' && <div className="w-2 h-2 rounded-full" style={{ background: 'var(--sage)' }} />}
                   </div>
                   <span className="text-[18px] leading-none">📮</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-medium text-ink font-sans truncate">{sendingAddress}</div>
-                    <div className="text-[10px] font-light mt-0.5" style={{ color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+                    <div className="text-[10px] font-light mt-0.5" style={{ color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic' }}>
                       Recommended · secure delivery
                     </div>
                   </div>
                   {sender === 'system' && (
                     <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.5px] px-2 py-[3px] rounded-full font-sans"
-                      style={{ background: 'rgba(122,158,142,0.14)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.28)' }}>
+                      style={{ background: 'rgba(46,125,91,0.14)', color: 'var(--sage)', border: '1px solid rgba(46,125,91,0.28)' }}>
                       Active
                     </span>
                   )}
@@ -201,13 +201,13 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                     onClick={() => setSender('custom')}
                     className="flex items-center gap-3 w-full text-left rounded-[10px] px-3 py-[10px] transition-all duration-150 border-none cursor-pointer"
                     style={sender === 'custom'
-                      ? { background: 'rgba(196,99,58,0.05)', border: '1.5px solid rgba(196,99,58,0.35)' }
-                      : { background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.12)' }
+                      ? { background: 'rgba(244,129,63,0.05)', border: '1.5px solid rgba(244,129,63,0.35)' }
+                      : { background: 'var(--paper)', border: '0.5px solid rgba(59,54,99,0.12)' }
                     }
                   >
                     <div
                       className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-                      style={{ border: `2px solid ${sender === 'custom' ? 'var(--tc)' : 'rgba(28,26,23,0.25)'}` }}
+                      style={{ border: `2px solid ${sender === 'custom' ? 'var(--tc)' : 'rgba(59,54,99,0.25)'}` }}
                     >
                       {sender === 'custom' && <div className="w-2 h-2 rounded-full" style={{ background: 'var(--tc)' }} />}
                     </div>
@@ -216,7 +216,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                       <div className="text-[13px] font-medium text-ink font-sans truncate">
                         {selectedAccount || 'Your email'}
                       </div>
-                      <div className="text-[10px] font-light mt-0.5" style={{ color: 'var(--ink-muted)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+                      <div className="text-[10px] font-light mt-0.5" style={{ color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic' }}>
                         Sent from your inbox via SMTP
                       </div>
                     </div>
@@ -229,7 +229,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                     value={selectedAccount}
                     onChange={e => setSelectedAccount(e.target.value)}
                     className="w-full px-3 py-[9px] rounded-[8px] font-sans text-[13px] text-ink outline-none cursor-pointer"
-                    style={{ background: 'var(--paper)', border: '0.5px solid rgba(196,99,58,0.3)', marginTop: 2 }}
+                    style={{ background: 'var(--paper)', border: '0.5px solid rgba(244,129,63,0.3)', marginTop: 2 }}
                   >
                     {emailAccounts.map(acc => (
                       <option key={acc._id || acc.emailAddress} value={acc.emailAddress}>
@@ -255,7 +255,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                       className="flex-1 py-[9px] rounded-[8px] font-sans text-[12px] font-medium border-none cursor-pointer transition-all duration-150"
                       style={deliveryMode === opt.id
                         ? { background: 'var(--ink)', color: 'var(--cream)' }
-                        : { background: 'var(--paper)', color: 'var(--ink-soft)', border: '0.5px solid rgba(28,26,23,0.12)' }
+                        : { background: 'var(--paper)', color: 'var(--ink-soft)', border: '0.5px solid rgba(59,54,99,0.12)' }
                       }
                     >
                       {opt.label}
@@ -269,7 +269,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                     min={minScheduleTime()}
                     onChange={e => { setSendAt(e.target.value); setError('') }}
                     className="w-full px-3 py-[10px] rounded-[8px] font-sans text-[13px] text-ink outline-none"
-                    style={{ background: 'var(--paper)', border: '0.5px solid rgba(196,99,58,0.35)' }}
+                    style={{ background: 'var(--paper)', border: '0.5px solid rgba(244,129,63,0.35)' }}
                   />
                 )}
               </div>
@@ -283,7 +283,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                   onChange={e => setTo(e.target.value)}
                   placeholder="recipient@email.com"
                   className="w-full px-3 py-[10px] rounded-[8px] font-sans text-[13px] text-ink outline-none"
-                  style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.15)' }}
+                  style={{ background: 'var(--paper)', border: '0.5px solid rgba(59,54,99,0.15)' }}
                 />
               </label>
 
@@ -294,7 +294,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                   value={subject}
                   onChange={e => setSubject(e.target.value)}
                   className="w-full px-3 py-[10px] rounded-[8px] font-sans text-[13px] text-ink outline-none"
-                  style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.15)' }}
+                  style={{ background: 'var(--paper)', border: '0.5px solid rgba(59,54,99,0.15)' }}
                 />
               </label>
 
@@ -303,7 +303,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
                 <div className="text-[11px] uppercase tracking-[1px] font-medium text-ink-muted mb-1">Preview</div>
                 <div
                   className="rounded-[8px] px-4 py-3 max-h-[130px] overflow-y-auto text-[12px] font-lora text-ink-soft leading-[1.9]"
-                  style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)' }}
+                  style={{ background: 'var(--paper)', border: '0.5px solid rgba(59,54,99,0.08)' }}
                 >
                   {sal && <div className="font-medium text-ink mb-1">Dear {sal},</div>}
                   <div className="whitespace-pre-wrap">
@@ -314,7 +314,7 @@ export default function SendEmailModal({ sal, body, recipientEmail, emailAccount
 
               {/* Error */}
               {error && (
-                <div className="text-[12px] font-sans px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(196,99,58,0.07)', border: '0.5px solid rgba(196,99,58,0.2)' }}>
+                <div className="text-[12px] font-sans px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(244,129,63,0.07)', border: '0.5px solid rgba(244,129,63,0.2)' }}>
                   {error}
                 </div>
               )}

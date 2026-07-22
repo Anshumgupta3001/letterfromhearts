@@ -11,8 +11,8 @@ import { motion } from 'framer-motion'
 import { useFocusPlayer } from '../context/FocusPlayerContext'
 import { FOCUS_TRACKS, FOCUS_CATEGORIES } from '../data/focusTracks'
 
-const serif = '"Lora", serif'
-const sans  = '"DM Sans", sans-serif'
+const serif = '"Inter", system-ui, sans-serif'
+const sans  = '"Inter", system-ui, sans-serif'
 
 // Subtle paper grain, used over photos and blobs
 const GRAIN =
@@ -52,8 +52,8 @@ function PlayGlyph({ playing, size = 13 }) {
 // ── Watercolor hero shapes ────────────────────────────────────────
 function HeroArt() {
   const shapes = [
-    { size: 240, top: 12,  right: 30,  hue: 'rgba(196,99,58,0.5)',  dur: 38, dx: -10, dy: 12, r: '62% 38% 54% 46% / 48% 60% 40% 52%' },
-    { size: 150, top: 130, right: 190, hue: 'rgba(201,168,76,0.45)', dur: 46, dx: 12,  dy: -9, r: '45% 55% 60% 40% / 55% 45% 55% 45%' },
+    { size: 240, top: 12,  right: 30,  hue: 'rgba(244,129,63,0.5)',  dur: 38, dx: -10, dy: 12, r: '62% 38% 54% 46% / 48% 60% 40% 52%' },
+    { size: 150, top: 130, right: 190, hue: 'rgba(224,107,40,0.45)', dur: 46, dx: 12,  dy: -9, r: '45% 55% 60% 40% / 55% 45% 55% 45%' },
     { size: 95,  top: 30,  right: 225, hue: 'rgba(122,140,101,0.4)', dur: 30, dx: -7,  dy: -10, r: '58% 42% 40% 60% / 50% 55% 45% 50%' },
     { size: 70,  top: 195, right: 90,  hue: 'rgba(138,90,68,0.35)',  dur: 52, dx: 8,   dy: 7,  r: '50% 50% 62% 38% / 42% 58% 42% 58%' },
   ]
@@ -96,7 +96,7 @@ function FeaturedSession({ track, queue }) {
       style={{
         display: 'grid', gridTemplateColumns: '1.5fr 1fr',
         background: 'var(--paper)', borderRadius: 24,
-        border: '1px solid rgba(28,26,23,0.08)',
+        border: '1px solid rgba(59,54,99,0.08)',
         overflow: 'hidden', cursor: 'pointer', marginBottom: 56,
         boxShadow: hov ? '0 22px 60px rgba(26,18,8,0.12)' : '0 10px 40px rgba(26,18,8,0.06)',
         transition: 'box-shadow 0.35s ease',
@@ -122,7 +122,7 @@ function FeaturedSession({ track, queue }) {
               padding: '11px 22px', borderRadius: 999, border: 'none', cursor: 'pointer',
               background: 'var(--tc)', color: '#fff',
               fontFamily: sans, fontSize: 13, fontWeight: 500, letterSpacing: '0.2px',
-              boxShadow: hov ? '0 8px 24px rgba(196,99,58,0.35)' : '0 4px 14px rgba(196,99,58,0.25)',
+              boxShadow: hov ? '0 8px 24px rgba(244,129,63,0.35)' : '0 4px 14px rgba(244,129,63,0.25)',
               transform: hov ? 'translateY(-1px)' : 'none',
               transition: 'box-shadow 0.25s, transform 0.25s',
             }}
@@ -149,7 +149,7 @@ function FeaturedSession({ track, queue }) {
           }}
         />
         {/* warm overlay + gradient toward the copy side */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(253,249,243,0.25) 0%, rgba(60,35,18,0.05) 30%, rgba(40,22,10,0.28) 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(255,255,255,0.25) 0%, rgba(60,35,18,0.05) 30%, rgba(40,22,10,0.28) 100%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, pointerEvents: 'none' }} />
       </div>
     </motion.div>
@@ -174,13 +174,13 @@ function TrackCard({ track, queue, index }) {
       onMouseLeave={() => setHov(false)}
       style={{
         background: 'var(--paper)', borderRadius: 18,
-        border: `1px solid ${isActive ? 'rgba(196,99,58,0.45)' : 'rgba(28,26,23,0.09)'}`,
+        border: `1px solid ${isActive ? 'rgba(244,129,63,0.45)' : 'rgba(59,54,99,0.09)'}`,
         overflow: 'hidden', cursor: 'pointer', position: 'relative',
         transform: hov ? 'translateY(-4px)' : 'none',
         boxShadow: hov
           ? '0 16px 44px rgba(26,18,8,0.11)'
           : isActive
-            ? '0 6px 26px rgba(196,99,58,0.16)'
+            ? '0 6px 26px rgba(244,129,63,0.16)'
             : '0 2px 10px rgba(26,18,8,0.04)',
         transition: 'transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease',
       }}
@@ -207,7 +207,7 @@ function TrackCard({ track, queue, index }) {
             display: 'inline-flex', alignItems: 'center', gap: 6,
             fontSize: 9, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase',
             padding: '4px 10px', borderRadius: 20,
-            background: 'rgba(253,249,243,0.92)', color: 'var(--tc)', fontFamily: sans,
+            background: 'rgba(255,255,255,0.92)', color: 'var(--tc)', fontFamily: sans,
           }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--tc)', animation: 'focusBlink 1.6s ease-in-out infinite' }} />
             Playing
@@ -218,10 +218,10 @@ function TrackCard({ track, queue, index }) {
         <div style={{
           position: 'absolute', right: 12, bottom: 12,
           width: 36, height: 36, borderRadius: '50%',
-          background: isThisPlaying ? 'var(--ink)' : 'rgba(253,249,243,0.94)',
+          background: isThisPlaying ? 'var(--ink)' : 'rgba(255,255,255,0.94)',
           color: isThisPlaying ? '#fff' : 'var(--tc)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 14px rgba(28,26,23,0.28)',
+          boxShadow: '0 4px 14px rgba(59,54,99,0.28)',
           transform: hov ? 'scale(1.1)' : 'scale(1)',
           transition: 'transform 0.2s, background 0.2s, color 0.2s',
         }}>
@@ -323,12 +323,12 @@ export default function FocusPage() {
                 cursor: 'pointer',
                 background: active ? 'var(--tc)' : 'var(--paper)',
                 color:      active ? '#fff' : 'var(--ink-soft)',
-                border:     active ? '1px solid var(--tc)' : '1px solid rgba(28,26,23,0.12)',
-                boxShadow:  active ? '0 4px 14px rgba(196,99,58,0.25)' : '0 1px 4px rgba(26,18,8,0.05)',
+                border:     active ? '1px solid var(--tc)' : '1px solid rgba(59,54,99,0.12)',
+                boxShadow:  active ? '0 4px 14px rgba(244,129,63,0.25)' : '0 1px 4px rgba(26,18,8,0.05)',
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={e => { if (!active) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(26,18,8,0.09)' } }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = active ? '0 4px 14px rgba(196,99,58,0.25)' : '0 1px 4px rgba(26,18,8,0.05)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = active ? '0 4px 14px rgba(244,129,63,0.25)' : '0 1px 4px rgba(26,18,8,0.05)' }}
             >
               {c.label}
             </button>

@@ -15,16 +15,16 @@ export const FOCUS_CATEGORIES = [
   { id: 'nature',   label: 'Nature' },
 ]
 
-// Warm gradients in the site's palette — used as image fallbacks and tints
+// Cool clinical gradients — used as album-art fallbacks and tints
 const G = {
-  terracotta: 'linear-gradient(135deg, #C4633A 0%, #E09A6B 100%)',
-  gold:       'linear-gradient(135deg, #B98A2F 0%, #E4C36A 100%)',
-  dusk:       'linear-gradient(135deg, #8A5A44 0%, #C08A6A 100%)',
-  sage:       'linear-gradient(135deg, #6C7C59 0%, #A3B18A 100%)',
-  river:      'linear-gradient(135deg, #4E6E81 0%, #8FB3C4 100%)',
-  plum:       'linear-gradient(135deg, #6D4A5C 0%, #A97F95 100%)',
-  ember:      'linear-gradient(135deg, #9C4A2F 0%, #D08050 100%)',
-  moss:       'linear-gradient(135deg, #55604B 0%, #8C9B78 100%)',
+  terracotta: 'linear-gradient(135deg, #F4813F 0%, #6FA0BE 100%)',
+  gold:       'linear-gradient(135deg, #E06B28 0%, #D98E78 100%)',
+  dusk:       'linear-gradient(135deg, #E06B28 0%, #6E8CA0 100%)',
+  sage:       'linear-gradient(135deg, #2E7D5B 0%, #86B49A 100%)',
+  river:      'linear-gradient(135deg, #35667F 0%, #7FB0C6 100%)',
+  plum:       'linear-gradient(135deg, #5C4FA8 0%, #A99ECB 100%)',
+  ember:      'linear-gradient(135deg, #E06B28 0%, #D98E78 100%)',
+  moss:       'linear-gradient(135deg, #46765C 0%, #82A98F 100%)',
 }
 
 const img = (id, w = 640) =>

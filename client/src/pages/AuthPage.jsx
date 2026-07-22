@@ -47,15 +47,15 @@ function TermsModal({ onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ background: 'rgba(28,26,23,0.45)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(59,54,99,0.45)', backdropFilter: 'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
         className="relative w-full max-w-[560px] rounded-[20px] overflow-hidden"
         style={{
           background: 'var(--paper)',
-          border: '0.5px solid rgba(28,26,23,0.1)',
-          boxShadow: '0 24px 64px rgba(28,26,23,0.18)',
+          border: '0.5px solid rgba(59,54,99,0.1)',
+          boxShadow: '0 24px 64px rgba(59,54,99,0.18)',
           maxHeight: '82vh',
           display: 'flex',
           flexDirection: 'column',
@@ -64,7 +64,7 @@ function TermsModal({ onClose }) {
         {/* Header */}
         <div
           className="flex items-center justify-between px-7 py-5 flex-shrink-0"
-          style={{ borderBottom: '0.5px solid rgba(28,26,23,0.08)' }}
+          style={{ borderBottom: '0.5px solid rgba(59,54,99,0.08)' }}
         >
           <div>
             <div className="font-lora text-[18px] font-medium" style={{ color: 'var(--ink)' }}>Terms &amp; Conditions</div>
@@ -73,9 +73,9 @@ function TermsModal({ onClose }) {
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-150"
-            style={{ background: 'rgba(28,26,23,0.06)', color: 'var(--ink-soft)', border: 'none', cursor: 'pointer', fontSize: 16 }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.11)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(28,26,23,0.06)'}
+            style={{ background: 'rgba(59,54,99,0.06)', color: 'var(--ink-soft)', border: 'none', cursor: 'pointer', fontSize: 16 }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,54,99,0.11)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,54,99,0.06)'}
           >
             ✕
           </button>
@@ -100,7 +100,7 @@ function TermsModal({ onClose }) {
 
           <div
             className="rounded-[12px] px-4 py-3.5 mt-1"
-            style={{ background: 'rgba(196,99,58,0.05)', border: '0.5px solid rgba(196,99,58,0.15)' }}
+            style={{ background: 'rgba(244,129,63,0.05)', border: '0.5px solid rgba(244,129,63,0.15)' }}
           >
             <p className="text-[12px] font-light leading-[1.7] italic" style={{ color: 'var(--ink-muted)' }}>
               For questions or concerns, please contact us at{' '}
@@ -112,12 +112,12 @@ function TermsModal({ onClose }) {
         {/* Footer */}
         <div
           className="px-7 py-4 flex-shrink-0 flex justify-end"
-          style={{ borderTop: '0.5px solid rgba(28,26,23,0.08)' }}
+          style={{ borderTop: '0.5px solid rgba(59,54,99,0.08)' }}
         >
           <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer transition-all duration-200 hover:-translate-y-px"
-            style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 12px rgba(28,26,23,0.15)' }}
+            style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 12px rgba(59,54,99,0.15)' }}
           >
             Got it
           </button>
@@ -212,8 +212,8 @@ function FieldInput({ label, type = 'text', value, onChange, placeholder, hint, 
             paddingLeft: icon ? '40px' : '14px',
             paddingRight: '14px',
             background: 'var(--cream)',
-            border: `1px solid ${focused ? 'var(--tc)' : 'rgba(28,26,23,0.14)'}`,
-            boxShadow: focused ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
+            border: `1px solid ${focused ? 'var(--tc)' : 'rgba(59,54,99,0.14)'}`,
+            boxShadow: focused ? '0 0 0 3px rgba(244,129,63,0.08)' : 'none',
           }}
         />
       </div>
@@ -247,8 +247,8 @@ function PasswordInput({ label, value, onChange, placeholder }) {
             paddingLeft: '40px',
             paddingRight: '44px',
             background: 'var(--cream)',
-            border: `1px solid ${focused ? 'var(--tc)' : 'rgba(28,26,23,0.14)'}`,
-            boxShadow: focused ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
+            border: `1px solid ${focused ? 'var(--tc)' : 'rgba(59,54,99,0.14)'}`,
+            boxShadow: focused ? '0 0 0 3px rgba(244,129,63,0.08)' : 'none',
           }}
         />
         <button
@@ -274,8 +274,8 @@ function FloatingCard({ style, children }) {
       className="absolute rounded-[12px] px-4 py-3"
       style={{
         background: 'rgba(255,255,255,0.65)',
-        border: '0.5px solid rgba(196,99,58,0.15)',
-        boxShadow: '0 8px 32px rgba(28,26,23,0.08)',
+        border: '0.5px solid rgba(244,129,63,0.15)',
+        boxShadow: '0 8px 32px rgba(59,54,99,0.08)',
         backdropFilter: 'blur(6px)',
         ...style,
       }}
@@ -408,25 +408,25 @@ export default function AuthPage({ initialMode = 'signup' }) {
         className="hidden lg:flex flex-col justify-between px-14 py-12 relative overflow-hidden flex-shrink-0"
         style={{
           width: '44%',
-          background: 'linear-gradient(145deg, #fdf6ec 0%, #f5e9d8 50%, #ede0cc 100%)',
-          borderRight: '0.5px solid rgba(196,99,58,0.12)',
+          background: 'linear-gradient(145deg, #FFFFFF 0%, #FBFAF8 50%, #EFEDE8 100%)',
+          borderRight: '1px solid var(--line)',
         }}
       >
         {/* Soft blur blobs */}
         <div
           className="absolute rounded-full pointer-events-none"
-          style={{ width: 320, height: 320, top: -80, right: -80, background: 'rgba(196,99,58,0.06)', filter: 'blur(60px)' }}
+          style={{ width: 320, height: 320, top: -80, right: -80, background: 'rgba(244,129,63,0.06)', filter: 'blur(60px)' }}
         />
         <div
           className="absolute rounded-full pointer-events-none"
-          style={{ width: 240, height: 240, bottom: 60, left: -60, background: 'rgba(122,158,142,0.08)', filter: 'blur(50px)' }}
+          style={{ width: 240, height: 240, bottom: 60, left: -60, background: 'rgba(46,125,91,0.08)', filter: 'blur(50px)' }}
         />
 
         {/* Back link + Logo */}
         <div className="flex flex-col gap-4">
           <a
             href="https://letterfromheart.com"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--ink-muted)', textDecoration: 'none', fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 400, transition: 'color 0.15s' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--ink-muted)', textDecoration: 'none', fontSize: 12, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 400, transition: 'color 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--tc)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
           >
@@ -436,7 +436,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
             Back
           </a>
           <div className="flex items-center gap-3">
-            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, borderRadius: 8, filter: 'drop-shadow(0 1px 3px rgba(28,26,23,0.12))' }} />
+            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, borderRadius: 8, filter: 'drop-shadow(0 1px 3px rgba(59,54,99,0.12))' }} />
             <div className="font-lora text-[20px] italic font-medium" style={{ color: 'var(--ink)' }}>Letter from Heart</div>
           </div>
         </div>
@@ -488,7 +488,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
           <div className="lg:hidden mb-5">
             <a
               href="https://letterfromheart.com"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--ink-muted)', textDecoration: 'none', fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 400, minHeight: 44, paddingTop: 4, transition: 'color 0.15s' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--ink-muted)', textDecoration: 'none', fontSize: 12, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 400, minHeight: 44, paddingTop: 4, transition: 'color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.color = 'var(--tc)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
             >
@@ -501,7 +501,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
 
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 48, height: 48, objectFit: 'contain', margin: '0 auto 14px', borderRadius: 10, filter: 'drop-shadow(0 2px 6px rgba(28,26,23,0.12))' }} />
+            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 48, height: 48, objectFit: 'contain', margin: '0 auto 14px', borderRadius: 10, filter: 'drop-shadow(0 2px 6px rgba(59,54,99,0.12))' }} />
             <p className="text-[13px] font-light mt-1" style={{ color: 'var(--ink-muted)' }}>
               {mode === 'login' ? 'Welcome back.' : 'A place for words that matter.'}
             </p>
@@ -512,8 +512,8 @@ export default function AuthPage({ initialMode = 'signup' }) {
             className="rounded-[20px] px-8 py-7"
             style={{
               background: 'var(--paper)',
-              border: '0.5px solid rgba(28,26,23,0.1)',
-              boxShadow: '0 16px 48px rgba(28,26,23,0.09)',
+              border: '0.5px solid rgba(59,54,99,0.1)',
+              boxShadow: '0 16px 48px rgba(59,54,99,0.09)',
             }}
           >
             {/* Heading */}
@@ -533,14 +533,14 @@ export default function AuthPage({ initialMode = 'signup' }) {
                   color: 'var(--ink-muted)',
                   textDecoration: 'none',
                   fontSize: 11.5,
-                  fontFamily: '"DM Sans", sans-serif',
+                  fontFamily: '"Inter", system-ui, sans-serif',
                   fontWeight: 400,
-                  border: '0.5px solid rgba(28,26,23,0.12)',
+                  border: '0.5px solid rgba(59,54,99,0.12)',
                   background: 'var(--cream)',
                   marginTop: 3,
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = 'var(--tc)'; e.currentTarget.style.borderColor = 'rgba(196,99,58,0.3)'; e.currentTarget.style.background = 'rgba(196,99,58,0.04)' }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'rgba(28,26,23,0.12)'; e.currentTarget.style.background = 'var(--cream)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--tc)'; e.currentTarget.style.borderColor = 'rgba(244,129,63,0.3)'; e.currentTarget.style.background = 'rgba(244,129,63,0.04)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--ink-muted)'; e.currentTarget.style.borderColor = 'rgba(59,54,99,0.12)'; e.currentTarget.style.background = 'var(--cream)' }}
               >
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -554,14 +554,14 @@ export default function AuthPage({ initialMode = 'signup' }) {
               <div className="mb-5" style={{
                 padding: '11px 14px',
                 borderRadius: 12,
-                background: 'rgba(196,99,58,0.06)',
-                border: '1px solid rgba(196,99,58,0.18)',
+                background: 'rgba(244,129,63,0.06)',
+                border: '1px solid rgba(244,129,63,0.18)',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: 9,
               }}>
                 <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>💌</span>
-                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>
+                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink)', fontFamily: '"Inter", system-ui, sans-serif' }}>
                   {replyFromUrl
                     ? 'Someone sent you a letter. Sign in to read it — or create an account if you\'re new.'
                     : 'Someone wrote you a letter. Create an account to read it and reply.'}
@@ -577,7 +577,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
                   onClick={() => switchMode(m)}
                   className="flex-1 py-2 rounded-[9px] font-sans text-[13px] font-medium cursor-pointer transition-all duration-200 border-none capitalize"
                   style={mode === m
-                    ? { background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 2px 8px rgba(28,26,23,0.15)' }
+                    ? { background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 2px 8px rgba(59,54,99,0.15)' }
                     : { background: 'transparent', color: 'var(--ink-muted)' }}
                 >
                   {m === 'login' ? 'Log In' : 'Sign Up'}
@@ -632,9 +632,9 @@ export default function AuthPage({ initialMode = 'signup' }) {
                           onClick={() => setRole(r.id)}
                           className="flex items-start gap-3 px-4 py-3 rounded-[11px] text-left cursor-pointer border-none outline-none transition-all duration-200"
                           style={{
-                            background: active ? 'rgba(196,99,58,0.06)' : r.recommended ? 'rgba(196,99,58,0.02)' : 'var(--cream)',
-                            border: `1px solid ${active ? 'var(--tc)' : r.recommended ? 'rgba(196,99,58,0.22)' : 'rgba(28,26,23,0.1)'}`,
-                            boxShadow: active ? '0 0 0 3px rgba(196,99,58,0.07)' : 'none',
+                            background: active ? 'rgba(244,129,63,0.06)' : r.recommended ? 'rgba(244,129,63,0.02)' : 'var(--cream)',
+                            border: `1px solid ${active ? 'var(--tc)' : r.recommended ? 'rgba(244,129,63,0.22)' : 'rgba(59,54,99,0.1)'}`,
+                            boxShadow: active ? '0 0 0 3px rgba(244,129,63,0.07)' : 'none',
                           }}
                         >
                           <span className="text-[17px] flex-shrink-0 mt-0.5">{r.icon}</span>
@@ -647,7 +647,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
                                 <span
                                   className="text-[9.5px] font-medium font-sans uppercase tracking-[0.6px] px-[7px] py-[2px] rounded-full flex-shrink-0"
                                   style={{
-                                    background: active ? 'rgba(196,99,58,0.14)' : 'rgba(196,99,58,0.09)',
+                                    background: active ? 'rgba(244,129,63,0.14)' : 'rgba(244,129,63,0.09)',
                                     color: 'var(--tc)',
                                   }}
                                 >
@@ -682,12 +682,12 @@ export default function AuthPage({ initialMode = 'signup' }) {
                     onChange={e => { setSource(e.target.value); setOtherSource('') }}
                     style={{
                       width: '100%', padding: '11px 14px', borderRadius: 10,
-                      background: 'var(--cream)', border: `1px solid ${source ? 'var(--tc)' : 'rgba(28,26,23,0.14)'}`,
-                      fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: source ? 'var(--ink)' : 'rgba(28,26,23,0.4)',
+                      background: 'var(--cream)', border: `1px solid ${source ? 'var(--tc)' : 'rgba(59,54,99,0.14)'}`,
+                      fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14, color: source ? 'var(--ink)' : 'rgba(59,54,99,0.4)',
                       outline: 'none', cursor: 'pointer', appearance: 'none',
                       backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231C1A17' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
                       backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-                      boxShadow: source ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
+                      boxShadow: source ? '0 0 0 3px rgba(244,129,63,0.08)' : 'none',
                       transition: 'border 0.2s, box-shadow 0.2s',
                     }}
                   >
@@ -704,13 +704,13 @@ export default function AuthPage({ initialMode = 'signup' }) {
                       placeholder="Please specify"
                       style={{
                         width: '100%', padding: '11px 14px', borderRadius: 10,
-                        background: 'var(--cream)', border: '1px solid rgba(28,26,23,0.14)',
-                        fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: 'var(--ink)',
+                        background: 'var(--cream)', border: '1px solid rgba(59,54,99,0.14)',
+                        fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14, color: 'var(--ink)',
                         outline: 'none', transition: 'border 0.2s, box-shadow 0.2s',
                         boxSizing: 'border-box',
                       }}
-                      onFocus={e => { e.target.style.border = '1px solid var(--tc)'; e.target.style.boxShadow = '0 0 0 3px rgba(196,99,58,0.08)' }}
-                      onBlur={e => { e.target.style.border = '1px solid rgba(28,26,23,0.14)'; e.target.style.boxShadow = 'none' }}
+                      onFocus={e => { e.target.style.border = '1px solid var(--tc)'; e.target.style.boxShadow = '0 0 0 3px rgba(244,129,63,0.08)' }}
+                      onBlur={e => { e.target.style.border = '1px solid rgba(59,54,99,0.14)'; e.target.style.boxShadow = 'none' }}
                     />
                   )}
                 </div>
@@ -719,7 +719,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
               {error && (
                 <div
                   className="text-[12px] px-3 py-2.5 rounded-[9px] font-sans"
-                  style={{ background: 'rgba(196,99,58,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(196,99,58,0.2)' }}
+                  style={{ background: 'rgba(244,129,63,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(244,129,63,0.2)' }}
                 >
                   {error}
                 </div>
@@ -729,7 +729,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
                 type="submit"
                 disabled={loading}
                 className="w-full py-[13px] rounded-pill font-sans text-[14px] font-medium border-none cursor-pointer transition-all duration-200 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
-                style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 14px rgba(28,26,23,0.18)' }}
+                style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 14px rgba(59,54,99,0.18)' }}
               >
                 {loading && (
                   <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -750,9 +750,9 @@ export default function AuthPage({ initialMode = 'signup' }) {
 
             {/* ── OR divider ── */}
             <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px" style={{ background: 'rgba(28,26,23,0.1)' }} />
+              <div className="flex-1 h-px" style={{ background: 'rgba(59,54,99,0.1)' }} />
               <span className="text-[11px] font-light tracking-wide" style={{ color: 'var(--ink-muted)' }}>or</span>
-              <div className="flex-1 h-px" style={{ background: 'rgba(28,26,23,0.1)' }} />
+              <div className="flex-1 h-px" style={{ background: 'rgba(59,54,99,0.1)' }} />
             </div>
 
             {/* Google button — mode-aware */}
@@ -770,7 +770,7 @@ export default function AuthPage({ initialMode = 'signup' }) {
               type="button"
               onClick={() => setTermsOpen(true)}
               className="text-[11px] font-light border-none bg-transparent cursor-pointer transition-colors duration-150 underline underline-offset-2"
-              style={{ color: 'var(--ink-muted)', textDecorationColor: 'rgba(28,26,23,0.25)' }}
+              style={{ color: 'var(--ink-muted)', textDecorationColor: 'rgba(59,54,99,0.25)' }}
               onMouseEnter={e => e.currentTarget.style.color = 'var(--tc)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
             >

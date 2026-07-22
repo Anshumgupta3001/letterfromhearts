@@ -7,16 +7,16 @@ const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const C = {
-  ink:    '#1C1A17',
-  paper:  '#F8F4EE',
+  ink:    '#3B3663',
+  paper:  '#FFFFFF',
   white:  '#FFFFFF',
-  muted:  '#8C8478',
-  border: 'rgba(28,26,23,0.09)',
-  tc:     '#C4633A',
-  sage:   '#6B9E8A',
-  purple: '#8B7EC8',
-  gold:   '#C9A84C',
-  red:    '#B85450',
+  muted:  '#8B87A6',
+  border: 'rgba(59,54,99,0.11)',
+  tc:     '#F4813F',
+  sage:   '#2E7D5B',
+  purple: '#5C4FA8',
+  gold:   '#E06B28',
+  red:    '#E06B28',
   google: '#EA4335',
 }
 
@@ -40,7 +40,7 @@ function initials(name = '') {
 // ── DonutChart (pure SVG, no deps) ───────────────────────────────────────────
 function DonutChart({ segments, size = 148, thickness = 26 }) {
   const total = segments.reduce((s, seg) => s + (seg.value || 0), 0)
-  if (total === 0) return <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(28,26,23,0.05)' }} />
+  if (total === 0) return <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(59,54,99,0.05)' }} />
   const r  = (size - thickness) / 2
   const cx = size / 2
   const cy = size / 2
@@ -49,7 +49,7 @@ function DonutChart({ segments, size = 148, thickness = 26 }) {
   let accum  = 0
   return (
     <svg width={size} height={size} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(28,26,23,0.06)" strokeWidth={thickness} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(59,54,99,0.06)" strokeWidth={thickness} />
       {segments.map((seg, i) => {
         const dashLen = Math.max(0, (seg.value / total) * circ - GAP)
         const offset  = -(accum / total) * circ
@@ -91,8 +91,8 @@ function BarRow({ label, value, max, color, icon }) {
       {icon && <span style={{ fontSize: 15, width: 20, flexShrink: 0 }}>{icon}</span>}
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, textTransform: 'capitalize' }}>{label}</span>
-          <span style={{ fontSize: 12, color, fontFamily: '"DM Sans",sans-serif', fontWeight: 700 }}>{fmt(value)}</span>
+          <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 500, textTransform: 'capitalize' }}>{label}</span>
+          <span style={{ fontSize: 12, color, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 700 }}>{fmt(value)}</span>
         </div>
         <div style={{ width: '100%', background: `${color}18`, borderRadius: 99, height: 6, overflow: 'hidden' }}>
           <div style={{ width: `${Math.min(pctVal, 100)}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.6s ease' }} />
@@ -117,14 +117,14 @@ function Funnel({ steps }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 15 }}>{step.icon}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{step.label}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>{step.label}</span>
                 {dropPct !== null && (
-                  <span style={{ fontSize: 10.5, color: C.muted, background: `${C.muted}12`, borderRadius: 99, padding: '1px 7px', fontFamily: '"DM Sans",sans-serif' }}>
+                  <span style={{ fontSize: 10.5, color: C.muted, background: `${C.muted}12`, borderRadius: 99, padding: '1px 7px', fontFamily: '"Inter", system-ui, sans-serif' }}>
                     −{dropPct}% drop-off
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: step.color, fontFamily: '"Lora",serif' }}>{fmt(step.value)}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: step.color, fontFamily: '"Inter", system-ui, sans-serif' }}>{fmt(step.value)}</span>
             </div>
             <div style={{ height: 10, background: `${step.color}18`, borderRadius: 99, overflow: 'hidden' }}>
               <div style={{ width: `${width}%`, height: '100%', background: step.color, borderRadius: 99, transition: 'width 0.7s ease' }} />
@@ -140,10 +140,10 @@ function Funnel({ steps }) {
 function SectionHeading({ children, sub }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, fontFamily: '"Inter", system-ui, sans-serif' }}>
         {children}
       </div>
-      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 3, fontFamily: '"DM Sans",sans-serif' }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 3, fontFamily: '"Inter", system-ui, sans-serif' }}>{sub}</div>}
     </div>
   )
 }
@@ -156,24 +156,24 @@ function StatCard({ icon, label, value, desc, accent = C.tc, iconBg }) {
       style={{
         background: C.white, border: `1px solid ${C.border}`, borderRadius: 16,
         padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10,
-        boxShadow: '0 1px 4px rgba(28,26,23,0.04)',
+        boxShadow: '0 1px 4px rgba(59,54,99,0.04)',
         transition: 'box-shadow 0.18s, transform 0.18s', cursor: 'default',
       }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(28,26,23,0.09)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(28,26,23,0.04)'; e.currentTarget.style.transform = 'none' }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(59,54,99,0.09)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(59,54,99,0.04)'; e.currentTarget.style.transform = 'none' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, fontFamily: '"Inter", system-ui, sans-serif' }}>
           {label}
         </div>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
           {icon}
         </div>
       </div>
-      <div style={{ fontSize: 32, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px' }}>
+      <div style={{ fontSize: 32, fontWeight: 700, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1, letterSpacing: '-1.5px' }}>
         {fmt(value)}
       </div>
-      <div style={{ fontSize: 11.5, color: C.muted, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.5 }}>
+      <div style={{ fontSize: 11.5, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1.5 }}>
         {desc}
       </div>
     </div>
@@ -187,10 +187,10 @@ function ProgressMetric({ label, desc, value, max, color }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
         <div>
-          <span style={{ fontSize: 13, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 600 }}>{label}</span>
+          <span style={{ fontSize: 13, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 600 }}>{label}</span>
           {desc && <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{desc}</div>}
         </div>
-        <span style={{ fontSize: 15, fontWeight: 700, color, fontFamily: '"Lora",serif' }}>{pctVal}%</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color, fontFamily: '"Inter", system-ui, sans-serif' }}>{pctVal}%</span>
       </div>
       <div style={{ width: '100%', background: `${color}18`, borderRadius: 99, height: 8, overflow: 'hidden' }}>
         <div style={{ width: `${Math.min(pctVal, 100)}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.7s cubic-bezier(.4,0,.2,1)' }} />
@@ -206,7 +206,7 @@ function Badge({ label, color }) {
       fontSize: 10, padding: '3px 8px', borderRadius: 99, fontWeight: 600,
       letterSpacing: '0.4px', textTransform: 'uppercase',
       background: `${color}15`, color, border: `1px solid ${color}28`,
-      fontFamily: '"DM Sans",sans-serif', whiteSpace: 'nowrap',
+      fontFamily: '"Inter", system-ui, sans-serif', whiteSpace: 'nowrap',
     }}>
       {label}
     </span>
@@ -218,9 +218,9 @@ function Chip({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
       padding: '5px 12px', borderRadius: 99, fontSize: 11.5, cursor: 'pointer',
-      fontFamily: '"DM Sans",sans-serif', fontWeight: active ? 600 : 400,
+      fontFamily: '"Inter", system-ui, sans-serif', fontWeight: active ? 600 : 400,
       background: active ? C.ink : C.white,
-      color: active ? '#F7F2EA' : '#4A4640',
+      color: active ? '#FFFFFF' : '#5A5580',
       border: active ? `1px solid ${C.ink}` : `1px solid ${C.border}`,
       transition: 'all 0.12s',
     }}>{label}</button>
@@ -235,10 +235,10 @@ function DayFilter({ active, onChange }) {
       {DAY_OPTIONS.map(d => (
         <button key={d} onClick={() => onChange(d)} style={{
           padding: '5px 13px', borderRadius: 99, fontSize: 12, cursor: 'pointer',
-          fontFamily: '"DM Sans",sans-serif', fontWeight: active === d ? 600 : 400,
-          background: active === d ? 'rgba(247,242,234,0.95)' : 'rgba(247,242,234,0.12)',
-          color: active === d ? C.ink : 'rgba(247,242,234,0.65)',
-          border: active === d ? '1px solid rgba(247,242,234,0.7)' : '1px solid rgba(247,242,234,0.15)',
+          fontFamily: '"Inter", system-ui, sans-serif', fontWeight: active === d ? 600 : 400,
+          background: active === d ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.12)',
+          color: active === d ? C.ink : 'rgba(255,255,255,0.65)',
+          border: active === d ? '1px solid rgba(255,255,255,0.7)' : '1px solid rgba(255,255,255,0.15)',
           transition: 'all 0.15s',
         }}>
           {d}d
@@ -249,10 +249,10 @@ function DayFilter({ active, onChange }) {
 }
 
 // ── Colors ────────────────────────────────────────────────────────────────────
-const STATUS_COLOR   = { sent: C.sage, scheduled: C.purple, opened: C.tc, clicked: C.gold, failed: C.red, personal: '#4A4640', stranger: '#7A6E5C' }
+const STATUS_COLOR   = { sent: C.sage, scheduled: C.purple, opened: C.tc, clicked: C.gold, failed: C.red, personal: '#5A5580', stranger: '#5A5580' }
 const ROLE_COLOR     = { seeker: C.tc, listener: C.sage, both: C.purple }
-const PROVIDER_COLOR = { email: '#4A4640', google: C.google }
-const AVATAR_COLORS  = [C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C']
+const PROVIDER_COLOR = { email: '#5A5580', google: C.google }
+const AVATAR_COLORS  = [C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#5A5580']
 
 function Avatar({ name, idx = 0 }) {
   const color = AVATAR_COLORS[idx % AVATAR_COLORS.length]
@@ -261,7 +261,7 @@ function Avatar({ name, idx = 0 }) {
       width: 28, height: 28, borderRadius: '50%', background: `${color}20`,
       border: `1.5px solid ${color}40`, color, fontSize: 10.5, fontWeight: 700,
       display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-      fontFamily: '"DM Sans",sans-serif',
+      fontFamily: '"Inter", system-ui, sans-serif',
     }}>
       {initials(name)}
     </div>
@@ -275,7 +275,7 @@ function TH({ children, center }) {
       padding: '11px 12px', fontSize: 10, letterSpacing: '1.2px',
       textTransform: 'uppercase', color: C.muted, fontWeight: 700,
       whiteSpace: 'nowrap', background: '#F5F1EB',
-      fontFamily: '"DM Sans",sans-serif',
+      fontFamily: '"Inter", system-ui, sans-serif',
     }}>{children}</th>
   )
 }
@@ -292,7 +292,7 @@ function TD({ children, center, muted, bold, color, nowrap, small, maxW }) {
       maxWidth: maxW,
       overflow: maxW ? 'hidden' : undefined,
       textOverflow: maxW ? 'ellipsis' : undefined,
-      fontFamily: '"DM Sans",sans-serif',
+      fontFamily: '"Inter", system-ui, sans-serif',
     }}>{children}</td>
   )
 }
@@ -597,11 +597,11 @@ export default function AdminDashboardPage() {
   // ── Lock screen ──────────────────────────────────────────────────────────────
   if (!unlocked) {
     return (
-      <div style={{ minHeight: '100vh', background: C.paper, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans",sans-serif', padding: 16 }}>
-        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, padding: '44px 40px', width: '100%', maxWidth: 400, boxShadow: '0 12px 40px rgba(28,26,23,0.10)' }}>
+      <div style={{ minHeight: '100vh', background: C.paper, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Inter", system-ui, sans-serif', padding: 16 }}>
+        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, padding: '44px 40px', width: '100%', maxWidth: 400, boxShadow: '0 12px 40px rgba(59,54,99,0.10)' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ width: 56, height: 56, borderRadius: 16, background: `${C.ink}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, margin: '0 auto 16px' }}>🔐</div>
-            <div style={{ fontFamily: '"Lora",serif', fontSize: 22, fontWeight: 700, color: C.ink, marginBottom: 6 }}>Admin Dashboard</div>
+            <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 22, fontWeight: 700, color: C.ink, marginBottom: 6 }}>Admin Dashboard</div>
             <div style={{ fontSize: 13, color: C.muted }}>Letter from Heart — internal analytics</div>
           </div>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -612,7 +612,7 @@ export default function AdminDashboardPage() {
               style={{
                 padding: '12px 16px', borderRadius: 12, fontSize: 14,
                 border: error ? `1.5px solid ${C.tc}` : `1px solid ${C.border}`,
-                outline: 'none', fontFamily: '"DM Sans",sans-serif', color: C.ink,
+                outline: 'none', fontFamily: '"Inter", system-ui, sans-serif', color: C.ink,
                 background: '#FAFAFA', transition: 'border 0.15s',
               }}
               onFocus={e => !error && (e.target.style.border = `1.5px solid ${C.ink}`)}
@@ -625,8 +625,8 @@ export default function AdminDashboardPage() {
             )}
             <button type="submit" disabled={loading} style={{
               padding: '12px', borderRadius: 99, background: loading ? '#aaa' : C.ink,
-              color: '#F7F2EA', border: 'none', fontSize: 14, fontWeight: 600,
-              fontFamily: '"DM Sans",sans-serif', cursor: loading ? 'default' : 'pointer',
+              color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600,
+              fontFamily: '"Inter", system-ui, sans-serif', cursor: loading ? 'default' : 'pointer',
               transition: 'background 0.15s',
             }}>
               {loading ? 'Verifying…' : 'Enter Dashboard →'}
@@ -647,7 +647,7 @@ export default function AdminDashboardPage() {
   const funnel    = d.letterFunnel || {}
 
   return (
-    <div style={{ minHeight: '100vh', background: C.paper, fontFamily: '"DM Sans",sans-serif', paddingBottom: 80 }}>
+    <div style={{ minHeight: '100vh', background: C.paper, fontFamily: '"Inter", system-ui, sans-serif', paddingBottom: 80 }}>
 
       {/* ── Top Bar ── */}
       <div style={{
@@ -656,23 +656,25 @@ export default function AdminDashboardPage() {
         gap: 12, flexWrap: 'wrap', borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 20 }}>💌</span>
-          <span style={{ fontFamily: '"Lora",serif', fontStyle: 'italic', fontSize: 18, color: '#F7F2EA', fontWeight: 600 }}>Letter from Heart</span>
-          <span style={{ width: 1, height: 14, background: 'rgba(247,242,234,0.2)', display: 'inline-block' }} />
-          <span style={{ fontSize: 10.5, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(247,242,234,0.4)' }}>Admin Analytics</span>
+          <span style={{ width: 26, height: 26, borderRadius: 7, background: C.tc, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 6l8 7 8-7"/></svg>
+          </span>
+          <span style={{ fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 700, fontSize: 17, letterSpacing: '-0.01em', color: '#FFFFFF' }}>Letter From Heart</span>
+          <span style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.2)', display: 'inline-block' }} />
+          <span style={{ fontSize: 10.5, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>Admin Analytics</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          {loading && <span style={{ fontSize: 12, color: 'rgba(247,242,234,0.4)', fontStyle: 'italic' }}>Refreshing…</span>}
+          {loading && <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>Refreshing…</span>}
           <DayFilter active={days} onChange={handleDayChange} />
           <button
             onClick={() => fetchData(key, days)}
-            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(247,242,234,0.1)', color: '#F7F2EA', border: '1px solid rgba(247,242,234,0.18)', transition: 'background 0.15s', fontFamily: '"DM Sans",sans-serif' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(247,242,234,0.2)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(247,242,234,0.1)'}
+            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(255,255,255,0.1)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.18)', transition: 'background 0.15s', fontFamily: '"Inter", system-ui, sans-serif' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
           >↻ Refresh</button>
           <button
             onClick={() => { localStorage.removeItem('adminKey'); setUnlocked(false); setData(null); setKey('') }}
-            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(196,99,58,0.15)', color: '#f0a080', border: '1px solid rgba(196,99,58,0.25)', fontFamily: '"DM Sans",sans-serif' }}
+            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(244,129,63,0.15)', color: '#f0a080', border: '1px solid rgba(244,129,63,0.25)', fontFamily: '"Inter", system-ui, sans-serif' }}
           >🔒 Lock</button>
         </div>
       </div>
@@ -680,7 +682,7 @@ export default function AdminDashboardPage() {
       {/* ── KPI sub-header ── */}
       <div style={{ background: C.white, padding: '14px clamp(16px,4vw,52px)', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontFamily: '"Lora",serif', fontSize: 20, fontWeight: 700, color: C.ink }}>Analytics</div>
+          <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 20, fontWeight: 700, color: C.ink }}>Analytics</div>
           <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
             Last <strong style={{ color: C.ink }}>{d.days}d</strong> ·{' '}
             <strong style={{ color: C.ink }}>{fmt(d.totalUsers)}</strong> total users ·{' '}
@@ -696,7 +698,7 @@ export default function AdminDashboardPage() {
           ].map((kpi, i, arr) => (
             <div key={kpi.label} style={{ display: 'flex', gap: 20 }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: kpi.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{kpi.value}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: kpi.color, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1 }}>{kpi.value}</div>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: C.muted, marginTop: 3 }}>{kpi.label}</div>
               </div>
               {i < arr.length - 1 && <div style={{ width: 1, background: C.border, alignSelf: 'stretch' }} />}
@@ -711,7 +713,7 @@ export default function AdminDashboardPage() {
           <button key={tab.id} onClick={() => tab.id === 'letters' ? handleLettersTabOpen() : setActiveTab(tab.id)} style={{
             padding: '12px 20px', fontSize: 13, border: 'none', whiteSpace: 'nowrap',
             background: activeTab === tab.id ? C.white : 'transparent',
-            fontFamily: '"DM Sans",sans-serif', cursor: 'pointer',
+            fontFamily: '"Inter", system-ui, sans-serif', cursor: 'pointer',
             color: activeTab === tab.id ? C.ink : C.muted,
             fontWeight: activeTab === tab.id ? 600 : 400,
             borderBottom: activeTab === tab.id ? `2.5px solid ${C.tc}` : '2.5px solid transparent',
@@ -733,9 +735,9 @@ export default function AdminDashboardPage() {
             <section>
               <SectionHeading sub="All-time platform totals across both user types">Platform Totals</SectionHeading>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px,1fr))', gap: 12 }}>
-                <StatCard icon="👥" label="Total Users"       accent={C.ink}    iconBg="rgba(28,26,23,0.08)"
+                <StatCard icon="👥" label="Total Users"       accent={C.ink}    iconBg="rgba(59,54,99,0.08)"
                   value={d.totalUsers} desc="All registered accounts — email + Google" />
-                <StatCard icon="📧" label="Email / Password"  accent="#4A4640"  iconBg="rgba(74,70,64,0.09)"
+                <StatCard icon="📧" label="Email / Password"  accent="#5A5580"  iconBg="rgba(74,70,64,0.09)"
                   value={d.totalEmailUsers} desc="Signed up with email & password" />
                 <StatCard icon="🔑" label="Google Sign-In"    accent={C.google} iconBg="rgba(234,67,53,0.09)"
                   value={d.totalGoogleUsers} desc="Authenticated via Google OAuth" />
@@ -767,7 +769,7 @@ export default function AdminDashboardPage() {
                   value={d.endedConversations} desc={`Closed conversations · ${endRate}% end rate`} />
                 <StatCard icon="📨" label="Total Messages"    accent={C.tc}
                   value={d.totalRepliesSent} desc="All messages sent across all conversations" />
-                <StatCard icon="🫂" label="Stranger Letters"  accent="#7A6E5C"  iconBg="rgba(122,110,92,0.1)"
+                <StatCard icon="🫂" label="Stranger Letters"  accent="#5A5580"  iconBg="rgba(122,110,92,0.1)"
                   value={d.strangerLetters} desc={`Sent to anonymous readers · ${claimRate}% claimed`} />
               </div>
             </section>
@@ -797,10 +799,10 @@ export default function AdminDashboardPage() {
             {((d.openSources?.email ?? 0) > 0 || (d.openSources?.platform ?? 0) > 0) && (
               <section>
                 <SectionHeading sub="How recipients opened letters — email pixel vs in-app view">Open Source Breakdown</SectionHeading>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 24 }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 28px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 24 }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openSources?.email ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Inter", system-ui, sans-serif', color: C.ink }}>{d.openSources?.email ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📧 Opened via Email</div>
@@ -811,7 +813,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openSources?.platform ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Inter", system-ui, sans-serif', color: C.ink }}>{d.openSources?.platform ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📱 Opened via App</div>
@@ -822,7 +824,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openedLetters ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Inter", system-ui, sans-serif', color: C.ink }}>{d.openedLetters ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>👁 Unique Opens (Total)</div>
@@ -837,7 +839,7 @@ export default function AdminDashboardPage() {
 
             <section>
               <SectionHeading sub="How well are letters being sent, read, and claimed?">Engagement Rates</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 28 }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 28 }}>
                 <ProgressMetric
                   label="Email Open Rate"
                   desc="Of all sent emails, how many were opened"
@@ -859,7 +861,7 @@ export default function AdminDashboardPage() {
 
             <section>
               <SectionHeading sub="All-time letter lifecycle from creation to claimed — no date filter">Letter Lifecycle Funnel</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                 <Funnel steps={[
                   { label: 'Created',        value: funnel.total   || 0, icon: '✍️', color: C.ink    },
                   { label: 'Sent via Email', value: funnel.sent    || 0, icon: '📨', color: C.gold   },
@@ -874,7 +876,7 @@ export default function AdminDashboardPage() {
               <SectionHeading sub="Most prolific writers and most active listeners">Top Contributors</SectionHeading>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
                 {/* Top senders */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Top Senders (by letters written)</div>
                   {(d.topSenders || []).length === 0
                     ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
@@ -886,7 +888,7 @@ export default function AdminDashboardPage() {
                   }
                 </div>
                 {/* Top listeners */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Top Listeners (by conversations)</div>
                   {(d.topListeners || []).length === 0
                     ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
@@ -910,7 +912,7 @@ export default function AdminDashboardPage() {
             <section>
               <SectionHeading sub="User role distribution and signup acquisition channels">Demographics</SectionHeading>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Users by Role</div>
                   {[
                     { key: 'seeker',   label: 'Seeker',   icon: '✍️', color: C.tc },
@@ -920,13 +922,13 @@ export default function AdminDashboardPage() {
                     <BarRow key={r.key} label={r.label} value={(d.roles || {})[r.key] || 0} max={d.totalUsers} color={r.color} icon={r.icon} />
                   ))}
                 </div>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Where Did They Hear About Us</div>
                   {(d.sources || []).length === 0
                     ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No source data yet.</div>
                     : (d.sources || []).map((s, i) => (
                         <BarRow key={s._id} label={s._id} value={s.count} max={(d.sources || [])[0]?.count || 1}
-                          color={[C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C'][i % 6]} />
+                          color={[C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#5A5580'][i % 6]} />
                       ))
                   }
                 </div>
@@ -935,9 +937,9 @@ export default function AdminDashboardPage() {
 
             <section>
               <SectionHeading sub="All users with full activity breakdown — sortable & searchable">User Directory</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                 {/* Controls */}
-                <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFAF7', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                   <input
                     type="text"
                     placeholder="🔍  Search by name or email…"
@@ -946,7 +948,7 @@ export default function AdminDashboardPage() {
                     style={{
                       padding: '8px 14px', borderRadius: 99, fontSize: 13,
                       border: `1px solid ${C.border}`, outline: 'none',
-                      fontFamily: '"DM Sans",sans-serif', color: C.ink,
+                      fontFamily: '"Inter", system-ui, sans-serif', color: C.ink,
                       background: C.white, width: '100%', maxWidth: 280,
                       transition: 'border 0.15s',
                     }}
@@ -990,31 +992,31 @@ export default function AdminDashboardPage() {
                     <tbody>
                       {filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={12} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"DM Sans",sans-serif', fontSize: 13 }}>
+                          <td colSpan={12} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13 }}>
                             {search ? `No users match "${search}"` : 'No users registered yet.'}
                           </td>
                         </tr>
                       ) : paginatedUsers.map((u, i) => (
                         <tr key={i}
-                          style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
-                          onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                          style={{ borderTop: `1px solid rgba(59,54,99,0.05)`, background: i % 2 === 0 ? C.white : '#FFFFFF', transition: 'background 0.12s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#FBFAF8'}
+                          onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FFFFFF'}
                         >
                           <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <Avatar name={u.name} idx={i} />
-                              <span style={{ fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontSize: 13 }}>{u.name || '—'}</span>
+                              <span style={{ fontWeight: 600, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13 }}>{u.name || '—'}</span>
                             </div>
                           </td>
                           <TD small muted maxW={200} nowrap>{u.email}</TD>
-                          <td style={{ padding: '10px 12px' }}><Badge label={u.provider} color={PROVIDER_COLOR[u.provider] || '#4A4640'} /></td>
+                          <td style={{ padding: '10px 12px' }}><Badge label={u.provider} color={PROVIDER_COLOR[u.provider] || '#5A5580'} /></td>
                           <td style={{ padding: '10px 12px' }}><Badge label={u.role || 'both'} color={ROLE_COLOR[u.role] || C.purple} /></td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: C.tc, fontFamily: '"DM Sans",sans-serif' }}>{u.written}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.gold, fontFamily: '"DM Sans",sans-serif' }}>{u.sent}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.sage, fontFamily: '"DM Sans",sans-serif' }}>{u.opened}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: C.purple, fontFamily: '"DM Sans",sans-serif' }}>{u.scheduled}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#4A4640', fontFamily: '"DM Sans",sans-serif' }}>{u.personal}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#7A6E5C', fontFamily: '"DM Sans",sans-serif' }}>{u.stranger}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: C.tc, fontFamily: '"Inter", system-ui, sans-serif' }}>{u.written}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.gold, fontFamily: '"Inter", system-ui, sans-serif' }}>{u.sent}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.sage, fontFamily: '"Inter", system-ui, sans-serif' }}>{u.opened}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: C.purple, fontFamily: '"Inter", system-ui, sans-serif' }}>{u.scheduled}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#5A5580', fontFamily: '"Inter", system-ui, sans-serif' }}>{u.personal}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#5A5580', fontFamily: '"Inter", system-ui, sans-serif' }}>{u.stranger}</td>
                           <TD small muted nowrap>{fmtDate(u.joinedAt)}</TD>
                           <TD small muted nowrap>{fmtDate(u.lastActive)}</TD>
                         </tr>
@@ -1026,14 +1028,14 @@ export default function AdminDashboardPage() {
                 {filteredUsers.length > PER_PAGE && (
                   <div style={{ padding: '14px 18px', borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page === 1 ? 'default' : 'pointer', fontFamily: '"DM Sans",sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page === 1 ? 0.35 : 1 }}>
+                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page === 1 ? 'default' : 'pointer', fontFamily: '"Inter", system-ui, sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page === 1 ? 0.35 : 1 }}>
                       ← Previous
                     </button>
                     <span style={{ fontSize: 12.5, color: C.muted }}>
                       Page <strong style={{ color: C.ink }}>{page}</strong> of <strong style={{ color: C.ink }}>{totalPages}</strong>
                     </span>
                     <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
-                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page >= totalPages ? 'default' : 'pointer', fontFamily: '"DM Sans",sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page >= totalPages ? 0.35 : 1 }}>
+                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page >= totalPages ? 'default' : 'pointer', fontFamily: '"Inter", system-ui, sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page >= totalPages ? 0.35 : 1 }}>
                       Next →
                     </button>
                   </div>
@@ -1051,7 +1053,7 @@ export default function AdminDashboardPage() {
             {/* ── Mood Distribution ── */}
             <section>
               <SectionHeading sub="Mood distribution across all letters ever written">Mood Distribution</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                 {(d.moods || []).length === 0
                   ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No mood data yet.</div>
                   : (
@@ -1080,12 +1082,12 @@ export default function AdminDashboardPage() {
                   onChange={e => setLettersSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { setLettersPage(1); fetchLetters(key, lettersSearch, lettersType, 1) } }}
                   placeholder="Search subject, message, email…"
-                  style={{ flex: 1, minWidth: 220, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', outline: 'none', background: C.white }}
+                  style={{ flex: 1, minWidth: 220, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"Inter", system-ui, sans-serif', outline: 'none', background: C.white }}
                 />
                 <select
                   value={lettersType}
                   onChange={e => { setLettersType(e.target.value); setLettersPage(1); fetchLetters(key, lettersSearch, e.target.value, 1) }}
-                  style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', background: C.white, cursor: 'pointer' }}
+                  style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"Inter", system-ui, sans-serif', background: C.white, cursor: 'pointer' }}
                 >
                   <option value="all">All types</option>
                   <option value="sent">Sent</option>
@@ -1094,11 +1096,11 @@ export default function AdminDashboardPage() {
                 </select>
                 <button
                   onClick={() => { setLettersPage(1); fetchLetters(key, lettersSearch, lettersType, 1) }}
-                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans",sans-serif' }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"Inter", system-ui, sans-serif' }}
                 >Search</button>
               </div>
 
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                 {lettersLoading ? (
                   <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13 }}>Loading…</div>
                 ) : (
@@ -1118,15 +1120,15 @@ export default function AdminDashboardPage() {
                       <tbody>
                         {allLetters.length === 0 ? (
                           <tr>
-                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
+                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14 }}>
                               No letters found.
                             </td>
                           </tr>
                         ) : allLetters.map((l, i) => (
                           <tr key={l._id || i}
-                            style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
-                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                            style={{ borderTop: `1px solid rgba(59,54,99,0.05)`, background: i % 2 === 0 ? C.white : '#FFFFFF', transition: 'background 0.12s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#FBFAF8'}
+                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FFFFFF'}
                           >
                             <td style={{ padding: '10px 12px', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               <div style={{ fontWeight: 500, color: C.ink, fontSize: 12.5 }}>{l.senderName}</div>
@@ -1140,14 +1142,14 @@ export default function AdminDashboardPage() {
                                 {(l.message || '').replace(/<[^>]+>/g, '').slice(0, 80)}…
                               </div>
                             </td>
-                            <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#4A4640'} /></td>
-                            <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#4A4640'} /></td>
+                            <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#5A5580'} /></td>
+                            <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#5A5580'} /></td>
                             <TD small muted maxW={160} nowrap>{l.toEmail || '—'}</TD>
                             <TD small muted nowrap>{fmtDateTime(l.createdAt)}</TD>
                             <td style={{ padding: '10px 12px' }}>
                               <button
                                 onClick={() => setViewingLetter(l)}
-                                style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(196,99,58,0.08)', color: C.tc, border: `1px solid rgba(196,99,58,0.2)`, fontFamily: '"DM Sans",sans-serif', fontWeight: 500 }}
+                                style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(244,129,63,0.08)', color: C.tc, border: `1px solid rgba(244,129,63,0.2)`, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 500 }}
                               >View</button>
                             </td>
                           </tr>
@@ -1164,9 +1166,9 @@ export default function AdminDashboardPage() {
                   <span>Showing {((lettersPage - 1) * 50) + 1}–{Math.min(lettersPage * 50, lettersTotal)} of {fmt(lettersTotal)}</span>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button disabled={lettersPage === 1} onClick={() => { const p = lettersPage - 1; setLettersPage(p); fetchLetters(key, lettersSearch, lettersType, p) }}
-                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage === 1 ? 'default' : 'pointer', opacity: lettersPage === 1 ? 0.4 : 1, fontFamily: '"DM Sans",sans-serif', fontSize: 12 }}>← Prev</button>
+                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage === 1 ? 'default' : 'pointer', opacity: lettersPage === 1 ? 0.4 : 1, fontFamily: '"Inter", system-ui, sans-serif', fontSize: 12 }}>← Prev</button>
                     <button disabled={lettersPage >= Math.ceil(lettersTotal / 50)} onClick={() => { const p = lettersPage + 1; setLettersPage(p); fetchLetters(key, lettersSearch, lettersType, p) }}
-                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage >= Math.ceil(lettersTotal / 50) ? 'default' : 'pointer', opacity: lettersPage >= Math.ceil(lettersTotal / 50) ? 0.4 : 1, fontFamily: '"DM Sans",sans-serif', fontSize: 12 }}>Next →</button>
+                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage >= Math.ceil(lettersTotal / 50) ? 'default' : 'pointer', opacity: lettersPage >= Math.ceil(lettersTotal / 50) ? 0.4 : 1, fontFamily: '"Inter", system-ui, sans-serif', fontSize: 12 }}>Next →</button>
                   </div>
                 </div>
               )}
@@ -1176,16 +1178,16 @@ export default function AdminDashboardPage() {
             {viewingLetter && (
               <div
                 onClick={() => setViewingLetter(null)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(28,26,23,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(59,54,99,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
               >
                 <div
                   onClick={e => e.stopPropagation()}
-                  style={{ background: C.paper, borderRadius: 18, width: '100%', maxWidth: 620, maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 72px rgba(28,26,23,0.22)', overflow: 'hidden' }}
+                  style={{ background: C.paper, borderRadius: 18, width: '100%', maxWidth: 620, maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 72px rgba(59,54,99,0.22)', overflow: 'hidden' }}
                 >
                   {/* Modal header */}
                   <div style={{ padding: '18px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexShrink: 0 }}>
                     <div>
-                      <div style={{ fontFamily: '"Lora",serif', fontSize: 16, fontWeight: 600, color: C.ink }}>
+                      <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 16, fontWeight: 600, color: C.ink }}>
                         {viewingLetter.subject || 'No subject'}
                       </div>
                       <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>
@@ -1195,8 +1197,8 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                      <Badge label={viewingLetter.type} color={STATUS_COLOR[viewingLetter.type] || '#4A4640'} />
-                      <Badge label={viewingLetter.status} color={STATUS_COLOR[viewingLetter.status] || '#4A4640'} />
+                      <Badge label={viewingLetter.type} color={STATUS_COLOR[viewingLetter.type] || '#5A5580'} />
+                      <Badge label={viewingLetter.status} color={STATUS_COLOR[viewingLetter.status] || '#5A5580'} />
                       <button onClick={() => setViewingLetter(null)}
                         style={{ width: 28, height: 28, borderRadius: '50%', border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 14, color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
                     </div>
@@ -1204,7 +1206,7 @@ export default function AdminDashboardPage() {
                   {/* Letter body */}
                   <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
                     <div
-                      style={{ fontFamily: '"Lora",serif', fontSize: 14.5, lineHeight: 1.85, color: C.ink, whiteSpace: 'pre-wrap' }}
+                      style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14.5, lineHeight: 1.85, color: C.ink, whiteSpace: 'pre-wrap' }}
                       dangerouslySetInnerHTML={{ __html: viewingLetter.message || '<em>No content.</em>' }}
                     />
                   </div>
@@ -1222,7 +1224,7 @@ export default function AdminDashboardPage() {
             <SectionHeading sub="Caring Stranger conversations and platform notification stats">Conversations &amp; Notifications</SectionHeading>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
               {/* Conversation stats */}
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Conversations</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
                   {[
@@ -1232,7 +1234,7 @@ export default function AdminDashboardPage() {
                     { label: 'Messages Sent', value: d.totalRepliesSent,    color: C.sage },
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1 }}>{fmt(s.value)}</div>
                       <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
                     </div>
                   ))}
@@ -1254,7 +1256,7 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Notification stats */}
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Notifications</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
                   {[
@@ -1262,7 +1264,7 @@ export default function AdminDashboardPage() {
                     { label: 'Unread', value: d.unreadNotifs, color: C.tc },
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1 }}>{fmt(s.value)}</div>
                       <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
                     </div>
                   ))}
@@ -1270,8 +1272,8 @@ export default function AdminDashboardPage() {
                 <div style={{ fontSize: 11, color: C.muted }}>
                   {(d.notifByType || []).map((n, i) => {
                     const NOTIF_ICON  = { reply: '💬', claim: '💌', delivery: '📬', system: '⚙️', general: '🔔' }
-                    const NOTIF_COLOR = { reply: C.tc, claim: C.sage, delivery: C.gold, system: C.purple, general: '#4A4640' }
-                    const color = NOTIF_COLOR[n._id] || '#4A4640'
+                    const NOTIF_COLOR = { reply: C.tc, claim: C.sage, delivery: C.gold, system: C.purple, general: '#5A5580' }
+                    const color = NOTIF_COLOR[n._id] || '#5A5580'
                     const icon  = NOTIF_ICON[n._id]  || '🔔'
                     return (
                       <div key={n._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < (d.notifByType || []).length - 1 ? `1px solid ${C.border}` : 'none' }}>
@@ -1300,14 +1302,14 @@ export default function AdminDashboardPage() {
             <section>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>🚨 Reports Management</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>🚨 Reports Management</div>
                   <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{reportsTotal} total reports</div>
                 </div>
                 {/* CSV download */}
                 <a
                   href={`${API}/api/reports/export?key=${encodeURIComponent(key)}&status=${reportsFilter}`}
                   download
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: C.sage, color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 600, textDecoration: 'none', fontFamily: '"DM Sans",sans-serif' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: C.sage, color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 600, textDecoration: 'none', fontFamily: '"Inter", system-ui, sans-serif' }}
                 >
                   ⬇ Download CSV
                 </a>
@@ -1326,7 +1328,7 @@ export default function AdminDashboardPage() {
                   value={reportsSearch}
                   onChange={e => setReportsSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { setReportsPage(1); fetchReports(key, reportsFilter, reportsSearch, 1) } }}
-                  style={{ padding: '6px 12px', border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, outline: 'none', width: 220, fontFamily: '"DM Sans",sans-serif', color: C.ink }}
+                  style={{ padding: '6px 12px', border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, outline: 'none', width: 220, fontFamily: '"Inter", system-ui, sans-serif', color: C.ink }}
                 />
                 <button onClick={() => { setReportsPage(1); fetchReports(key, reportsFilter, reportsSearch, 1) }}
                   style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.paper, fontSize: 12, cursor: 'pointer', color: C.muted }}>
@@ -1337,7 +1339,7 @@ export default function AdminDashboardPage() {
               {reportsLoading ? (
                 <div style={{ textAlign: 'center', padding: 48, color: C.muted, fontStyle: 'italic' }}>Loading reports…</div>
               ) : reports.length === 0 ? (
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Inter", system-ui, sans-serif' }}>
                   No reports found.
                 </div>
               ) : (
@@ -1360,14 +1362,14 @@ export default function AdminDashboardPage() {
                           <div style={{ fontWeight: 500, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.subject}</div>
                           {r.description && <div style={{ fontSize: 11, color: C.muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.description}</div>}
                         </div>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 10.5, fontWeight: 600, background: isPending ? 'rgba(196,99,58,0.1)' : 'rgba(107,158,138,0.12)', color: isPending ? C.tc : C.sage }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 10.5, fontWeight: 600, background: isPending ? 'rgba(244,129,63,0.1)' : 'rgba(46,125,91,0.12)', color: isPending ? C.tc : C.sage }}>
                           {isPending ? '⏳ Pending' : '✅ Resolved'}
                         </span>
                         <span style={{ fontSize: 11, color: C.muted }}>{fmtDate(r.createdAt)}</span>
                         <button
                           disabled={busy}
                           onClick={() => resolveReport(r._id, isPending ? 'resolved' : 'pending')}
-                          style={{ padding: '5px 10px', borderRadius: 7, border: `1px solid ${isPending ? C.sage : C.border}`, background: isPending ? 'rgba(107,158,138,0.08)' : C.paper, color: isPending ? C.sage : C.muted, fontSize: 11, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.5 : 1, whiteSpace: 'nowrap' }}
+                          style={{ padding: '5px 10px', borderRadius: 7, border: `1px solid ${isPending ? C.sage : C.border}`, background: isPending ? 'rgba(46,125,91,0.08)' : C.paper, color: isPending ? C.sage : C.muted, fontSize: 11, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.5 : 1, whiteSpace: 'nowrap' }}
                         >
                           {busy ? '…' : isPending ? '✅ Resolve' : '↩ Reopen'}
                         </button>
@@ -1402,7 +1404,7 @@ export default function AdminDashboardPage() {
             <section>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>🤝 Known Connections</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>🤝 Known Connections</div>
                   <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>
                     "Someone I Know" letters — who sent them and whether recipients joined.
                   </div>
@@ -1418,10 +1420,10 @@ export default function AdminDashboardPage() {
                     { label: 'Recipients w/ Account',   value: fmt(s.withAccount),      color: C.sage,   icon: '✅' },
                     { label: 'No Account Yet',           value: fmt(s.withoutAccount),   color: C.muted,  icon: '⭕' },
                   ].map(stat => (
-                    <div key={stat.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div key={stat.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                       <div style={{ fontSize: 18, marginBottom: 6 }}>{stat.icon}</div>
-                      <div style={{ fontSize: 22, fontWeight: 700, color: stat.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{stat.value}</div>
-                      <div style={{ fontSize: 10.5, color: C.muted, marginTop: 5, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.4 }}>{stat.label}</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: stat.color, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1 }}>{stat.value}</div>
+                      <div style={{ fontSize: 10.5, color: C.muted, marginTop: 5, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1.4 }}>{stat.label}</div>
                     </div>
                   ))}
                 </div>
@@ -1432,13 +1434,13 @@ export default function AdminDashboardPage() {
                 <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 16 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-                      <span style={{ fontSize: 11.5, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>Recipient conversion rate</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: convPct >= 50 ? C.sage : C.tc, fontFamily: '"Lora",serif' }}>{convPct}%</span>
+                      <span style={{ fontSize: 11.5, fontWeight: 600, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>Recipient conversion rate</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: convPct >= 50 ? C.sage : C.tc, fontFamily: '"Inter", system-ui, sans-serif' }}>{convPct}%</span>
                     </div>
                     <div style={{ width: '100%', background: `${C.border}`, borderRadius: 99, height: 8, overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(convPct, 100)}%`, height: '100%', background: convPct >= 50 ? C.sage : C.tc, borderRadius: 99, transition: 'width 0.6s ease' }} />
                     </div>
-                    <div style={{ fontSize: 10.5, color: C.muted, marginTop: 5, fontFamily: '"DM Sans",sans-serif' }}>
+                    <div style={{ fontSize: 10.5, color: C.muted, marginTop: 5, fontFamily: '"Inter", system-ui, sans-serif' }}>
                       {s.withAccount} of {s.uniqueRecipients} unique recipients have registered accounts
                     </div>
                   </div>
@@ -1452,15 +1454,15 @@ export default function AdminDashboardPage() {
                   onChange={e => setConnectionsSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { setConnectionsPage(1); fetchConnections(key, connectionsSearch, 1, connectionsFilter) } }}
                   placeholder="Search sender name, email or recipient…"
-                  style={{ flex: 1, minWidth: 240, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', outline: 'none', background: C.white, color: C.ink }}
+                  style={{ flex: 1, minWidth: 240, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"Inter", system-ui, sans-serif', outline: 'none', background: C.white, color: C.ink }}
                 />
                 <button
                   onClick={() => { setConnectionsPage(1); fetchConnections(key, connectionsSearch, 1, connectionsFilter) }}
-                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans",sans-serif' }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"Inter", system-ui, sans-serif' }}
                 >Search</button>
                 <button
                   onClick={() => fetchConnections(key, connectionsSearch, connectionsPage, connectionsFilter)}
-                  style={{ padding: '8px 14px', borderRadius: 8, background: C.paper, color: C.muted, border: `1px solid ${C.border}`, fontSize: 13, cursor: 'pointer', fontFamily: '"DM Sans",sans-serif' }}
+                  style={{ padding: '8px 14px', borderRadius: 8, background: C.paper, color: C.muted, border: `1px solid ${C.border}`, fontSize: 13, cursor: 'pointer', fontFamily: '"Inter", system-ui, sans-serif' }}
                 >↻</button>
               </div>
 
@@ -1481,7 +1483,7 @@ export default function AdminDashboardPage() {
                         fetchConnections(key, connectionsSearch, 1, f.id)
                       }}
                       style={{
-                        padding: '6px 16px', borderRadius: 99, fontSize: 12.5, fontFamily: '"DM Sans",sans-serif',
+                        padding: '6px 16px', borderRadius: 99, fontSize: 12.5, fontFamily: '"Inter", system-ui, sans-serif',
                         fontWeight: active ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s',
                         border: `1px solid ${active ? C.tc : C.border}`,
                         background: active ? `${C.tc}14` : C.white,
@@ -1493,9 +1495,9 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* ── Table ── */}
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                 {connectionsLoading ? (
-                  <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13, fontFamily: '"Lora",serif' }}>Loading connections…</div>
+                  <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13, fontFamily: '"Inter", system-ui, sans-serif' }}>Loading connections…</div>
                 ) : (
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -1513,7 +1515,7 @@ export default function AdminDashboardPage() {
                       <tbody>
                         {connections.length === 0 ? (
                           <tr>
-                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
+                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14 }}>
                               {connectionsFilter === 'with_account'
                                 ? 'No recipients have created accounts yet.'
                                 : connectionsFilter === 'no_account'
@@ -1524,9 +1526,9 @@ export default function AdminDashboardPage() {
                         ) : connections.map((c, i) => (
                           <tr
                             key={c.letterId || i}
-                            style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
-                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                            style={{ borderTop: `1px solid rgba(59,54,99,0.05)`, background: i % 2 === 0 ? C.white : '#FFFFFF', transition: 'background 0.12s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#FBFAF8'}
+                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FFFFFF'}
                           >
                             {/* Sender */}
                             <td style={{ padding: '10px 12px', maxWidth: 160 }}>
@@ -1543,11 +1545,11 @@ export default function AdminDashboardPage() {
                             {/* Account status badge */}
                             <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                               {c.recipientExists ? (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: 'rgba(107,158,138,0.1)', color: C.sage, border: `1px solid rgba(107,158,138,0.25)`, whiteSpace: 'nowrap' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: 'rgba(46,125,91,0.1)', color: C.sage, border: `1px solid rgba(46,125,91,0.25)`, whiteSpace: 'nowrap' }}>
                                   ✅ Has account
                                 </span>
                               ) : (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: 'rgba(28,26,23,0.04)', color: C.muted, border: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: 'rgba(59,54,99,0.04)', color: C.muted, border: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>
                                   ⭕ No account
                                 </span>
                               )}
@@ -1565,7 +1567,7 @@ export default function AdminDashboardPage() {
                             </td>
                             {/* Letter status */}
                             <td style={{ padding: '10px 12px' }}>
-                              <Badge label={c.status || '—'} color={STATUS_COLOR[c.status] || '#4A4640'} />
+                              <Badge label={c.status || '—'} color={STATUS_COLOR[c.status] || '#5A5580'} />
                             </td>
                             {/* Date */}
                             <TD small muted nowrap>{fmtDate(c.createdAt)}</TD>
@@ -1603,7 +1605,7 @@ export default function AdminDashboardPage() {
           <section>
             <SectionHeading sub={`Daily activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Daily Trends</SectionHeading>
             {((d.letterTrend || []).length < 2 && (d.userTrend || []).length < 2) ? (
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Inter", system-ui, sans-serif' }}>
                 Not enough data for trend charts — try a wider date range.
               </div>
             ) : (
@@ -1616,11 +1618,11 @@ export default function AdminDashboardPage() {
                   const mapped = tdata.map(r => ({ count: r[key] ?? 0 }))
                   const total  = mapped.reduce((s, r) => s + r.count, 0)
                   return (
-                    <div key={title} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div key={title} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
                         <div>
                           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted }}>{title}</div>
-                          <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Lora",serif', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
+                          <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Inter", system-ui, sans-serif', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
                           <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2 }}>total this period</div>
                         </div>
                       </div>
@@ -1669,14 +1671,14 @@ export default function AdminDashboardPage() {
             if (!lead) return null
             const leadPct = Math.round((lead.count / Math.max(total, 1)) * 100)
             return (
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 22px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 22px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)', display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.3px', textTransform: 'uppercase', color: accentColor, marginBottom: 5 }}>Insight</div>
-                  <div style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, lineHeight: 1.5 }}>{question}</div>
+                  <div style={{ fontSize: 12.5, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 500, lineHeight: 1.5 }}>{question}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-                  <div style={{ fontSize: 44, fontWeight: 700, color: accentColor, fontFamily: '"Lora",serif', lineHeight: 1 }}>{leadPct}%</div>
-                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"Lora",serif', fontStyle: 'italic', lineHeight: 1.5, paddingBottom: 4, maxWidth: 200 }}>
+                  <div style={{ fontSize: 44, fontWeight: 700, color: accentColor, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1 }}>{leadPct}%</div>
+                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', lineHeight: 1.5, paddingBottom: 4, maxWidth: 200 }}>
                     "{lead.answer}"
                   </div>
                 </div>
@@ -1686,11 +1688,11 @@ export default function AdminDashboardPage() {
                     return (
                       <div key={r.answer}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                          <span style={{ fontSize: 11.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                          <span style={{ fontSize: 11.5, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>{r.answer}</span>
                           <span style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? accentColor : C.muted }}>{p}%</span>
                         </div>
-                        <div style={{ height: 4, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
-                          <div style={{ width: `${p}%`, height: '100%', background: i === 0 ? accentColor : 'rgba(28,26,23,0.12)', borderRadius: 99, transition: 'width 0.6s ease' }} />
+                        <div style={{ height: 4, background: 'rgba(59,54,99,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                          <div style={{ width: `${p}%`, height: '100%', background: i === 0 ? accentColor : 'rgba(59,54,99,0.12)', borderRadius: 99, transition: 'width 0.6s ease' }} />
                         </div>
                       </div>
                     )
@@ -1709,14 +1711,14 @@ export default function AdminDashboardPage() {
                 <button
                   onClick={() => fetchOnboardingInsights(key)}
                   disabled={onboardingLoading}
-                  style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(28,26,23,0.06)', color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"DM Sans",sans-serif', opacity: onboardingLoading ? 0.5 : 1 }}
+                  style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(59,54,99,0.06)', color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"Inter", system-ui, sans-serif', opacity: onboardingLoading ? 0.5 : 1 }}
                 >↻ Refresh</button>
               </div>
 
               {onboardingLoading ? (
-                <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13, fontFamily: '"Lora",serif' }}>Loading insights…</div>
+                <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13, fontFamily: '"Inter", system-ui, sans-serif' }}>Loading insights…</div>
               ) : !oi ? (
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Inter", system-ui, sans-serif' }}>
                   No onboarding data yet. Data will appear here once users sign up after the onboarding launch date.
                 </div>
               ) : (<>
@@ -1728,24 +1730,24 @@ export default function AdminDashboardPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(185px,1fr))', gap: 12, marginBottom: 28 }}>
 
                   {/* Total new users */}
-                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                       <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>New Users</div>
-                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: 'rgba(28,26,23,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👥</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: 'rgba(59,54,99,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👥</div>
                     </div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
                       {fmt(oi.totalNewUsers || 0)}
                     </div>
                     <div style={{ fontSize: 11.5, color: C.muted }}>Since onboarding launched</div>
                   </div>
 
                   {/* Completed */}
-                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                       <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>Completed</div>
                       <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.sage}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✅</div>
                     </div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: C.sage, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.sage, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
                       {fmt(oi.completed || 0)}
                     </div>
                     <div style={{ fontSize: 11.5, color: C.muted }}>
@@ -1754,12 +1756,12 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Partially completed */}
-                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                       <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>Partial</div>
                       <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.purple}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📝</div>
                     </div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: C.purple, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.purple, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
                       {fmt(oi.partiallyCompleted || 0)}
                     </div>
                     <div style={{ fontSize: 11.5, color: C.muted }}>
@@ -1768,12 +1770,12 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Skipped */}
-                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                       <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>Skipped</div>
                       <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.gold}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏭️</div>
                     </div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: C.gold, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: C.gold, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: 6 }}>
                       {fmt(oi.skipped || 0)}
                     </div>
                     <div style={{ fontSize: 11.5, color: C.muted }}>
@@ -1791,14 +1793,14 @@ export default function AdminDashboardPage() {
                   const pendingP   = Math.max(0, 100 - completedP - partialP - skippedP)
                   return (
                     <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px', marginBottom: 28 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 10, fontFamily: '"DM Sans",sans-serif', letterSpacing: '0.5px' }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 10, fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.5px' }}>
                         Onboarding Completion Breakdown
                       </div>
-                      <div style={{ height: 14, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 2, background: 'rgba(28,26,23,0.04)', marginBottom: 12 }}>
+                      <div style={{ height: 14, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 2, background: 'rgba(59,54,99,0.04)', marginBottom: 12 }}>
                         {completedP > 0 && <div style={{ width: `${completedP}%`, background: C.sage,   borderRadius: 99, transition: 'width 0.7s ease' }} />}
                         {partialP   > 0 && <div style={{ width: `${partialP}%`,   background: C.purple, borderRadius: 99, transition: 'width 0.7s ease' }} />}
                         {skippedP   > 0 && <div style={{ width: `${skippedP}%`,   background: C.gold,   borderRadius: 99, transition: 'width 0.7s ease' }} />}
-                        {pendingP   > 0 && <div style={{ width: `${pendingP}%`,   background: 'rgba(28,26,23,0.08)', borderRadius: 99 }} />}
+                        {pendingP   > 0 && <div style={{ width: `${pendingP}%`,   background: 'rgba(59,54,99,0.08)', borderRadius: 99 }} />}
                       </div>
                       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                         {[
@@ -1809,7 +1811,7 @@ export default function AdminDashboardPage() {
                         ].map(s => (
                           <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                            <span style={{ fontSize: 11.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{s.label}</span>
+                            <span style={{ fontSize: 11.5, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>{s.label}</span>
                             <span style={{ fontSize: 11.5, fontWeight: 700, color: s.color }}>{s.pct}%</span>
                           </div>
                         ))}
@@ -1824,8 +1826,8 @@ export default function AdminDashboardPage() {
                 {funnelSteps.length > 0 && (
                   <>
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Completion Funnel</div>
-                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', marginBottom: 28 }}>
-                      <div style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif', marginBottom: 18, lineHeight: 1.5 }}>
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)', marginBottom: 28 }}>
+                      <div style={{ fontSize: 12, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif', marginBottom: 18, lineHeight: 1.5 }}>
                         How far users progress through the 12 questions — drop-off indicates where to focus re-engagement.
                       </div>
                       <Funnel steps={funnelSteps} />
@@ -1840,7 +1842,7 @@ export default function AdminDashboardPage() {
                   <>
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>🌿 Community Insights Summary</div>
                     <div style={{ background: `linear-gradient(135deg, ${C.tc}0A 0%, ${C.sage}0A 100%)`, border: `1px solid ${C.tc}20`, borderRadius: 16, padding: '22px 24px', marginBottom: 28 }}>
-                      <div style={{ fontSize: 12.5, color: C.muted, fontFamily: '"DM Sans",sans-serif', marginBottom: 18, fontStyle: 'italic' }}>
+                      <div style={{ fontSize: 12.5, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif', marginBottom: 18, fontStyle: 'italic' }}>
                         Auto-generated from {fmt(oi.total)} onboarding responses
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
@@ -1865,7 +1867,7 @@ export default function AdminDashboardPage() {
                           <div key={insight.label} style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '14px 16px', border: `1px solid ${insight.color}18` }}>
                             <div style={{ fontSize: 18, marginBottom: 6 }}>{insight.icon}</div>
                             <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 6 }}>{insight.label}</div>
-                            <div style={{ fontSize: 13.5, fontWeight: 600, color: insight.color, fontFamily: '"Lora",serif', lineHeight: 1.4 }}>{insight.value}</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 600, color: insight.color, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1.4 }}>{insight.value}</div>
                           </div>
                         ))}
                       </div>
@@ -1888,9 +1890,9 @@ export default function AdminDashboardPage() {
                       { label: 'Writing Reason',  value: topBenefit ? topBenefit.answer.split(',')[0] : '—',
                                                   sub: `${pctOf('writingBenefit')}% chose this`, color: C.tc },
                     ].map(card => (
-                      <div key={card.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                      <div key={card.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 6 }}>{card.label}</div>
-                        <div style={{ fontSize: 17, fontWeight: 700, color: card.color, fontFamily: '"Lora",serif', lineHeight: 1.2, marginBottom: 4 }}>{card.value}</div>
+                        <div style={{ fontSize: 17, fontWeight: 700, color: card.color, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1.2, marginBottom: 4 }}>{card.value}</div>
                         <div style={{ fontSize: 10.5, color: C.muted }}>{card.sub}</div>
                       </div>
                     ))}
@@ -1901,13 +1903,13 @@ export default function AdminDashboardPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 16 }}>
 
                     {/* Age donut */}
-                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                       <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Age Distribution</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                         <div style={{ position: 'relative', flexShrink: 0 }}>
                           <DonutChart segments={ageSegments} size={130} thickness={24} />
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                            <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>{oi.total}</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>{oi.total}</div>
                             <div style={{ fontSize: 9.5, color: C.muted }}>responses</div>
                           </div>
                         </div>
@@ -1917,7 +1919,7 @@ export default function AdminDashboardPage() {
                             return (
                               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
-                                <span style={{ fontSize: 11.5, color: C.ink, flex: 1, fontFamily: '"DM Sans",sans-serif' }}>{seg.label}</span>
+                                <span style={{ fontSize: 11.5, color: C.ink, flex: 1, fontFamily: '"Inter", system-ui, sans-serif' }}>{seg.label}</span>
                                 <span style={{ fontSize: 11.5, fontWeight: 700, color: seg.color }}>{p}%</span>
                               </div>
                             )
@@ -1927,7 +1929,7 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* Identity bars */}
-                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                       <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Identity Distribution</div>
                       {dist('identity').map((r, i) => {
                         const p = Math.round((r.count / Math.max(oi.total, 1)) * 100)
@@ -1935,10 +1937,10 @@ export default function AdminDashboardPage() {
                         return (
                           <div key={r.answer} style={{ marginBottom: 12 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                              <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                              <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>{r.answer}</span>
                               <span style={{ fontSize: 12, fontWeight: 700, color: ICOLS[i % ICOLS.length] }}>{p}%</span>
                             </div>
-                            <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ height: 7, background: 'rgba(59,54,99,0.06)', borderRadius: 99, overflow: 'hidden' }}>
                               <div style={{ width: `${p}%`, height: '100%', background: ICOLS[i % ICOLS.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
                             </div>
                           </div>
@@ -1948,7 +1950,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Occupation / Profession breakdown */}
-                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', marginBottom: 16 }}>
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)', marginBottom: 16 }}>
                     <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Occupation Distribution</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '10px 32px' }}>
                       {dist('profession').map((r, i) => {
@@ -1957,10 +1959,10 @@ export default function AdminDashboardPage() {
                         return (
                           <div key={r.answer}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                              <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{r.answer}</span>
+                              <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>{r.answer}</span>
                               <span style={{ fontSize: 12, fontWeight: 700, color: PCOL[i % PCOL.length] }}>{p}%</span>
                             </div>
-                            <div style={{ height: 7, background: 'rgba(28,26,23,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ height: 7, background: 'rgba(59,54,99,0.06)', borderRadius: 99, overflow: 'hidden' }}>
                               <div style={{ width: `${p}%`, height: '100%', background: PCOL[i % PCOL.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
                             </div>
                           </div>
@@ -1989,8 +1991,8 @@ export default function AdminDashboardPage() {
 
                   {/* ── Support Preferences ── */}
                   <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>Support Preferences</div>
-                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 500, color: C.ink, fontFamily: '"DM Sans",sans-serif', marginBottom: 16 }}>
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 500, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', marginBottom: 16 }}>
                       What kind of support feels most natural to receive?
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
@@ -2002,8 +2004,8 @@ export default function AdminDashboardPage() {
                         return (
                           <div key={r.answer} style={{ background: `${SCOL[i % SCOL.length]}0C`, border: `1px solid ${SCOL[i % SCOL.length]}30`, borderRadius: 12, padding: '14px 16px' }}>
                             <div style={{ fontSize: 20, marginBottom: 6 }}>{SICO[i % SICO.length]}</div>
-                            <div style={{ fontSize: 12, color: C.ink, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.45, marginBottom: 8 }}>{r.answer}</div>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: SCOL[i % SCOL.length], fontFamily: '"Lora",serif' }}>{p}%</div>
+                            <div style={{ fontSize: 12, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', lineHeight: 1.45, marginBottom: 8 }}>{r.answer}</div>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: SCOL[i % SCOL.length], fontFamily: '"Inter", system-ui, sans-serif' }}>{p}%</div>
                           </div>
                         )
                       })}
@@ -2028,8 +2030,8 @@ export default function AdminDashboardPage() {
                     { label: 'Rejected', sk: 'rejected', color: C.red  },
                   ].map(({ label, sk, color }) => (
                     <div key={sk} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 100 }}>
-                      <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Lora",serif' }}>{therapistCounts[sk] ?? 0}</span>
-                      <span style={{ fontSize: 11.5, color: C.muted, fontFamily: '"DM Sans",sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
+                      <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Inter", system-ui, sans-serif' }}>{therapistCounts[sk] ?? 0}</span>
+                      <span style={{ fontSize: 11.5, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
                     </div>
                   ))}
                 </div>
@@ -2045,7 +2047,7 @@ export default function AdminDashboardPage() {
                         fetchTherapists(key, f)
                       }}
                       style={{
-                        padding: '6px 16px', borderRadius: 99, fontSize: 12.5, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+                        padding: '6px 16px', borderRadius: 99, fontSize: 12.5, fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
                         background: therapistFilter === f ? C.tc : C.white,
                         color:      therapistFilter === f ? '#fff' : C.ink,
                         border:     `1px solid ${therapistFilter === f ? C.tc : C.border}`,
@@ -2066,7 +2068,7 @@ export default function AdminDashboardPage() {
                     ))}
                   </div>
                 ) : therapistList.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '60px 24px', color: C.muted, fontFamily: '"DM Sans",sans-serif', fontSize: 14 }}>
+                  <div style={{ textAlign: 'center', padding: '60px 24px', color: C.muted, fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14 }}>
                     No therapist applications found
                   </div>
                 ) : (
@@ -2075,7 +2077,7 @@ export default function AdminDashboardPage() {
                       const statusColors = { pending: C.gold, verified: C.sage, rejected: C.red }
                       const sc = statusColors[t.status] ?? C.muted
                       return (
-                        <div key={t._id} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 20px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                        <div key={t._id} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 20px', boxShadow: '0 1px 4px rgba(59,54,99,0.04)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
                             {/* Left: info */}
                             <div style={{ flex: 1, minWidth: 200 }}>
@@ -2083,32 +2085,32 @@ export default function AdminDashboardPage() {
                                 {t.profileImage ? (
                                   <img src={t.profileImage} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}` }} />
                                 ) : (
-                                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${C.tc}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: C.tc, fontFamily: '"DM Sans",sans-serif' }}>
+                                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${C.tc}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: C.tc, fontFamily: '"Inter", system-ui, sans-serif' }}>
                                     {(t.firstName?.[0] ?? '') + (t.lastName?.[0] ?? '')}
                                   </div>
                                 )}
                                 <div>
-                                  <div style={{ fontSize: 14.5, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>
+                                  <div style={{ fontSize: 14.5, fontWeight: 600, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif' }}>
                                     {t.firstName} {t.lastName}
                                   </div>
-                                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>{t.email}</div>
+                                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif' }}>{t.email}</div>
                                 </div>
-                                <span style={{ marginLeft: 4, fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 99, background: `${sc}18`, color: sc, border: `1px solid ${sc}40`, textTransform: 'capitalize', fontFamily: '"DM Sans",sans-serif' }}>
+                                <span style={{ marginLeft: 4, fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 99, background: `${sc}18`, color: sc, border: `1px solid ${sc}40`, textTransform: 'capitalize', fontFamily: '"Inter", system-ui, sans-serif' }}>
                                   {t.status}
                                 </span>
                               </div>
                               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                                 {t.location && (
-                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>📍 {t.location}</span>
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif' }}>📍 {t.location}</span>
                                 )}
                                 {t.licenseNumber && (
-                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>🪪 {t.licenseNumber}</span>
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif' }}>🪪 {t.licenseNumber}</span>
                                 )}
                                 {t.sessionType && (
-                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>🖥 {t.sessionType}</span>
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif' }}>🖥 {t.sessionType}</span>
                                 )}
                                 {t.submittedAt && (
-                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"Inter", system-ui, sans-serif' }}>
                                     {new Date(t.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                   </span>
                                 )}
@@ -2116,7 +2118,7 @@ export default function AdminDashboardPage() {
                               {t.specializations?.length > 0 && (
                                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
                                   {t.specializations.map(s => (
-                                    <span key={s} style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: `${C.tc}10`, color: C.tc, border: `1px solid ${C.tc}25`, fontFamily: '"DM Sans",sans-serif' }}>{s}</span>
+                                    <span key={s} style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: `${C.tc}10`, color: C.tc, border: `1px solid ${C.tc}25`, fontFamily: '"Inter", system-ui, sans-serif' }}>{s}</span>
                                   ))}
                                 </div>
                               )}
@@ -2125,7 +2127,7 @@ export default function AdminDashboardPage() {
                             {/* Right: actions */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
                               {t.about && (
-                                <details style={{ fontSize: 12, color: C.ink, fontFamily: '"DM Sans",sans-serif', maxWidth: 280, cursor: 'pointer', marginBottom: 4 }}>
+                                <details style={{ fontSize: 12, color: C.ink, fontFamily: '"Inter", system-ui, sans-serif', maxWidth: 280, cursor: 'pointer', marginBottom: 4 }}>
                                   <summary style={{ color: C.muted, listStyle: 'none', cursor: 'pointer' }}>View bio ▾</summary>
                                   <div style={{ marginTop: 6, lineHeight: 1.55, color: C.ink }}>{t.about}</div>
                                 </details>
@@ -2135,7 +2137,7 @@ export default function AdminDashboardPage() {
                                   <button
                                     disabled={updatingTherapistId === t._id}
                                     onClick={() => updateTherapistStatus(t._id, 'verified')}
-                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: C.sage, color: '#fff', border: 'none', fontFamily: '"DM Sans",sans-serif', transition: 'opacity 0.15s' }}
+                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: C.sage, color: '#fff', border: 'none', fontFamily: '"Inter", system-ui, sans-serif', transition: 'opacity 0.15s' }}
                                   >
                                     {updatingTherapistId === t._id ? '…' : 'Verify'}
                                   </button>
@@ -2144,13 +2146,13 @@ export default function AdminDashboardPage() {
                                   <button
                                     disabled={updatingTherapistId === t._id}
                                     onClick={() => updateTherapistStatus(t._id, 'rejected')}
-                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: '#f5f5f5', color: C.red, border: `1px solid ${C.red}40`, fontFamily: '"DM Sans",sans-serif', transition: 'opacity 0.15s' }}
+                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: '#f5f5f5', color: C.red, border: `1px solid ${C.red}40`, fontFamily: '"Inter", system-ui, sans-serif', transition: 'opacity 0.15s' }}
                                   >
                                     {updatingTherapistId === t._id ? '…' : 'Reject'}
                                   </button>
                                 )}
                                 {t.website && (
-                                  <a href={t.website} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 500, background: C.white, color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"DM Sans",sans-serif', textDecoration: 'none' }}>
+                                  <a href={t.website} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 500, background: C.white, color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"Inter", system-ui, sans-serif', textDecoration: 'none' }}>
                                     Visit ↗
                                   </a>
                                 )}

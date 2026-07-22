@@ -411,12 +411,12 @@ export const openLetters = [
 ]
 
 export const moodConfig = {
-  vent: { label: 'Need to vent', emoji: '🌧️', color: '#4A4640', bgClass: 'bg-ink-soft' },
-  joy: { label: 'Pure joy', emoji: '🌟', color: '#C9A84C', bgClass: 'bg-gold' },
-  love: { label: 'Love & warmth', emoji: '💌', color: '#C4633A', bgClass: 'bg-tc' },
-  grief: { label: 'Grief & loss', emoji: '🕯️', color: '#7A9E8E', bgClass: 'bg-sage' },
-  gratitude: { label: 'Gratitude', emoji: '🌿', color: '#7A6E5C', bgClass: 'bg-brown' },
-  longing: { label: 'Longing', emoji: '🌙', color: '#8B7EC8', bgClass: 'bg-purple' },
+  vent: { label: 'Need to vent', emoji: '🌧️', color: '#5A5580', bgClass: 'bg-ink-soft' },
+  joy: { label: 'Pure joy', emoji: '🌟', color: '#E06B28', bgClass: 'bg-gold' },
+  love: { label: 'Love & warmth', emoji: '💌', color: '#F4813F', bgClass: 'bg-tc' },
+  grief: { label: 'Grief & loss', emoji: '🕯️', color: '#2E7D5B', bgClass: 'bg-sage' },
+  gratitude: { label: 'Gratitude', emoji: '🌿', color: '#5A5580', bgClass: 'bg-brown' },
+  longing: { label: 'Longing', emoji: '🌙', color: '#5C4FA8', bgClass: 'bg-purple' },
 }
 
 export const statusConfig = {

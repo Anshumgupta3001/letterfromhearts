@@ -12,7 +12,7 @@ export default function ProgressDots({ total, current }) {
             style={{
               width: isOn ? 18 : 6,
               borderRadius: isOn ? 3 : '50%',
-              background: isDone ? 'var(--sage)' : isOn ? 'var(--tc)' : 'rgba(28,26,23,0.15)',
+              background: isDone ? 'var(--sage)' : isOn ? 'var(--tc)' : 'rgba(59,54,99,0.15)',
             }}
           />
         )

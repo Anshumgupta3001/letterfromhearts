@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 
-const BD = '#E0D4BC'
-const FT = '#F2EBE0'
+const BD = '#F1EFEA'
+const FT = '#FBFAF8'
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
 function EditModal({ letter, onSave, onClose }) {
@@ -41,7 +41,7 @@ function EditModal({ letter, onSave, onClose }) {
             <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Message</span>
             <textarea value={message} onChange={e => setMessage(e.target.value)} rows={10} className="w-full px-3 py-[10px] rounded-[8px] font-lora text-[14px] leading-[1.9] outline-none resize-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink-soft)' }} />
           </label>
-          {error && <div className="text-[12px] px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(196,99,58,0.07)', border: '1px solid rgba(196,99,58,0.2)' }}>{error}</div>}
+          {error && <div className="text-[12px] px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(244,129,63,0.07)', border: '1px solid rgba(244,129,63,0.2)' }}>{error}</div>}
           <div className="flex gap-2 justify-end">
             <button onClick={onClose} className="px-5 py-[9px] rounded-pill font-sans text-[13px] cursor-pointer bg-transparent" style={{ color: 'var(--ink-muted)', border: `1px solid ${BD}` }}>Cancel</button>
             <button onClick={handleSave} disabled={saving} className="px-5 py-[9px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50" style={{ background: 'var(--ink)', color: 'var(--cream)' }}>{saving ? 'Saving…' : 'Save changes'}</button>
@@ -100,27 +100,27 @@ function StrangerCard({ letter, onEdit, onDelete }) {
       {/* Card body */}
       <div style={{ padding: '26px 28px 22px 32px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
-          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.25)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: 'rgba(46,125,91,0.1)', color: 'var(--sage)', border: '1px solid rgba(46,125,91,0.25)' }}>
               🔒 Anonymous
             </span>
             {letter.hasRead && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: 'rgba(139,126,200,0.1)', color: 'var(--purple)', border: '1px solid rgba(139,126,200,0.25)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: 'rgba(92,79,168,0.1)', color: 'var(--purple)', border: '1px solid rgba(92,79,168,0.25)' }}>
                 ✓ Read
               </span>
             )}
           </div>
         </div>
 
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 14.5, color: 'var(--ink-soft)', marginBottom: 10, fontWeight: 500 }}>
+        <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14.5, color: 'var(--ink-soft)', marginBottom: 10, fontWeight: 500 }}>
           A stranger writes,
         </div>
 
         <p style={{
-          fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14,
+          fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14,
           color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 16,
           whiteSpace: 'pre-line',
           ...(expanded ? {} : { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }),
@@ -129,7 +129,7 @@ function StrangerCard({ letter, onEdit, onDelete }) {
         </p>
 
         {isLong && (
-          <button onClick={() => setExpanded(e => !e)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--sage)', fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', marginBottom: 8, fontFamily: '"DM Sans", sans-serif' }}>
+          <button onClick={() => setExpanded(e => !e)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--sage)', fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', marginBottom: 8, fontFamily: '"Inter", system-ui, sans-serif' }}>
             {expanded ? 'Show less ↑' : 'Read more →'}
           </button>
         )}
@@ -149,13 +149,13 @@ function StrangerCard({ letter, onEdit, onDelete }) {
               onClick={() => onEdit(letter)}
               onMouseEnter={() => setEditHov(true)}
               onMouseLeave={() => setEditHov(false)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: editHov ? '1.5px solid var(--gold)' : '1.5px solid #E0D4BC', color: editHov ? 'var(--gold)' : 'var(--ink-soft)', background: editHov ? '#fef9f2' : 'transparent' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"Inter", system-ui, sans-serif', transition: 'all 0.15s', border: editHov ? '1.5px solid var(--gold)' : '1.5px solid #F1EFEA', color: editHov ? 'var(--gold)' : 'var(--ink-soft)', background: editHov ? '#FFF6F0' : 'transparent' }}
             >✏ Edit</button>
             <button
               onClick={() => onDelete(letter)}
               onMouseEnter={() => setDelHov(true)}
               onMouseLeave={() => setDelHov(false)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: delHov ? '1.5px solid var(--tc)' : '1.5px solid #f5d4ce', color: delHov ? '#fff' : 'var(--tc)', background: delHov ? 'var(--tc)' : 'transparent' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"Inter", system-ui, sans-serif', transition: 'all 0.15s', border: delHov ? '1.5px solid var(--tc)' : '1.5px solid #FBD9C6', color: delHov ? '#fff' : 'var(--tc)', background: delHov ? 'var(--tc)' : 'transparent' }}
             >✕ Delete</button>
           </div>
         )}
@@ -172,12 +172,12 @@ function ComposeTeaser({ onClick }) {
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      style={{ marginTop: 28, border: `1.5px dashed ${hov ? 'var(--sage)' : BD}`, borderRadius: 14, padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', background: hov ? 'rgba(122,158,142,0.03)' : 'transparent', transition: 'border-color 0.2s, background 0.2s' }}
+      style={{ marginTop: 28, border: `1.5px dashed ${hov ? 'var(--sage)' : BD}`, borderRadius: 14, padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', background: hov ? 'rgba(46,125,91,0.03)' : 'transparent', transition: 'border-color 0.2s, background 0.2s' }}
     >
-      <div style={{ width: 40, height: 40, borderRadius: '50%', background: hov ? 'rgba(122,158,142,0.15)' : '#EDE5D4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--sage)', flexShrink: 0, transition: 'background 0.2s' }}>+</div>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: hov ? 'rgba(46,125,91,0.15)' : '#EFEDE8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--sage)', flexShrink: 0, transition: 'background 0.2s' }}>+</div>
       <div>
-        <div style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Share something with a stranger</div>
-        <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>Your words might be exactly what someone needs to hear today.</div>
+        <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Share something with a stranger</div>
+        <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>Your words might be exactly what someone needs to hear today.</div>
       </div>
     </div>
   )
@@ -225,24 +225,24 @@ export default function CaringStrangerPage() {
               <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
               For a caring stranger
             </div>
-            <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+            <h1 style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
               <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #ecf3ef, #f0f7f4)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>🌍</span>
               Caring Stranger
             </h1>
-            <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
+            <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
               Your letter is already out there — held gently by a stranger who needed to read it.
             </p>
           </div>
           {canWrite && (
-            <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', flexShrink: 0, marginTop: 12, boxShadow: '0 4px 14px rgba(90,112,96,0.25)' }}>
+            <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', flexShrink: 0, marginTop: 12, boxShadow: '0 4px 14px rgba(90,112,96,0.25)' }}>
               <span>✦</span> Write another
             </button>
           )}
         </div>
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>🌿</div>
-          <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Your words are being heard</div>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 340, margin: '0 auto' }}>
+          <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Your words are being heard</div>
+          <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 340, margin: '0 auto' }}>
             The Caring Stranger feed is read by listeners. Your anonymous letters travel to strangers who need them most.
           </p>
         </div>
@@ -262,11 +262,11 @@ export default function CaringStrangerPage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Anonymous feed
           </div>
-          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+          <h1 style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
             <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #ecf3ef, #f0f7f4)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>🌍</span>
             Caring Stranger
           </h1>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
+          <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
             Anonymous letters from people around the world. Real feelings, no names. A safe space.
           </p>
         </div>
@@ -275,7 +275,7 @@ export default function CaringStrangerPage() {
             onClick={() => navigate('write')}
             onMouseEnter={() => setWriteBtnHov(true)}
             onMouseLeave={() => setWriteBtnHov(false)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: writeBtnHov ? '#5A8070' : 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', flexShrink: 0, marginTop: 12, boxShadow: writeBtnHov ? '0 8px 22px rgba(90,112,96,0.3)' : '0 4px 14px rgba(90,112,96,0.25)', transform: writeBtnHov ? 'translateY(-2px)' : 'translateY(0)', transition: 'all 0.2s' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: writeBtnHov ? '#5A8070' : 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', flexShrink: 0, marginTop: 12, boxShadow: writeBtnHov ? '0 8px 22px rgba(90,112,96,0.3)' : '0 4px 14px rgba(90,112,96,0.25)', transform: writeBtnHov ? 'translateY(-2px)' : 'translateY(0)', transition: 'all 0.2s' }}
           >
             <span>✦</span> Write a letter
           </button>
@@ -286,19 +286,19 @@ export default function CaringStrangerPage() {
       {letters.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ fontSize: 13, color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ background: '#EDE5D4', color: 'var(--ink-soft)', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 500 }}>
+            <span style={{ background: '#EFEDE8', color: 'var(--ink-soft)', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 500 }}>
               {letters.length} letter{letters.length !== 1 ? 's' : ''}
             </span>
             shared anonymously
           </div>
-          <button onClick={() => refreshStrangerLetters()} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--ink-muted)', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: `1px solid ${BD}`, background: 'transparent', fontFamily: '"DM Sans", sans-serif' }}>↻ Refresh</button>
+          <button onClick={() => refreshStrangerLetters()} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--ink-muted)', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: `1px solid ${BD}`, background: 'transparent', fontFamily: '"Inter", system-ui, sans-serif' }}>↻ Refresh</button>
         </div>
       )}
 
       {/* ── Anonymous note ──────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 32, padding: '16px 20px', borderRadius: 12, background: 'rgba(122,158,142,0.06)', border: '1px solid rgba(122,158,142,0.2)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 32, padding: '16px 20px', borderRadius: 12, background: 'rgba(46,125,91,0.06)', border: '1px solid rgba(46,125,91,0.2)' }}>
         <span style={{ fontSize: 16, flexShrink: 0, marginTop: 2 }}>🔒</span>
-        <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.65, margin: 0 }}>
+        <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.65, margin: 0 }}>
           Every letter here is completely anonymous. No names, no profiles — just honest words from real people.
         </p>
       </div>
@@ -307,12 +307,12 @@ export default function CaringStrangerPage() {
       {letters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.35 }}>🌿</div>
-          <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Nothing here yet</div>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 300, margin: '0 auto 28px' }}>
+          <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Nothing here yet</div>
+          <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, maxWidth: 300, margin: '0 auto 28px' }}>
             Be the first to share. Someone out there needs to read exactly what you've been carrying.
           </p>
           {canWrite && (
-            <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(90,112,96,0.25)', transition: 'all 0.2s' }}>
+            <button onClick={() => navigate('write')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--sage)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 24px', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(90,112,96,0.25)', transition: 'all 0.2s' }}>
               Write the first letter
             </button>
           )}

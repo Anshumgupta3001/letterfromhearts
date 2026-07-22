@@ -12,37 +12,37 @@ const CARD_CFG = {
   personal: {
     accent: 'linear-gradient(180deg, var(--tc) 0%, var(--gold) 100%)',
     label: 'Personal',
-    labelBg: 'rgba(196,99,58,0.08)',
+    labelBg: 'rgba(244,129,63,0.08)',
     labelColor: 'var(--tc)',
-    labelBorder: 'rgba(196,99,58,0.2)',
+    labelBorder: 'rgba(244,129,63,0.2)',
   },
   stranger: {
     accent: 'linear-gradient(180deg, var(--sage) 0%, var(--gold) 100%)',
     label: 'Caring Stranger',
-    labelBg: 'rgba(122,158,142,0.1)',
+    labelBg: 'rgba(46,125,91,0.1)',
     labelColor: 'var(--sage)',
-    labelBorder: 'rgba(122,158,142,0.25)',
+    labelBorder: 'rgba(46,125,91,0.25)',
   },
   received: {
     accent: 'linear-gradient(180deg, var(--purple) 0%, var(--tc) 100%)',
     label: 'For You',
-    labelBg: 'rgba(139,126,200,0.1)',
+    labelBg: 'rgba(92,79,168,0.1)',
     labelColor: 'var(--purple)',
-    labelBorder: 'rgba(139,126,200,0.25)',
+    labelBorder: 'rgba(92,79,168,0.25)',
   },
   sent: {
     accent: 'linear-gradient(180deg, var(--gold) 0%, var(--ink-muted) 100%)',
     label: 'Sent',
-    labelBg: 'rgba(201,168,76,0.1)',
+    labelBg: 'rgba(224,107,40,0.1)',
     labelColor: 'var(--gold)',
-    labelBorder: 'rgba(201,168,76,0.28)',
+    labelBorder: 'rgba(224,107,40,0.28)',
   },
   read: {
     accent: 'linear-gradient(180deg, var(--purple) 0%, var(--gold) 100%)',
     label: 'Listener Read',
-    labelBg: 'rgba(139,126,200,0.1)',
+    labelBg: 'rgba(92,79,168,0.1)',
     labelColor: 'var(--purple)',
-    labelBorder: 'rgba(139,126,200,0.25)',
+    labelBorder: 'rgba(92,79,168,0.25)',
   },
 }
 
@@ -67,17 +67,17 @@ function Btn({ label, onClick, danger }) {
         display: 'inline-flex', alignItems: 'center', gap: 5,
         height: 36, padding: '0 14px', borderRadius: 10,
         fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
-        fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s',
+        fontFamily: '"Inter", system-ui, sans-serif', transition: 'all 0.15s',
         ...(danger
           ? {
               background: hov ? 'var(--tc)' : 'transparent',
               color: hov ? '#fff' : 'var(--tc)',
-              border: `1.5px solid ${hov ? 'var(--tc)' : '#f5d4ce'}`,
+              border: `1.5px solid ${hov ? 'var(--tc)' : '#FBD9C6'}`,
             }
           : {
-              background: hov ? '#fef9f2' : 'transparent',
+              background: hov ? '#FFF6F0' : 'transparent',
               color: hov ? 'var(--gold)' : 'var(--ink-soft)',
-              border: `1.5px solid ${hov ? 'var(--gold)' : '#E0D4BC'}`,
+              border: `1.5px solid ${hov ? 'var(--gold)' : '#F1EFEA'}`,
             }
         ),
       }}
@@ -160,7 +160,7 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
             {moodEmoji && <span style={{ fontSize: 15, lineHeight: 1 }}>{moodEmoji}</span>}
             {withLabel && (
               <span style={{
-                fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500,
+                fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13, fontWeight: 500,
                 color: 'var(--ink-soft)', overflow: 'hidden', textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap', maxWidth: 160,
               }}>
@@ -170,7 +170,7 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
             <span style={{
               display: 'inline-flex', alignItems: 'center', fontSize: 11,
               padding: '4px 10px', borderRadius: 999, fontWeight: 500,
-              fontFamily: '"DM Sans", sans-serif', flexShrink: 0,
+              fontFamily: '"Inter", system-ui, sans-serif', flexShrink: 0,
               background: cfg.labelBg, color: cfg.labelColor, border: `1px solid ${cfg.labelBorder}`,
             }}>
               {cfg.label}
@@ -179,17 +179,17 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
 
           {/* Right: status / date */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
-            <span style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>
+            <span style={{ fontSize: 11.5, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif' }}>
               {ago}
             </span>
             {isSent && (
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11,
                 padding: '4px 10px', borderRadius: 999, fontWeight: 500,
-                fontFamily: '"DM Sans", sans-serif',
-                background: hasOpens ? 'rgba(122,158,142,0.1)' : 'rgba(28,26,23,0.05)',
+                fontFamily: '"Inter", system-ui, sans-serif',
+                background: hasOpens ? 'rgba(46,125,91,0.1)' : 'rgba(59,54,99,0.05)',
                 color: hasOpens ? 'var(--sage)' : 'var(--ink-muted)',
-                border: `1px solid ${hasOpens ? 'rgba(122,158,142,0.25)' : 'rgba(28,26,23,0.1)'}`,
+                border: `1px solid ${hasOpens ? 'rgba(46,125,91,0.25)' : 'rgba(59,54,99,0.1)'}`,
               }}>
                 {hasOpens ? `👁 Opened${uniqueOpens > 1 ? ` by ${uniqueOpens}` : ''}` : '· Unread'}
               </span>
@@ -198,10 +198,10 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11,
                 padding: '4px 10px', borderRadius: 999, fontWeight: 500,
-                fontFamily: '"DM Sans", sans-serif',
-                background: (letter.isClaimed || letter.isRead) ? 'rgba(139,126,200,0.1)' : 'rgba(28,26,23,0.04)',
+                fontFamily: '"Inter", system-ui, sans-serif',
+                background: (letter.isClaimed || letter.isRead) ? 'rgba(92,79,168,0.1)' : 'rgba(59,54,99,0.04)',
                 color: (letter.isClaimed || letter.isRead) ? 'var(--purple)' : 'var(--ink-muted)',
-                border: `1px solid ${(letter.isClaimed || letter.isRead) ? 'rgba(139,126,200,0.25)' : 'rgba(28,26,23,0.1)'}`,
+                border: `1px solid ${(letter.isClaimed || letter.isRead) ? 'rgba(92,79,168,0.25)' : 'rgba(59,54,99,0.1)'}`,
               }}>
                 {(letter.isClaimed || letter.isRead) ? '✓ Heard' : '· Waiting'}
               </span>
@@ -210,9 +210,9 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11,
                 padding: '4px 10px', borderRadius: 999, fontWeight: 500,
-                fontFamily: '"DM Sans", sans-serif',
-                background: 'rgba(139,126,200,0.08)', color: 'var(--purple)',
-                border: '1px solid rgba(139,126,200,0.2)',
+                fontFamily: '"Inter", system-ui, sans-serif',
+                background: 'rgba(92,79,168,0.08)', color: 'var(--purple)',
+                border: '1px solid rgba(92,79,168,0.2)',
               }}>
                 Open &amp; reply →
               </span>
@@ -222,7 +222,7 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
 
         {/* SUBJECT */}
         <h3 style={{
-          fontFamily: '"Lora", serif', fontSize: 17, fontWeight: 600,
+          fontFamily: '"Inter", system-ui, sans-serif', fontSize: 17, fontWeight: 600,
           color: 'var(--ink)', lineHeight: 1.3, letterSpacing: '-0.2px',
           margin: '0 0 10px', wordBreak: 'break-word',
         }}>
@@ -231,7 +231,7 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
 
         {/* MESSAGE PREVIEW */}
         <p style={{
-          fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14,
+          fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14,
           color: 'var(--ink-muted)', lineHeight: 1.8, margin: 0,
           display: '-webkit-box',
           WebkitLineClamp: expanded ? 'unset' : 4,
@@ -248,7 +248,7 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
             style={{
               background: 'none', border: 'none', padding: '4px 0', marginTop: 4,
               fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
-              fontFamily: '"DM Sans", sans-serif', color: cfg.labelColor, opacity: 0.85,
+              fontFamily: '"Inter", system-ui, sans-serif', color: cfg.labelColor, opacity: 0.85,
             }}
           >
             {expanded ? 'Show less' : 'Read more'}
@@ -261,24 +261,24 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11,
               padding: '4px 10px', borderRadius: 999, fontWeight: 500,
-              fontFamily: '"DM Sans", sans-serif',
-              background: 'rgba(201,168,76,0.1)', color: 'var(--gold)',
-              border: '1px solid rgba(201,168,76,0.28)',
+              fontFamily: '"Inter", system-ui, sans-serif',
+              background: 'rgba(224,107,40,0.1)', color: 'var(--gold)',
+              border: '1px solid rgba(224,107,40,0.28)',
             }}>✏ Edited</span>
           )}
           {isStranger && letter.replyCount > 0 && (
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11,
               padding: '4px 10px', borderRadius: 999, fontWeight: 500,
-              fontFamily: '"DM Sans", sans-serif',
-              background: 'rgba(122,158,142,0.1)', color: 'var(--sage)',
-              border: '1px solid rgba(122,158,142,0.28)',
+              fontFamily: '"Inter", system-ui, sans-serif',
+              background: 'rgba(46,125,91,0.1)', color: 'var(--sage)',
+              border: '1px solid rgba(46,125,91,0.28)',
             }}>🌿 {letter.replyCount} {letter.replyCount === 1 ? 'reply' : 'replies'}</span>
           )}
           {isSent && showBreakdown && (
             <>
-              {emailOpens > 0 && <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>📧 {emailOpens} email</span>}
-              {platformOpens > 0 && <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif' }}>📱 {platformOpens} app</span>}
+              {emailOpens > 0 && <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif' }}>📧 {emailOpens} email</span>}
+              {platformOpens > 0 && <span style={{ fontSize: 11, color: 'var(--ink-muted)', fontFamily: '"Inter", system-ui, sans-serif' }}>📱 {platformOpens} app</span>}
             </>
           )}
         </div>
@@ -290,7 +290,7 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8,
           padding: '12px 20px 14px',
           borderTop: '1px solid rgba(240,235,228,0.8)',
-          background: 'rgba(253,249,243,0.5)',
+          background: 'rgba(255,255,255,0.5)',
         }}>
           <Btn label="✏ Edit" onClick={e => { e.stopPropagation(); onEdit?.(letter) }} />
           {canDelete && onDelete && (
@@ -307,7 +307,7 @@ export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
 function MoodDot({ mood, size = 6 }) {
   const colors = {
     vent: 'var(--ink-soft)', joy: 'var(--gold)', love: 'var(--tc)',
-    grief: 'var(--sage)', gratitude: '#7A6E5C', longing: 'var(--purple)', anger: '#B85450',
+    grief: 'var(--sage)', gratitude: '#5A5580', longing: 'var(--purple)', anger: '#E06B28',
   }
   return (
     <span className="rounded-full flex-shrink-0"
@@ -317,8 +317,8 @@ function MoodDot({ mood, size = 6 }) {
 
 function StatusDot({ status }) {
   const colors = {
-    waiting: 'rgba(28,26,23,0.2)', 'new-reply': 'var(--tc)', replied: 'var(--sage)',
-    capsule: 'var(--gold)', burn: 'var(--purple)', direct: 'var(--tc)', closed: 'rgba(28,26,23,0.15)',
+    waiting: 'rgba(59,54,99,0.2)', 'new-reply': 'var(--tc)', replied: 'var(--sage)',
+    capsule: 'var(--gold)', burn: 'var(--purple)', direct: 'var(--tc)', closed: 'rgba(59,54,99,0.15)',
   }
   return (
     <span
@@ -342,15 +342,15 @@ export function LegacyLetterCard({ letter, onClick }) {
 
   return (
     <div
-      className={`card-accent mood-${letter.mood} bg-paper rounded-[10px] p-[22px] cursor-pointer transition-all duration-[250ms] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(28,26,23,0.09)] ${isNewReply ? 'card-new-reply' : ''}`}
-      style={{ border: isNewReply ? '0.5px solid rgba(196,99,58,0.2)' : '0.5px solid rgba(28,26,23,0.08)' }}
+      className={`card-accent mood-${letter.mood} bg-paper rounded-[10px] p-[22px] cursor-pointer transition-all duration-[250ms] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(59,54,99,0.09)] ${isNewReply ? 'card-new-reply' : ''}`}
+      style={{ border: isNewReply ? '0.5px solid rgba(244,129,63,0.2)' : '0.5px solid rgba(59,54,99,0.08)' }}
       onClick={onClick}
     >
       <div className="flex items-center gap-2 mb-[10px] flex-wrap">
         <span className="text-[10px] px-[9px] py-[3px] rounded-pill font-medium"
           style={letter.role === 'seeker'
-            ? { background: 'rgba(196,99,58,0.08)', color: 'var(--tc)' }
-            : { background: 'rgba(122,158,142,0.09)', color: 'var(--sage)' }}>
+            ? { background: 'rgba(244,129,63,0.08)', color: 'var(--tc)' }
+            : { background: 'rgba(46,125,91,0.09)', color: 'var(--sage)' }}>
           {letter.role === 'seeker' ? 'Your letter' : 'You replied'}
         </span>
         <div className="flex items-center gap-[5px] text-[11px] text-ink-muted tracking-[0.5px] uppercase">
@@ -370,7 +370,7 @@ export function LegacyLetterCard({ letter, onClick }) {
           {statusLabel}
         </div>
         <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(28,26,23,0.05)', color: 'var(--ink-soft)' }}>
+          style={{ background: 'rgba(59,54,99,0.05)', color: 'var(--ink-soft)' }}>
           <ArrowIcon />
         </div>
       </div>
@@ -381,8 +381,8 @@ export function LegacyLetterCard({ letter, onClick }) {
 export function OpenLetterListCard({ letter, onClick }) {
   return (
     <div
-      className="bg-paper rounded-[10px] px-[18px] py-[20px] cursor-pointer transition-all duration-[220ms] flex items-center gap-[14px] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(28,26,23,0.08)]"
-      style={{ border: '0.5px solid rgba(28,26,23,0.08)' }}
+      className="bg-paper rounded-[10px] px-[18px] py-[20px] cursor-pointer transition-all duration-[220ms] flex items-center gap-[14px] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(59,54,99,0.08)]"
+      style={{ border: '0.5px solid rgba(59,54,99,0.08)' }}
       onClick={onClick}
     >
       <div className="flex-1 min-w-0">
@@ -409,8 +409,8 @@ export function OpenLetterListCard({ letter, onClick }) {
 export function OpenLetterGridCard({ letter, onClick }) {
   return (
     <div
-      className={`card-accent mood-${letter.mood} bg-paper rounded-[10px] p-[22px] cursor-pointer transition-all duration-[250ms] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(28,26,23,0.09)]`}
-      style={{ border: '0.5px solid rgba(28,26,23,0.08)' }}
+      className={`card-accent mood-${letter.mood} bg-paper rounded-[10px] p-[22px] cursor-pointer transition-all duration-[250ms] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(59,54,99,0.09)]`}
+      style={{ border: '0.5px solid rgba(59,54,99,0.08)' }}
       onClick={onClick}
     >
       <div className="flex items-center gap-2 mb-[10px] flex-wrap">
@@ -418,7 +418,7 @@ export function OpenLetterGridCard({ letter, onClick }) {
           <MoodDot mood={letter.mood} />
           {letter.moodLabel}
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-pill" style={{ background: 'rgba(122,158,142,0.09)', color: 'var(--sage)' }}>
+        <span className="text-[10px] px-2 py-0.5 rounded-pill" style={{ background: 'rgba(46,125,91,0.09)', color: 'var(--sage)' }}>
           Anonymous
         </span>
         <span className="text-[11px] text-ink-muted ml-auto">{letter.timeAgo}</span>
@@ -430,7 +430,7 @@ export function OpenLetterGridCard({ letter, onClick }) {
       </div>
       <div className="flex items-center justify-between">
         <div className="text-[11px] text-ink-muted italic font-light">"{letter.tone}"</div>
-        <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center" style={{ background: 'rgba(28,26,23,0.05)', color: 'var(--ink-soft)' }}>
+        <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center" style={{ background: 'rgba(59,54,99,0.05)', color: 'var(--ink-soft)' }}>
           <ArrowIcon />
         </div>
       </div>

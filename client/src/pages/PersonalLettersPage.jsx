@@ -3,8 +3,8 @@ import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 
 // ── Design constants ──────────────────────────────────────────────────────────
-const BD = '#E0D4BC'   // parchment-deeper border
-const FT = '#F2EBE0'   // parchment-dark footer bg border
+const BD = '#F1EFEA'   // parchment-deeper border
+const FT = '#FBFAF8'   // parchment-dark footer bg border
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
 function EditModal({ letter, onSave, onClose }) {
@@ -52,7 +52,7 @@ function EditModal({ letter, onSave, onClose }) {
             <span className="text-[11px] uppercase tracking-[1px] font-medium" style={{ color: 'var(--ink-muted)' }}>Message</span>
             <textarea value={message} onChange={e => setMessage(e.target.value)} rows={10} className="w-full px-3 py-[10px] rounded-[8px] font-lora text-[14px] leading-[1.9] outline-none resize-none" style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink-soft)' }} />
           </label>
-          {error && <div className="text-[12px] px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(196,99,58,0.07)', border: '1px solid rgba(196,99,58,0.2)' }}>{error}</div>}
+          {error && <div className="text-[12px] px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(244,129,63,0.07)', border: '1px solid rgba(244,129,63,0.2)' }}>{error}</div>}
           <div className="flex gap-2 justify-end">
             <button onClick={onClose} className="px-5 py-[9px] rounded-pill font-sans text-[13px] cursor-pointer bg-transparent" style={{ color: 'var(--ink-muted)', border: `1px solid ${BD}` }}>Cancel</button>
             <button onClick={handleSave} disabled={saving} className="px-5 py-[9px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50" style={{ background: 'var(--ink)', color: 'var(--cream)' }}>
@@ -119,20 +119,20 @@ function LetterCard({ letter, onEdit, onDelete }) {
       {/* Card body */}
       <div style={{ padding: '26px 28px 22px 32px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
-          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 20, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             {letter.subject}
           </h3>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: '#fdf0ee', color: 'var(--tc)', flexShrink: 0, border: '1px solid #f5d4ce' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, padding: '5px 11px', borderRadius: 20, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', background: '#FFF6F0', color: 'var(--tc)', flexShrink: 0, border: '1px solid #FBD9C6' }}>
             ✦ Personal
           </span>
         </div>
 
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 14.5, color: 'var(--ink-soft)', marginBottom: 10, fontWeight: 500 }}>
+        <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14.5, color: 'var(--ink-soft)', marginBottom: 10, fontWeight: 500 }}>
           Dear {letter.subject},
         </div>
 
         <p style={{
-          fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14,
+          fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14,
           color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 16,
           whiteSpace: 'pre-line',
           ...(expanded ? {} : { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }),
@@ -143,7 +143,7 @@ function LetterCard({ letter, onEdit, onDelete }) {
         {isLong && (
           <button
             onClick={() => setExpanded(e => !e)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--tc)', fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', marginBottom: 8, fontFamily: '"DM Sans", sans-serif', transition: 'gap 0.2s' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--tc)', fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', marginBottom: 8, fontFamily: '"Inter", system-ui, sans-serif', transition: 'gap 0.2s' }}
           >
             {expanded ? 'Show less ↑' : 'Read more →'}
           </button>
@@ -163,13 +163,13 @@ function LetterCard({ letter, onEdit, onDelete }) {
             onClick={() => onEdit(letter)}
             onMouseEnter={() => setEditHov(true)}
             onMouseLeave={() => setEditHov(false)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: editHov ? '1.5px solid var(--gold)' : '1.5px solid #E0D4BC', color: editHov ? 'var(--gold)' : 'var(--ink-soft)', background: editHov ? '#fef9f2' : 'transparent' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"Inter", system-ui, sans-serif', transition: 'all 0.15s', border: editHov ? '1.5px solid var(--gold)' : '1.5px solid #F1EFEA', color: editHov ? 'var(--gold)' : 'var(--ink-soft)', background: editHov ? '#FFF6F0' : 'transparent' }}
           >✏ Edit</button>
           <button
             onClick={() => onDelete(letter)}
             onMouseEnter={() => setDelHov(true)}
             onMouseLeave={() => setDelHov(false)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: delHov ? '1.5px solid var(--tc)' : '1.5px solid #f5d4ce', color: delHov ? '#fff' : 'var(--tc)', background: delHov ? 'var(--tc)' : 'transparent' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"Inter", system-ui, sans-serif', transition: 'all 0.15s', border: delHov ? '1.5px solid var(--tc)' : '1.5px solid #FBD9C6', color: delHov ? '#fff' : 'var(--tc)', background: delHov ? 'var(--tc)' : 'transparent' }}
           >✕ Delete</button>
         </div>
       </div>
@@ -187,10 +187,10 @@ function ComposeTeaser({ onClick }) {
       onMouseLeave={() => setHov(false)}
       style={{ marginTop: 28, border: `1.5px dashed ${hov ? 'var(--tc)' : BD}`, borderRadius: 14, padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', background: hov ? 'rgba(139,58,42,0.03)' : 'transparent', transition: 'border-color 0.2s, background 0.2s' }}
     >
-      <div style={{ width: 40, height: 40, borderRadius: '50%', background: hov ? '#fde8e4' : '#EDE5D4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--tc)', flexShrink: 0, transition: 'background 0.2s' }}>+</div>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: hov ? '#E9EFF2' : '#EFEDE8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--tc)', flexShrink: 0, transition: 'background 0.2s' }}>+</div>
       <div>
-        <div style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Begin a new letter</div>
-        <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>No pressure. Start with "Dear…" and see where it goes.</div>
+        <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Begin a new letter</div>
+        <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)' }}>No pressure. Start with "Dear…" and see where it goes.</div>
       </div>
     </div>
   )
@@ -241,11 +241,11 @@ export default function PersonalLettersPage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Your space
           </div>
-          <h1 style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
-            <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #fde8e4, #fdf0e8)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>📝</span>
+          <h1 style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 12 }}>
+            <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #E9EFF2, #FFF6F0)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>📝</span>
             Personal Letters
           </h1>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
+          <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65, maxWidth: 420 }}>
             Letters written for your eyes only. To your past self, your future self, or simply to release what you carry.
           </p>
         </div>
@@ -254,7 +254,7 @@ export default function PersonalLettersPage() {
             onClick={() => navigate('write')}
             onMouseEnter={() => setWriteBtnHov(true)}
             onMouseLeave={() => setWriteBtnHov(false)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: writeBtnHov ? '#B85433' : 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, marginTop: 12, boxShadow: writeBtnHov ? '0 8px 22px rgba(139,58,42,0.3)' : '0 4px 14px rgba(139,58,42,0.25)', transform: writeBtnHov ? 'translateY(-2px)' : 'translateY(0)', transition: 'all 0.2s' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: writeBtnHov ? '#B85433' : 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, marginTop: 12, boxShadow: writeBtnHov ? '0 8px 22px rgba(139,58,42,0.3)' : '0 4px 14px rgba(139,58,42,0.25)', transform: writeBtnHov ? 'translateY(-2px)' : 'translateY(0)', transition: 'all 0.2s' }}
           >
             <span>✦</span> Write a letter
           </button>
@@ -269,7 +269,7 @@ export default function PersonalLettersPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search your letters…"
-            style={{ width: '100%', padding: '14px 18px 14px 46px', border: `1.5px solid ${BD}`, borderRadius: 10, background: 'rgba(255,255,255,0.6)', fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink)', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+            style={{ width: '100%', padding: '14px 18px 14px 46px', border: `1.5px solid ${BD}`, borderRadius: 10, background: 'rgba(255,255,255,0.6)', fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink)', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
             onFocus={e => { e.currentTarget.style.borderColor = 'var(--tc)'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(139,58,42,0.08)' }}
             onBlur={e => { e.currentTarget.style.borderColor = BD; e.currentTarget.style.background = 'rgba(255,255,255,0.6)'; e.currentTarget.style.boxShadow = 'none' }}
           />
@@ -280,12 +280,12 @@ export default function PersonalLettersPage() {
       {letters.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ fontSize: 13, color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ background: '#EDE5D4', color: 'var(--ink-soft)', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 500 }}>
+            <span style={{ background: '#EFEDE8', color: 'var(--ink-soft)', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 500 }}>
               {filtered.length} letter{filtered.length !== 1 ? 's' : ''}
             </span>
             {search ? `matching "${search}"` : 'sorted by newest'}
           </div>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--ink-muted)', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: `1px solid ${BD}`, background: 'transparent', fontFamily: '"DM Sans", sans-serif' }}>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--ink-muted)', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: `1px solid ${BD}`, background: 'transparent', fontFamily: '"Inter", system-ui, sans-serif' }}>
             ↕ Sort
           </button>
         </div>
@@ -295,21 +295,21 @@ export default function PersonalLettersPage() {
       {letters.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '72px 40px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
           <div style={{ fontSize: 48, marginBottom: 20, opacity: 0.4 }}>🪞</div>
-          <div style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Your private space</div>
-          <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 320, margin: '0 auto 28px' }}>
+          <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Your private space</div>
+          <p style={{ fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 320, margin: '0 auto 28px' }}>
             Write to yourself — your past self, your future self, or simply release what you carry. No one else will ever read these.
           </p>
           {canWrite && (
             <button
               onClick={() => navigate('write')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(139,58,42,0.25)' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 24px', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(139,58,42,0.25)' }}
             >
               ✦ Write your first letter
             </button>
           )}
         </div>
       ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--ink-muted)', fontSize: 13, fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--ink-muted)', fontSize: 13, fontFamily: '"Inter", system-ui, sans-serif', fontStyle: 'italic' }}>
           No letters match "<span style={{ color: 'var(--ink-soft)' }}>{search}</span>"
         </div>
       ) : (
