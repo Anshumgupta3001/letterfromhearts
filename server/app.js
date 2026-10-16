@@ -21,6 +21,7 @@ import notificationRoutes  from './routes/notificationRoutes.js'
 import reportRoutes        from './routes/reportRoutes.js'
 import onboardingRoutes    from './routes/onboardingRoutes.js'
 import therapistRoutes     from './routes/therapistRoutes.js'
+import mcpRoutes           from './routes/mcpRoutes.js'
 import { notFound, errorHandler } from './middlewares/errorHandler.js'
 import { guardMaliciousInput }    from './middlewares/sanitize.js'
 
@@ -71,7 +72,8 @@ app.use(guardMaliciousInput)
 app.use(passport.initialize())
 
 if (config.nodeEnv !== 'test') {
-  app.use(morgan('dev'))
+  // Skip /api/mcp: its ?key= secret must never end up in the logs.
+  app.use(morgan('dev', { skip: req => req.originalUrl.startsWith('/api/mcp') }))
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────
@@ -107,6 +109,7 @@ app.use('/api/notifications',  apiLimiter, notificationRoutes)
 app.use('/api/onboarding',     apiLimiter, onboardingRoutes)
 app.use('/api/report-issue',   apiLimiter, reportIssueRoutes)
 app.use('/api/therapists',     therapistRoutes)
+app.use('/api/mcp',           mcpRoutes)
 
 // Tracking — no rate limiter (email clients trigger opens/clicks automatically)
 app.use('/api/tracking', trackingRoutes)
