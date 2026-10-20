@@ -1,10 +1,15 @@
 import rateLimit from 'express-rate-limit'
 
+// Local `npm run dev` sets LFH_LOCAL_DEV=1, so limits never block you while testing.
+// Production runs `npm start`, which keeps every limit on.
+const skip = () => process.env.LFH_LOCAL_DEV === '1'
+
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max:      200,
   standardHeaders: true,
   legacyHeaders:   false,
+  skip,
   message: { error: 'Too many requests. Please try again later.' },
 })
 
@@ -14,6 +19,7 @@ export const authLimiter = rateLimit({
   max:      20,
   standardHeaders: true,
   legacyHeaders:   false,
+  skip,
   message: { error: 'Too many authentication attempts. Please wait before trying again.' },
 })
 
@@ -23,6 +29,7 @@ export const reportReadLimiter = rateLimit({
   max:      300,
   standardHeaders: true,
   legacyHeaders:   false,
+  skip,
   message: { error: 'Too many requests. Please try again later.' },
 })
 
@@ -32,5 +39,6 @@ export const reportWriteLimiter = rateLimit({
   max:      20,
   standardHeaders: true,
   legacyHeaders:   false,
+  skip,
   message: { error: 'Too many report submissions. Please slow down.' },
 })

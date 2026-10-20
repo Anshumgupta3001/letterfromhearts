@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js",
+    "dev": "LFH_LOCAL_DEV=1 nodemon server.js",
     "worker": "node worker/emailWorker.js",
     "worker:dev": "nodemon worker/emailWorker.js"
   },
