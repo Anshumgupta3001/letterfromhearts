@@ -1,384 +1,30 @@
-import { useEffect, useState } from "react";
-import { useApp } from "../context/AppContext";
-import { apiFetch } from "../utils/api";
+import { useEffect, useState } from 'react'
+import { useApp } from '../context/AppContext'
+import { apiFetch } from '../utils/api'
+import LetterCard from '../components/LetterCard'
 
 const BD = "#F0DFD1";
 const FT = "#F0DFD1";
 
-// ── Shared letter card (same design as global system) ─────────────────────────
-function LetterCard({
-  letter,
-  onEdit,
-  onDelete,
-  onOpen,
-  accentGrad,
-  tagLabel,
-  tagBg,
-  tagColor,
-  tagBorder,
-}) {
-  const [hov, setHov] = useState(false);
-  const [editHov, setEditHov] = useState(false);
-  const [delHov, setDelHov] = useState(false);
-
-  const date = new Date(letter.createdAt).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const isPersonal = letter.type === "personal";
-
-  // status: 'sent' | 'opened' | 'clicked' | 'failed' | 'saved'
-  const isOpened = letter.status === "opened" || letter.status === "clicked";
-  const isSentLetter = letter.type === "sent";
-
-  return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: "#fff",
-        borderRadius: 14,
-        border: `1px solid ${BD}`,
-        overflow: "hidden",
-        position: "relative",
-        transform: hov ? "translateY(-3px)" : "translateY(0)",
-        boxShadow: hov ? "0 14px 40px rgba(26,18,8,0.09)" : "none",
-        transition: "transform 0.2s, box-shadow 0.2s",
-      }}
-    >
-      {/* Left accent */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 4,
-          background: accentGrad,
-          borderRadius: "4px 0 0 4px", display: 'none' }}
-      />
-
-      {/* Card body — clickable to open */}
-      <div
-        style={{ padding: "22px 22px 18px 28px", cursor: "pointer" }}
-        onClick={() => onOpen(letter)}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 14,
-            marginBottom: 12,
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: '"Gambetta", serif',
-              fontSize: 22,
-              fontWeight: 400,
-              color: "var(--ink)",
-              lineHeight: 1.2,
-              letterSpacing: "-0.2px",
-            }}
-          >
-            {letter.subject}
-          </h3>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: 5,
-              flexShrink: 0,
-            }}
-          >
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                fontSize: 13,
-                padding: "5px 11px",
-                borderRadius: 6,
-                fontWeight: 600,
-                background: tagBg,
-                color: tagColor,
-                border: `1px solid ${tagBorder}`,
-              }}
-            >
-              {tagLabel}
-            </span>
-            {/* "Heard" indicator — stranger letters claimed by a listener */}
-            {letter.type === "stranger" &&
-              (letter.isClaimed || letter.isRead) && (
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    fontSize: 12,
-                    padding: "3px 9px",
-                    borderRadius: 6,
-                    fontWeight: 500,
-                    background: "rgba(51,85,127,0.1)",
-                    color: "var(--purple)",
-                    border: "1px solid rgba(51,85,127,0.25)",
-                  }}
-                >
-                  ✓ Heard by a listener
-                </span>
-              )}
-            {letter.type === "stranger" &&
-              !letter.isClaimed &&
-              !letter.isRead && (
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    fontSize: 12,
-                    padding: "3px 9px",
-                    borderRadius: 6,
-                    fontWeight: 500,
-                    background: "rgba(40,3,15,0.04)",
-                    color: "var(--ink-muted)",
-                    border: "1px solid rgba(40,3,15,0.1)",
-                  }}
-                >
-                  · Waiting to be heard
-                </span>
-              )}
-            {/* Reply count badge */}
-            {letter.type === "stranger" && letter.replyCount > 0 && (
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  fontSize: 12,
-                  padding: "3px 9px",
-                  borderRadius: 6,
-                  fontWeight: 600,
-                  background: "rgba(88,143,96,0.1)",
-                  color: "var(--sage)",
-                  border: "1px solid rgba(88,143,96,0.28)",
-                }}
-              >
-                🌿 {letter.replyCount}{" "}
-                {letter.replyCount === 1 ? "reply" : "replies"}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <p
-          style={{
-            fontFamily: '"General Sans", sans-serif', fontSize: 15,
-            color: "var(--ink-muted)",
-            lineHeight: 1.7,
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {letter.message}
-        </p>
-      </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 22px 12px 28px",
-          borderTop: `1px solid ${FT}`,
-          background: "rgba(245,240,232,0.4)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            flexWrap: "wrap",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 12,
-              color: "var(--ink-muted)",
-            }}
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              style={{ opacity: 0.5 }}
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            {date}
-          </div>
-          {/* Open status badge — only for sent letters */}
-          {isSentLetter &&
-            (() => {
-              // Prefer new openedBy-based count; fall back to legacy status field
-              const uniqueOpens = letter.openCount ?? (isOpened ? 1 : 0);
-              const emailOpens = letter.emailOpenCount ?? 0;
-              const platformOpens = letter.platformOpenCount ?? 0;
-              const hasOpens = uniqueOpens > 0 || isOpened;
-              const showBreakdown =
-                uniqueOpens > 0 && (emailOpens > 0 || platformOpens > 0);
-              return (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: 3,
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      fontSize: 12,
-                      padding: "3px 9px",
-                      borderRadius: 6,
-                      fontWeight: 500,
-                      letterSpacing: "0.3px",
-                      fontFamily: '"General Sans", sans-serif',
-                      background: hasOpens
-                        ? "rgba(90,158,122,0.1)"
-                        : "rgba(40,3,15,0.05)",
-                      color: hasOpens ? "var(--sage)" : "var(--ink-muted)",
-                      border: `1px solid ${
-                        hasOpens
-                          ? "rgba(90,158,122,0.25)"
-                          : "rgba(40,3,15,0.1)"
-                      }`,
-                    }}
-                  >
-                    {hasOpens
-                      ? `👁 Opened by ${uniqueOpens} ${
-                          uniqueOpens === 1 ? "person" : "people"
-                        }`
-                      : "· Not opened"}
-                  </span>
-                  {showBreakdown && (
-                    <div style={{ display: "flex", gap: 5, paddingLeft: 2 }}>
-                      {emailOpens > 0 && (
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: "var(--ink-muted)",
-                            fontFamily: '"General Sans", sans-serif',
-                          }}
-                        >
-                          📧 {emailOpens} email
-                        </span>
-                      )}
-                      {platformOpens > 0 && (
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: "var(--ink-muted)",
-                            fontFamily: '"General Sans", sans-serif',
-                          }}
-                        >
-                          📱 {platformOpens} app
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-        </div>
-        {/* Only personal letters can be edited/deleted */}
-        {isPersonal && onEdit && onDelete && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(letter);
-              }}
-              onMouseEnter={() => setEditHov(true)}
-              onMouseLeave={() => setEditHov(false)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "5px 12px",
-                borderRadius: 7,
-                fontSize: 12,
-                fontWeight: 500,
-                cursor: "pointer",
-                fontFamily: '"General Sans", sans-serif',
-                transition: "all 0.15s",
-                border: editHov
-                  ? "1.5px solid var(--gold)"
-                  : "1.5px solid #F0DFD1",
-                color: editHov ? "var(--gold)" : "var(--ink-soft)",
-                background: editHov ? "#FCFAF8" : "transparent",
-              }}
-            >
-              ✏ Edit
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(letter);
-              }}
-              onMouseEnter={() => setDelHov(true)}
-              onMouseLeave={() => setDelHov(false)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "5px 12px",
-                borderRadius: 7,
-                fontSize: 12,
-                fontWeight: 500,
-                cursor: "pointer",
-                fontFamily: '"General Sans", sans-serif',
-                transition: "all 0.15s",
-                border: delHov
-                  ? "1.5px solid var(--tc)"
-                  : "1.5px solid #f5d4ce",
-                color: delHov ? "#fff" : "var(--tc)",
-                background: delHov ? "var(--tc)" : "transparent",
-              }}
-            >
-              ✕ Delete
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Edit Modal ────────────────────────────────────────────────────────────────
+const MOOD_OPTIONS = [
+  { value: '',          label: 'No mood',    emoji: '—'  },
+  { value: 'vent',      label: 'Need to vent', emoji: '🌧️' },
+  { value: 'joy',       label: 'Pure joy',     emoji: '🌟' },
+  { value: 'love',      label: 'Love & warmth',emoji: '💌' },
+  { value: 'grief',     label: 'Grief & loss', emoji: '🕯️' },
+  { value: 'gratitude', label: 'Gratitude',    emoji: '🌿' },
+  { value: 'longing',   label: 'Longing',      emoji: '🌙' },
+]
+
 function EditModal({ letter, onSave, onClose }) {
-  const [subject, setSubject] = useState(letter.subject);
-  const [message, setMessage] = useState(letter.message);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [subject, setSubject] = useState(letter.subject || '')
+  const [message, setMessage] = useState(letter.message || '')
+  const [mood,    setMood]    = useState(letter.mood    || '')
+  const [saving,  setSaving]  = useState(false)
+  const [error,   setError]   = useState('')
+
+  const isStranger = letter.type === 'stranger'
 
   async function handleSave() {
     setError("");
@@ -388,127 +34,103 @@ function EditModal({ letter, onSave, onClose }) {
     }
     setSaving(true);
     try {
-      const res = await apiFetch(`/api/letters/${letter._id}`, {
-        method: "PUT",
-        body: JSON.stringify({ subject, message }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setError(json.error || "Failed to save.");
-        return;
-      }
-      onSave(json.data);
-    } catch {
-      setError("Network error.");
-    } finally {
-      setSaving(false);
-    }
+      const res  = await apiFetch(`/api/letters/${letter._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ subject, message, mood }),
+      })
+      const json = await res.json()
+      if (!res.ok) { setError(json.error || 'Failed to save.'); return }
+      onSave(json.data)
+    } catch { setError('Network error.') }
+    finally { setSaving(false) }
   }
 
   return (
     <div
-      className="fixed inset-0 z-[500] flex items-center justify-center"
-      style={{ background: "rgba(26,18,8,0.45)", backdropFilter: "blur(4px)" }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center"
+      style={{ background: 'rgba(26,18,8,0.45)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="w-full max-w-[560px] mx-4 overflow-hidden animate-fade-up"
+        className="w-full sm:max-w-[560px] sm:mx-4 animate-fade-up flex flex-col"
         style={{
-          background: "var(--cream)",
-          border: `1px solid ${BD}`,
-          borderRadius: 16,
-          boxShadow: "0 24px 64px rgba(26,18,8,0.18)",
+          background: 'var(--cream)', border: `1px solid ${BD}`,
+          borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,8,0.18)',
+          maxHeight: 'calc(100dvh - 32px)', overflow: 'hidden',
         }}
       >
-        <div
-          className="flex items-center justify-between px-6 pt-5 pb-4"
-          style={{ borderBottom: `1px solid ${FT}` }}
-        >
-          <span
-            style={{
-              fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em',
-              fontSize: 22,
-              fontWeight: 400,
-              color: "var(--ink)",
-            }}
-          >
-            Edit Letter
-          </span>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center cursor-pointer bg-transparent border-none text-[20px]"
-            style={{ color: "var(--ink-muted)" }}
-          >
-            ×
-          </button>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0" style={{ borderBottom: `1px solid ${FT}` }}>
+          <div>
+            <span style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)' }}>Edit Letter</span>
+            {isStranger && (
+              <span style={{ marginLeft: 10, fontSize: 13, padding: '2px 8px', borderRadius: 6, fontWeight: 600, background: 'rgba(88,143,96,0.1)', color: 'var(--sage)', border: '1px solid rgba(88,143,96,0.25)', fontFamily: '"General Sans", sans-serif' }}>
+                Caring Stranger
+              </span>
+            )}
+          </div>
+          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center cursor-pointer bg-transparent border-none text-[20px]" style={{ color: 'var(--ink-muted)' }}>×</button>
         </div>
-        <div className="px-6 py-5 flex flex-col gap-4">
+
+        {/* Scrollable body */}
+        <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
           <label className="flex flex-col gap-1">
-            <span
-              className="text-[13px] font-medium"
-              style={{ color: "var(--ink-muted)" }}
-            >
-              Subject
-            </span>
+            <span className="text-[13px] font-medium" style={{ color: 'var(--ink-muted)' }}>Subject</span>
             <input
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={e => setSubject(e.target.value)}
               className="w-full px-3 py-[10px] rounded-[8px] font-sans text-[13px] outline-none"
-              style={{
-                background: "var(--paper)",
-                border: `1px solid ${BD}`,
-                color: "var(--ink)",
-              }}
+              style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink)' }}
             />
           </label>
+
           <label className="flex flex-col gap-1">
-            <span
-              className="text-[13px] font-medium"
-              style={{ color: "var(--ink-muted)" }}
-            >
-              Message
-            </span>
+            <span className="text-[13px] font-medium" style={{ color: 'var(--ink-muted)' }}>Message</span>
             <textarea
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
               rows={10}
               className="w-full px-3 py-[10px] rounded-[8px] font-lora text-[14px] leading-[1.9] outline-none resize-none"
-              style={{
-                background: "var(--paper)",
-                border: `1px solid ${BD}`,
-                color: "var(--ink-soft)",
-              }}
+              style={{ background: 'var(--paper)', border: `1px solid ${BD}`, color: 'var(--ink-soft)' }}
             />
           </label>
+
+          {/* Mood picker */}
+          <div className="flex flex-col gap-2">
+            <span className="text-[13px] font-medium" style={{ color: 'var(--ink-muted)' }}>Mood</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {MOOD_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setMood(opt.value)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    padding: '5px 11px', borderRadius: 6, cursor: 'pointer',
+                    fontSize: 12, fontFamily: '"General Sans", sans-serif', fontWeight: 500,
+                    transition: 'all 0.12s',
+                    background: mood === opt.value ? 'var(--ink)' : 'var(--paper)',
+                    color:      mood === opt.value ? 'var(--cream)' : 'var(--ink-soft)',
+                    border:     mood === opt.value ? '1px solid var(--ink)' : `1px solid ${BD}`,
+                  }}
+                >
+                  {opt.emoji !== '—' && <span>{opt.emoji}</span>}
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {error && (
-            <div
-              className="text-[12px] px-3 py-2 rounded-[7px]"
-              style={{
-                color: "var(--tc)",
-                background: "rgba(40,3,15,0.07)",
-                border: "1px solid rgba(40,3,15,0.2)",
-              }}
-            >
+            <div className="text-[12px] px-3 py-2 rounded-[7px]" style={{ color: 'var(--tc)', background: 'rgba(40,3,15,0.07)', border: '1px solid rgba(40,3,15,0.2)' }}>
               {error}
             </div>
           )}
-          <div className="flex gap-2 justify-end">
-            <button
-              onClick={onClose}
-              className="px-5 py-[9px] rounded-pill font-sans text-[13px] cursor-pointer bg-transparent"
-              style={{ color: "var(--ink-muted)", border: `1px solid ${BD}` }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-5 py-[9px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50"
-              style={{ background: "var(--ink)", color: "var(--cream)" }}
-            >
-              {saving ? "Saving…" : "Save changes"}
+
+          <div className="flex gap-2 justify-end pb-1">
+            <button onClick={onClose} className="px-5 py-[9px] rounded-pill font-sans text-[13px] cursor-pointer bg-transparent" style={{ color: 'var(--ink-muted)', border: `1px solid ${BD}` }}>Cancel</button>
+            <button onClick={handleSave} disabled={saving} className="px-5 py-[9px] rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer disabled:opacity-50" style={{ background: 'var(--ink)', color: 'var(--cream)' }}>
+              {saving ? 'Saving…' : 'Save changes'}
             </button>
           </div>
         </div>
@@ -688,213 +310,6 @@ function Tab({ label, count, active, onClick }) {
   );
 }
 
-// ── Received letter card ──────────────────────────────────────────────────────
-function ReceivedLetterCard({ letter, onOpen }) {
-  const [hov, setHov] = useState(false);
-  const date = new Date(letter.createdAt).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const senderName = letter.senderInfo?.name || "—";
-  const senderEmail = letter.senderInfo?.email || letter.fromEmail || "—";
-  const displaySender =
-    senderName && senderName !== "—" ? senderName : senderEmail;
-
-  return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      onClick={() => onOpen(letter)}
-      style={{
-        background: "#fff",
-        borderRadius: 14,
-        border: `1px solid ${BD}`,
-        overflow: "hidden",
-        position: "relative",
-        cursor: "pointer",
-        transform: hov ? "translateY(-3px)" : "translateY(0)",
-        boxShadow: hov ? "0 14px 40px rgba(26,18,8,0.09)" : "none",
-        transition: "transform 0.2s, box-shadow 0.2s",
-      }}
-    >
-      {/* Left accent — purple for received */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 4,
-          background: "linear-gradient(180deg, var(--purple), var(--tc))",
-          borderRadius: "4px 0 0 4px", display: 'none' }}
-      />
-
-      <div style={{ padding: "22px 22px 18px 28px" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 14,
-            marginBottom: 10,
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            {/* From badge */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                marginBottom: 8,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 13,
-                  padding: "3px 9px",
-                  borderRadius: 6,
-                  fontWeight: 600,
-                  background: "rgba(51,85,127,0.1)",
-                  color: "var(--purple)",
-                  border: "1px solid rgba(51,85,127,0.25)",
-                  fontFamily: '"General Sans", sans-serif',
-                }}
-              >
-                📥 Received
-              </span>
-            </div>
-            <h3
-              style={{
-                fontFamily: '"Gambetta", serif',
-                fontSize: 22,
-                fontWeight: 400,
-                color: "var(--ink)",
-                lineHeight: 1.2,
-                letterSpacing: "-0.2px",
-                marginBottom: 4,
-              }}
-            >
-              {letter.subject || "A letter from my heart"}
-            </h3>
-            <div
-              style={{
-                fontSize: 12,
-                color: "var(--ink-muted)",
-                fontFamily: '"General Sans", sans-serif',
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-              }}
-            >
-              <span style={{ opacity: 0.5 }}>✉</span>
-              <span>
-                From{" "}
-                <strong style={{ color: "var(--ink-soft)" }}>
-                  {displaySender}
-                </strong>
-              </span>
-            </div>
-          </div>
-        </div>
-        <p
-          style={{
-            fontFamily: '"General Sans", sans-serif', fontSize: 15,
-            color: "var(--ink-muted)",
-            lineHeight: 1.7,
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {letter.message}
-        </p>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "10px 22px 12px 28px",
-          borderTop: `1px solid ${FT}`,
-          background: "rgba(245,240,232,0.4)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            fontSize: 12,
-            color: "var(--ink-muted)",
-          }}
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            style={{ opacity: 0.5 }}
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          {date}
-        </div>
-        <span
-          style={{
-            fontSize: 12,
-            color: "var(--purple)",
-            fontFamily: '"General Sans", sans-serif',
-            fontWeight: 500,
-          }}
-        >
-          Open & reply →
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ── Card config per type ──────────────────────────────────────────────────────
-const CARD_CONFIG = {
-  personal: {
-    accentGrad: "linear-gradient(180deg, var(--tc), var(--gold))",
-    tagLabel: "Personal",
-    tagBg: "var(--lemon)",
-    tagColor: "var(--ink)",
-    tagBorder: "var(--lemon)",
-  },
-  stranger: {
-    accentGrad: "linear-gradient(180deg, var(--sage), var(--gold))",
-    tagLabel: "Caring stranger",
-    tagBg: "#E3EEE4",
-    tagColor: "var(--fern)",
-    tagBorder: "#E3EEE4",
-  },
-  read: {
-    accentGrad: "linear-gradient(180deg, var(--purple), var(--gold))",
-    tagLabel: "Listener read",
-    tagBg: "var(--sand)",
-    tagColor: "var(--ink)",
-    tagBorder: "var(--sand)",
-  },
-  sent: {
-    accentGrad: "linear-gradient(180deg, var(--gold), var(--ink-muted))",
-    tagLabel: "Sent to someone",
-    tagBg: "#E4EAF1",
-    tagColor: "var(--slate)",
-    tagBorder: "#E4EAF1",
-  },
-};
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function MySpacePage() {
   const {
@@ -943,31 +358,13 @@ export default function MySpacePage() {
 
   // Tabs config
   const TABS = [
-    {
-      id: "all",
-      label: "All",
-      count:
-        personal.length +
-        stranger.length +
-        sentLetters.length +
-        receivedLetters.length,
-    },
-    { id: "personal", label: "Personal", count: personal.length },
-    { id: "sent", label: "Sent to Someone", count: sentLetters.length },
-    { id: "received", label: "For Me", count: receivedLetters.length },
-    ...(canWriteStranger
-      ? [
-          {
-            id: "stranger",
-            label: "Send to a Stranger",
-            count: stranger.length,
-          },
-        ]
-      : []),
-    ...(canReadFeed
-      ? [{ id: "read", label: "Held by Me", count: readLetters.length }]
-      : []),
-  ];
+    { id: 'all',      label: 'All',                 count: personal.length + stranger.length + sentLetters.length + receivedLetters.length },
+    { id: 'personal', label: 'Personal',             count: personal.length },
+    { id: 'sent',     label: 'Sent to Someone',      count: sentLetters.length },
+    { id: 'received', label: 'For You',               count: receivedLetters.length },
+    ...(canWriteStranger ? [{ id: 'stranger', label: 'Send to a Stranger', count: stranger.length }] : []),
+    ...(canReadFeed    ? [{ id: 'read',     label: 'Held by Me',     count: readLetters.length }] : []),
+  ]
 
   // Letters visible per tab
   const visibleLetters = (() => {
@@ -991,10 +388,9 @@ export default function MySpacePage() {
   })();
 
   function handleSaved(updated) {
-    setPersonal((prev) =>
-      prev.map((l) => (l._id === updated._id ? updated : l)),
-    );
-    setEditingLetter(null);
+    setPersonal(prev => prev.map(l => l._id === updated._id ? updated : l))
+    setStranger(prev => prev.map(l => l._id === updated._id ? updated : l))
+    setEditingLetter(null)
   }
 
   async function handleDeleteConfirm() {
@@ -1045,7 +441,7 @@ export default function MySpacePage() {
                 fontWeight: 400,
                 color: "var(--ink)",
                 lineHeight: 1.05,
-                letterSpacing: '-0.045em',
+                letterSpacing: '-0.03em',
                 marginBottom: 5,
               }}
             >
@@ -1166,7 +562,7 @@ export default function MySpacePage() {
             </span>
             <span
               style={{
-                fontSize: 12.5,
+                fontSize: 13,
                 color: "var(--ink-muted)",
                 fontFamily: '"General Sans", sans-serif', }}
             >
@@ -1175,89 +571,38 @@ export default function MySpacePage() {
           </div>
         )}
 
-        {/* ── Content ─────────────────────────────────────────────────── */}
-        {visibleLetters.length === 0 ? (
-          activeTab === "personal" ? (
-            <EmptyState
-              icon="🪞"
-              title="Nothing written yet"
-              subtitle="Write to yourself — your past self, your future self. Even one sentence matters."
-              cta="Write your first letter"
-              onCta={() => navigate("write")}
-            />
-          ) : activeTab === "sent" ? (
-            <EmptyState
-              icon="📬"
-              title="No letters sent yet"
-              subtitle="Write a letter to someone you know and send it directly to their inbox."
-              cta="Write a letter"
-              onCta={() => navigate("write")}
-            />
-          ) : activeTab === "received" ? (
-            <EmptyState
-              icon="📥"
-              title="No letters received yet"
-              subtitle="When someone sends you a letter through Letter from Heart, it will appear here."
-            />
-          ) : activeTab === "stranger" ? (
-            <EmptyState
-              icon="🌍"
-              title="No stranger letters yet"
-              subtitle="Share something with the world. Your words might be exactly what someone needs today."
-              cta="Write to a stranger"
-              onCta={() => navigate("write")}
-            />
-          ) : activeTab === "read" ? (
-            <EmptyState
-              icon="🎧"
-              title="No letters read yet"
-              subtitle="Someone out there is waiting to be heard. Go to the listener feed and be present."
-              cta="Go to Listener Read"
-              onCta={() => navigate("listenerread")}
-            />
-          ) : (
-            <EmptyState
-              icon="✦"
-              title="Your space is empty"
-              subtitle="Start by writing a letter — to yourself, to a stranger, or to someone you love."
-              cta="Write your first letter"
-              onCta={() => navigate("write")}
-            />
-          )
+      {/* ── Content ─────────────────────────────────────────────────── */}
+      {visibleLetters.length === 0 ? (
+        activeTab === 'personal' ? (
+          <EmptyState icon="🪞" title="Nothing written yet" subtitle="Write to yourself — your past self, your future self. Even one sentence matters." cta="Write your first letter" onCta={() => navigate('write')} />
+        ) : activeTab === 'sent' ? (
+          <EmptyState icon="📬" title="No letters sent yet" subtitle="Write a letter to someone you know and send it directly to their inbox." cta="Write a letter" onCta={() => navigate('write')} />
+        ) : activeTab === 'received' ? (
+          <EmptyState icon="📥" title="Nothing for you yet" subtitle="When someone sends you a letter through Letter from Heart, it will appear here." />
+        ) : activeTab === 'stranger' ? (
+          <EmptyState icon="🌍" title="No stranger letters yet" subtitle="Share something with the world. Your words might be exactly what someone needs today." cta="Write to a stranger" onCta={() => navigate('write')} />
+        ) : activeTab === 'read' ? (
+          <EmptyState icon="🎧" title="No letters read yet" subtitle="Someone out there is waiting to be heard. Go to the listener feed and be present." cta="Go to Listener Read" onCta={() => navigate('listenerread')} />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {visibleLetters.map((letter) => {
-              if (letter._cardType === "received") {
-                return (
-                  <ReceivedLetterCard
-                    key={letter._id}
-                    letter={letter}
-                    onOpen={openLetterPanel}
-                  />
-                );
+          <EmptyState icon="✦" title="Your space is empty" subtitle="Start by writing a letter — to yourself, to a stranger, or to someone you love." cta="Write your first letter" onCta={() => navigate('write')} />
+        )
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {visibleLetters.map(letter => (
+            <LetterCard
+              key={letter._id}
+              letter={letter}
+              onOpen={openLetterPanel}
+              onEdit={
+                letter.type === 'personal' ||
+                (letter.type === 'stranger' && !letter.isClaimed && !letter.isRead)
+                  ? setEditingLetter : undefined
               }
-              const cfg = CARD_CONFIG[letter._cardType] || CARD_CONFIG.personal;
-              return (
-                <LetterCard
-                  key={letter._id}
-                  letter={letter}
-                  accentGrad={cfg.accentGrad}
-                  tagLabel={cfg.tagLabel}
-                  tagBg={cfg.tagBg}
-                  tagColor={cfg.tagColor}
-                  tagBorder={cfg.tagBorder}
-                  onOpen={openLetterPanel}
-                  onEdit={
-                    letter.type === "personal" ? setEditingLetter : undefined
-                  }
-                  onDelete={
-                    letter.type === "personal" ? setDeletingLetter : undefined
-                  }
-                />
-              );
-            })}
-          </div>
-        )}
+              onDelete={letter.type === 'personal' ? setDeletingLetter : undefined}
+            />
+          ))}
+        </div>
+      )}
 
         {/* ── Compose teaser ──────────────────────────────────────────── */}
         {visibleLetters.length > 0 && (

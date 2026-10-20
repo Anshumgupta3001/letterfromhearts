@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { AppProvider } from './context/AppContext'
 import Layout from './components/Layout'
 import Drawer from './components/Drawer'
@@ -15,24 +16,60 @@ import PersonalLettersPage from './pages/PersonalLettersPage'
 import CaringStrangerPage from './pages/CaringStrangerPage'
 import ListenerReadPage from './pages/ListenerReadPage'
 import ReportIssuePage from './pages/ReportIssuePage'
+import TherapistsPage from './pages/TherapistsPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AuthPage from './pages/AuthPage'
 import LandingPage from './pages/LandingPage'
 import { useState } from 'react'
+import OnboardingModal from './components/OnboardingModal'
 import { useApp } from './context/AppContext'
+import FocusPage from './pages/FocusPage'
+import { FocusPlayerProvider } from './context/FocusPlayerContext'
+
+// Only show onboarding for accounts created on or after this date.
+// Users who signed up before onboarding was launched are auto-skipped.
+const ONBOARDING_LAUNCH = new Date('2026-05-16')
+
+// ── Deep link parser ──────────────────────────────────────────────────────────
+// Translates /welcome/* paths (from email CTAs) to their navigation intent.
+// Returns { type: 'letter'|'reply'|'notifications', id? } or null.
+function parseDeepLink(path) {
+  const letterMatch = path.match(/^\/welcome\/letters\/([a-f0-9]{24})$/)
+  if (letterMatch) return { type: 'letter', id: letterMatch[1] }
+  const replyMatch  = path.match(/^\/welcome\/reply\/([a-f0-9]{24})$/)
+  if (replyMatch)  return { type: 'reply',  id: replyMatch[1]  }
+  if (path === '/welcome/notifications') return { type: 'notifications' }
+  return null
+}
+
+// Auth-specific paths that the URL router recognises
+const AUTH_PATHS    = ['/signup', '/login']
+const WELCOME_PATH  = '/welcome'
 
 function PageRouter() {
-  const { currentPage, authUser, authLoading, pendingRoleSetup, googleAuthError } = useApp()
+  const { currentPage, authUser, authLoading, pendingRoleSetup, googleAuthError, navigate } = useApp()
+  const path = window.location.pathname
+  const deepLink = parseDeepLink(path)
+  const deepLinkHandled = useRef(false)
+  // Signed-out visitors see the landing page unless they're on /signup, /login,
+  // an invite link (?email=) or picked "Start writing" / "Log in" on the landing page.
   const [authMode, setAuthMode] = useState(() => {
-    const path = window.location.pathname
     if (path.startsWith('/signup') || new URLSearchParams(window.location.search).get('email')) return 'signup'
     if (path.startsWith('/login')) return 'login'
     return null
   })
-
-  if (window.location.pathname === '/admin-secret-dashboard') {
-    return <AdminDashboardPage />
+  const startAuth = mode => {
+    window.history.replaceState({}, '', mode === 'login' ? '/login' : '/signup')
+    setAuthMode(mode)
   }
+  const backToLanding = () => {
+    window.history.replaceState({}, '', '/')
+    setAuthMode(null)
+  }
+
+  // Admin bypass — no auth required, no URL rewriting
+  const adminPaths = ['/admin-secret-dashboard', '/admin/dashboard']
+  if (adminPaths.includes(path)) return <AdminDashboardPage />
 
   if (authLoading) {
     return (
@@ -42,12 +79,44 @@ function PageRouter() {
     )
   }
 
+  // ── Unauthenticated ────────────────────────────────────────────────────────
   if (!authUser) {
-    if (authMode || googleAuthError) {
-      return <AuthPage key={authMode || 'login'} initialMode={authMode || 'login'} onBack={() => setAuthMode(null)} />
+    if (deepLink) {
+      // Email deep link — preserve destination in ?redirect= and send to login
+      window.history.replaceState({}, '', `/login?redirect=${encodeURIComponent(path)}`)
+      return <AuthPage initialMode="login" />
     }
-    return <LandingPage onStart={setAuthMode} />
+    if (authMode || googleAuthError) {
+      return <AuthPage key={authMode || 'login'} initialMode={authMode || 'login'} onBack={backToLanding} />
+    }
+    return <LandingPage onStart={startAuth} />
   }
+
+  // ── Authenticated ──────────────────────────────────────────────────────────
+  // Deep link: authenticated user clicking an email CTA directly (already logged in).
+  // AppContext.init handles this via pathname check, but as a safety net we also
+  // handle it here for cases where auth was already resolved at render time.
+  if (deepLink && !deepLinkHandled.current) {
+    deepLinkHandled.current = true
+    if (deepLink.type === 'letter' || deepLink.type === 'reply') {
+      navigate('myspace', 'received')
+    } else if (deepLink.type === 'notifications') {
+      navigate('home')
+    }
+    window.history.replaceState({}, '', WELCOME_PATH)
+  }
+
+  // Swap auth/root paths to /welcome in the address bar
+  if (AUTH_PATHS.includes(path) || path === '/') {
+    window.history.replaceState({}, '', WELCOME_PATH)
+  }
+
+  const createdAt = authUser?.createdAt ? new Date(authUser.createdAt) : null
+  const showOnboarding = (
+    authUser &&
+    !authUser.hasCompletedOnboarding &&
+    createdAt && createdAt >= ONBOARDING_LAUNCH
+  )
 
   return (
     <>
@@ -63,11 +132,15 @@ function PageRouter() {
         {currentPage === 'personalletters'&& <PersonalLettersPage />}
         {currentPage === 'caringstranger' && <CaringStrangerPage />}
         {currentPage === 'listenerread'   && <ListenerReadPage />}
+        {currentPage === 'therapists'     && <TherapistsPage />}
+{currentPage === 'focus'          && <FocusPage />}        
         {currentPage === 'reportissue'    && <ReportIssuePage />}
+        {currentPage === 'therapists'     && <TherapistsPage />}
       </Layout>
       <Drawer />
       <LetterDrawer />
       {pendingRoleSetup && <GoogleRoleSetupModal />}
+      {showOnboarding  && <OnboardingModal />}
     </>
   )
 
@@ -77,7 +150,9 @@ export default function App() {
   return (
     <AppProvider>
       <div className="min-h-screen bg-cream font-sans">
+       <FocusPlayerProvider>      
         <PageRouter />
+      </FocusPlayerProvider>  
       </div>
     </AppProvider>
   )

@@ -1,7 +1,7 @@
 import Letter     from '../models/Letter.js'
 import Reply      from '../models/Reply.js'
 import User       from '../models/User.js'
-import { checkContentSafety } from '../utils/moderation.js'
+import { checkFieldsSafety, MSG_FLAGGED, MSG_UNAVAILABLE } from '../utils/moderation.js'
 import { createNotification } from './notificationController.js'
 
 // ── Helper: compute open stats from openedBy array ────────────────────────────
@@ -202,9 +202,11 @@ export async function createLetter(req, res) {
   if (!message?.trim()) return res.status(400).json({ error: 'Message cannot be empty.' })
 
   try {
-    await checkContentSafety(message.trim())
-  } catch {
-    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+    await checkFieldsSafety(subject, message)
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ success: false, error })
   }
 
   const defaults = {
@@ -274,7 +276,7 @@ export async function markLetterOpen(req, res) {
         letterId: letter._id,
         message:  'Your letter was opened 👁',
         type:     'claim',
-        link:     `/letters/${letter._id}`,
+        link:     `/welcome/letters/${letter._id}`,
         dedup:    true,
       })
     } catch (err) {
@@ -343,7 +345,7 @@ export async function markLetterRead(req, res) {
         letterId:  letter._id,
         message:   'Someone opened your letter 💌',
         type:      'claim',
-        link:      `/letters/${letter._id}`,
+        link:      `/welcome/letters/${letter._id}`,
         dedup:     true,
       })
     } catch (err) {
@@ -354,25 +356,40 @@ export async function markLetterRead(req, res) {
   res.json({ success: true })
 }
 
-// PUT /api/letters/:id  — edit own PERSONAL letters only
+// PUT /api/letters/:id  — edit own personal or unclaimed stranger letters
+// Sent (type:'sent') letters can never be edited — already delivered to a real inbox.
+// Stranger letters become locked once claimed by a listener (active conversation in progress).
 export async function updateLetter(req, res) {
-  const { subject, message } = req.body
+  const { subject, message, mood } = req.body
 
   if (!message?.trim()) return res.status(400).json({ error: 'Message cannot be empty.' })
 
   try {
-    await checkContentSafety(message.trim())
-  } catch {
-    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+    await checkFieldsSafety(subject, message)
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ success: false, error })
   }
 
-  // Only allow editing personal letters
   const letter = await Letter.findOne({ _id: req.params.id, userId: req.user._id })
   if (!letter) return res.status(404).json({ error: 'Letter not found.' })
-  if (letter.type !== 'personal') return res.status(403).json({ error: 'Only personal letters can be edited.' })
 
-  letter.subject = subject?.trim() || 'A personal letter'
-  letter.message = message.trim()
+  if (letter.type === 'sent') {
+    return res.status(403).json({ error: 'Letters sent to someone cannot be edited.' })
+  }
+  if (letter.type !== 'personal' && letter.type !== 'stranger') {
+    return res.status(403).json({ error: 'Only personal and caring-stranger letters can be edited.' })
+  }
+  if (letter.type === 'stranger' && (letter.isClaimed || letter.isRead)) {
+    return res.status(403).json({ error: 'This letter has already been claimed and cannot be edited.' })
+  }
+
+  const defaultSubject = letter.type === 'stranger' ? 'A letter from my heart' : 'A personal letter'
+  letter.subject  = subject?.trim() || defaultSubject
+  letter.message  = message.trim()
+  if (mood !== undefined) letter.mood = mood?.trim() || ''
+  letter.isEdited = true
   await letter.save()
 
   res.json({ success: true, data: letter })

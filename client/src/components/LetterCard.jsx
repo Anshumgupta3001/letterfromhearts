@@ -1,11 +1,277 @@
-import { useApp } from '../context/AppContext'
-import { moodConfig, statusConfig } from '../data/mockData'
+import { useState } from 'react'
+import { statusConfig } from '../data/mockData'
 
-const ArrowIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-    <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
+// ── Mood emoji map ────────────────────────────────────────────────────────────
+const MOOD_EMOJI = {
+  vent: '#755760', joy: '#C9BF2E', love: '#B5677F',
+  grief: '#588F60', gratitude: '#194B22', longing: '#33557F', anger: '#B85450',
+}
+
+// ── Card config per type ──────────────────────────────────────────────────────
+const CARD_CFG = {
+  personal: { accent: 'none', label: 'Personal',        labelBg: '#FBF582', labelColor: '#28030F', labelBorder: '#FBF582' },
+  stranger: { accent: 'none', label: 'Caring stranger', labelBg: '#E3EEE4', labelColor: '#194B22', labelBorder: '#E3EEE4' },
+  received: { accent: 'none', label: 'For you',         labelBg: '#F0DFD1', labelColor: '#28030F', labelBorder: '#F0DFD1' },
+  sent:     { accent: 'none', label: 'Sent',            labelBg: '#E4EAF1', labelColor: '#33557F', labelBorder: '#E4EAF1' },
+  read:     { accent: 'none', label: 'Listener read',   labelBg: '#F0DFD1', labelColor: '#28030F', labelBorder: '#F0DFD1' },
+}
+
+function relativeTime(dateStr) {
+  if (!dateStr) return ''
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
+  if (diff < 60) return 'just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
+  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+}
+
+function Btn({ label, onClick, danger }) {
+  const [hov, setHov] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5,
+        height: 38, padding: '0 14px', borderRadius: 8,
+        fontSize: 13, fontWeight: 500, cursor: 'pointer',
+        fontFamily: '"General Sans", sans-serif', transition: 'all 0.15s',
+        ...(danger
+          ? {
+              background: hov ? '#B83232' : '#FFFFFF',
+              color: hov ? '#fff' : '#B83232',
+              border: `1px solid ${hov ? '#B83232' : '#EBC9C9'}`,
+            }
+          : {
+              background: hov ? '#F9F4F1' : '#FFFFFF',
+              color: 'var(--ink)',
+              border: `1px solid ${hov ? 'var(--ink)' : '#D4C4C9'}`,
+            }
+        ),
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+// ── Unified Letter Card (real API data) ───────────────────────────────────────
+export default function LetterCard({ letter, onOpen, onEdit, onDelete }) {
+  const [hov, setHov] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
+  const type = letter._cardType || letter.type || 'personal'
+  const cfg  = CARD_CFG[type] || CARD_CFG.personal
+
+  const moodEmoji  = MOOD_EMOJI[letter.mood]
+  const ago        = relativeTime(letter.createdAt)
+  const isPersonal = type === 'personal'
+  const isStranger = type === 'stranger'
+  const isSent     = type === 'sent'
+  const isReceived = type === 'received'
+
+  const withLabel = isReceived
+    ? (() => {
+        const n = letter.senderInfo?.name
+        const e = letter.senderInfo?.email || letter.fromEmail
+        return (n && n !== '—') ? n : (e || null)
+      })()
+    : isSent ? (letter.toEmail || null)
+    : null
+
+  const isOpened      = letter.status === 'opened' || letter.status === 'clicked'
+  const uniqueOpens   = letter.openCount ?? (isOpened ? 1 : 0)
+  const emailOpens    = letter.emailOpenCount ?? 0
+  const platformOpens = letter.platformOpenCount ?? 0
+  const hasOpens      = uniqueOpens > 0 || isOpened
+  const showBreakdown = uniqueOpens > 0 && (emailOpens > 0 || platformOpens > 0)
+
+  const canEdit   = isPersonal || (isStranger && !letter.isClaimed && !letter.isRead)
+  const canDelete = isPersonal
+
+  const msgText = letter.message || '(No content)'
+  const isLong  = msgText.length > 300
+
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: '#fff',
+        borderRadius: 16,
+        border: '1px solid #EFE7E2',
+        overflow: 'hidden',
+        position: 'relative',
+        transform: hov ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hov ? '0 10px 28px rgba(40,3,15,0.06)' : 'none',
+        transition: 'all 0.2s ease',
+      }}
+    >
+      {/* Left accent bar */}
+      <div style={{
+        position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
+        background: cfg.accent, display: 'none' }} />
+
+      {/* Clickable body */}
+      <div
+        style={{ padding: '22px 22px 0 22px', cursor: 'pointer' }}
+        onClick={() => onOpen?.(letter)}
+      >
+        {/* TOP META ROW */}
+        <div style={{
+          display: 'flex', alignItems: 'flex-start',
+          justifyContent: 'space-between', gap: 12, marginBottom: 12,
+        }}>
+          {/* Left: identity / info */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, minWidth: 0 }}>
+            {moodEmoji && <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: moodEmoji, flexShrink: 0 }} />}
+            {withLabel && (
+              <span style={{
+                fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 500,
+                color: 'var(--ink-soft)', overflow: 'hidden', textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap', maxWidth: 160,
+              }}>
+                With {withLabel}
+              </span>
+            )}
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', fontSize: 12,
+              padding: '4px 10px', borderRadius: 6, fontWeight: 500,
+              fontFamily: '"General Sans", sans-serif', flexShrink: 0,
+              background: cfg.labelBg, color: cfg.labelColor, border: `1px solid ${cfg.labelBorder}`,
+            }}>
+              {cfg.label}
+            </span>
+          </div>
+
+          {/* Right: status / date */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
+            <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>
+              {ago}
+            </span>
+            {isSent && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12,
+                padding: '4px 10px', borderRadius: 6, fontWeight: 500,
+                fontFamily: '"General Sans", sans-serif',
+                background: hasOpens ? 'rgba(88,143,96,0.1)' : 'rgba(40,3,15,0.05)',
+                color: hasOpens ? 'var(--sage)' : 'var(--ink-muted)',
+                border: `1px solid ${hasOpens ? 'rgba(88,143,96,0.25)' : 'rgba(40,3,15,0.1)'}`,
+              }}>
+                {hasOpens ? `Opened${uniqueOpens > 1 ? ` by ${uniqueOpens}` : ''}` : 'Unread'}
+              </span>
+            )}
+            {isStranger && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12,
+                padding: '4px 10px', borderRadius: 6, fontWeight: 500,
+                fontFamily: '"General Sans", sans-serif',
+                background: (letter.isClaimed || letter.isRead) ? 'rgba(51,85,127,0.1)' : 'rgba(40,3,15,0.04)',
+                color: (letter.isClaimed || letter.isRead) ? 'var(--purple)' : 'var(--ink-muted)',
+                border: `1px solid ${(letter.isClaimed || letter.isRead) ? 'rgba(51,85,127,0.25)' : 'rgba(40,3,15,0.1)'}`,
+              }}>
+                {(letter.isClaimed || letter.isRead) ? 'Heard' : 'Waiting'}
+              </span>
+            )}
+            {isReceived && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12,
+                padding: '4px 10px', borderRadius: 6, fontWeight: 500,
+                fontFamily: '"General Sans", sans-serif',
+                background: 'rgba(51,85,127,0.08)', color: 'var(--purple)',
+                border: '1px solid rgba(51,85,127,0.2)',
+              }}>
+                Open &amp; reply →
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* SUBJECT */}
+        <h3 style={{
+          fontFamily: '"Gambetta", serif', fontSize: 22, fontWeight: 400,
+          color: 'var(--ink)', lineHeight: 1.3, letterSpacing: '-0.03em',
+          margin: '0 0 10px', wordBreak: 'break-word',
+        }}>
+          {letter.subject || 'A letter from my heart'}
+        </h3>
+
+        {/* MESSAGE PREVIEW */}
+        <p style={{
+          fontFamily: '"General Sans", sans-serif', fontSize: 14,
+          color: 'var(--ink-muted)', lineHeight: 1.8, margin: 0,
+          display: '-webkit-box',
+          WebkitLineClamp: expanded ? 'unset' : 4,
+          WebkitBoxOrient: 'vertical',
+          overflow: expanded ? 'visible' : 'hidden',
+          wordBreak: 'break-word', overflowWrap: 'break-word',
+        }}>
+          {msgText}
+        </p>
+
+        {isLong && (
+          <button
+            onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
+            style={{
+              background: 'none', border: 'none', padding: '4px 0', marginTop: 4,
+              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              fontFamily: '"General Sans", sans-serif', color: cfg.labelColor, opacity: 0.85,
+            }}
+          >
+            {expanded ? 'Show less' : 'Read more'}
+          </button>
+        )}
+
+        {/* SECONDARY BADGES */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '12px 0 20px' }}>
+          {letter.isEdited && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12,
+              padding: '4px 10px', borderRadius: 6, fontWeight: 500,
+              fontFamily: '"General Sans", sans-serif',
+              background: 'rgba(117,87,96,0.1)', color: 'var(--gold)',
+              border: '1px solid rgba(117,87,96,0.28)',
+            }}>Edited</span>
+          )}
+          {isStranger && letter.replyCount > 0 && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12,
+              padding: '4px 10px', borderRadius: 6, fontWeight: 500,
+              fontFamily: '"General Sans", sans-serif',
+              background: 'rgba(88,143,96,0.1)', color: 'var(--sage)',
+              border: '1px solid rgba(88,143,96,0.28)',
+            }}>🌿 {letter.replyCount} {letter.replyCount === 1 ? 'reply' : 'replies'}</span>
+          )}
+          {isSent && showBreakdown && (
+            <>
+              {emailOpens > 0 && <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>{emailOpens} by email</span>}
+              {platformOpens > 0 && <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>{platformOpens} in app</span>}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* FOOTER ACTIONS */}
+      {canEdit && onEdit && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8,
+          padding: '12px 20px 14px',
+          borderTop: '1px solid rgba(240,235,228,0.8)',
+          background: '#FFFFFF',
+        }}>
+          <Btn label="Edit" onClick={e => { e.stopPropagation(); onEdit?.(letter) }} />
+          {canDelete && onDelete && (
+            <Btn label="Delete" onClick={e => { e.stopPropagation(); onDelete?.(letter) }} danger />
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Helpers shared by legacy exports ─────────────────────────────────────────
 
 function MoodDot({ mood, size = 6 }) {
   const colors = {
@@ -18,10 +284,8 @@ function MoodDot({ mood, size = 6 }) {
     anger: '#B85450',
   }
   return (
-    <span
-      className="rounded-full flex-shrink-0"
-      style={{ width: size, height: size, background: colors[mood] || 'var(--ink-muted)', display: 'inline-block' }}
-    />
+    <span className="rounded-full flex-shrink-0"
+      style={{ width: size, height: size, background: colors[mood] || 'var(--ink-muted)', display: 'inline-block' }} />
   )
 }
 
@@ -43,7 +307,14 @@ function StatusDot({ status }) {
   )
 }
 
-export default function LetterCard({ letter, onClick }) {
+const ArrowIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+    <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+// Used by MyRepliesPage (mock data shape: sal, exc, mood, moodLabel, timeAgo, status, role)
+export function LegacyLetterCard({ letter, onClick }) {
   const statusLabel = statusConfig[letter.status]?.label || letter.status
   const statusColor = statusConfig[letter.status]?.color || 'var(--ink-muted)'
   const isNewReply = letter.status === 'new-reply'
@@ -81,7 +352,6 @@ export default function LetterCard({ letter, onClick }) {
       >
         {letter.exc}
       </div>
-
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-[5px] text-[12px] font-medium" style={{ color: statusColor }}>
           <StatusDot status={letter.status} />

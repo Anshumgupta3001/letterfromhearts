@@ -1,19 +1,11 @@
 import rateLimit from 'express-rate-limit'
 
-// Local `npm run dev` sets LFH_LOCAL_DEV=1, so limits never block you while testing.
+// Local `npm run dev` sets LFH_LOCAL_DEV=1 so limits never block testing.
 // Production runs `npm start`, which keeps every limit on.
 const skip = () => process.env.LFH_LOCAL_DEV === '1'
 
-export const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max:      200,
-  standardHeaders: true,
-  legacyHeaders:   false,
-  skip,
-  message: { error: 'Too many requests. Please try again later.' },
-})
-
-// Applied only to POST /signup and POST /login — not to Google OAuth redirects
+// ── Auth — strict ─────────────────────────────────────────────────────────────
+// Applied only to POST /signup and POST /login (not Google OAuth redirects).
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max:      20,
@@ -23,7 +15,31 @@ export const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts. Please wait before trying again.' },
 })
 
-// GET /api/reports — admin dashboard polling; generous limit
+// ── Standard API — generous ───────────────────────────────────────────────────
+// Applied to general authenticated routes: letters, notifications, analytics,
+// email accounts, replies, onboarding.  600 req / 15 min = 40 req/min — well
+// above what a normal active user generates even with polling.
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      600,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  skip,
+  message: { error: 'Too many requests. Please try again in a moment.' },
+})
+
+// ── Email sending — strict ────────────────────────────────────────────────────
+// Applied to /api/send-email and /api/schedule-email to prevent spam.
+export const sendEmailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      15,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  skip,
+  message: { error: 'Too many emails sent. Please wait before sending more.' },
+})
+
+// ── Report read — generous ────────────────────────────────────────────────────
 export const reportReadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max:      300,
@@ -33,7 +49,7 @@ export const reportReadLimiter = rateLimit({
   message: { error: 'Too many requests. Please try again later.' },
 })
 
-// POST /api/reports — user submissions; strict to prevent spam
+// ── Report write — strict ─────────────────────────────────────────────────────
 export const reportWriteLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max:      20,

@@ -1,6 +1,9 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+// Strip a trailing /api suffix so the constant works whether the env var is
+// "https://my.letterfromheart.com/api" or "https://my.letterfromheart.com".
+// All fetch calls below append "/api/..." themselves.
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const C = {
@@ -34,6 +37,35 @@ function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 }
 
+// ── DonutChart (pure SVG, no deps) ───────────────────────────────────────────
+function DonutChart({ segments, size = 148, thickness = 26 }) {
+  const total = segments.reduce((s, seg) => s + (seg.value || 0), 0)
+  if (total === 0) return <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(40,3,15,0.05)' }} />
+  const r  = (size - thickness) / 2
+  const cx = size / 2
+  const cy = size / 2
+  const circ = 2 * Math.PI * r
+  const GAP  = 2.5
+  let accum  = 0
+  return (
+    <svg width={size} height={size} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(40,3,15,0.06)" strokeWidth={thickness} />
+      {segments.map((seg, i) => {
+        const dashLen = Math.max(0, (seg.value / total) * circ - GAP)
+        const offset  = -(accum / total) * circ
+        accum += seg.value
+        return (
+          <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+            stroke={seg.color} strokeWidth={thickness}
+            strokeDasharray={`${dashLen} ${circ - dashLen}`}
+            strokeDashoffset={offset}
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
 // ── Sparkline (SVG, no deps) ──────────────────────────────────────────────────
 function Sparkline({ data, color = C.tc, height = 40, width = 160 }) {
   if (!data || data.length < 2) return <span style={{ fontSize: 12, color: C.muted }}>No trend data</span>
@@ -59,8 +91,8 @@ function BarRow({ label, value, max, color, icon }) {
       {icon && <span style={{ fontSize: 15, width: 20, flexShrink: 0 }}>{icon}</span>}
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 13, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, textTransform: 'capitalize' }}>{label}</span>
-          <span style={{ fontSize: 12, color, fontFamily: '"DM Sans",sans-serif', fontWeight: 700 }}>{fmt(value)}</span>
+          <span style={{ fontSize: 13, color: C.ink, fontFamily: '"General Sans", sans-serif', fontWeight: 500, textTransform: 'capitalize' }}>{label}</span>
+          <span style={{ fontSize: 12, color, fontFamily: '"General Sans", sans-serif', fontWeight: 700 }}>{fmt(value)}</span>
         </div>
         <div style={{ width: '100%', background: `${color}18`, borderRadius: 99, height: 6, overflow: 'hidden' }}>
           <div style={{ width: `${Math.min(pctVal, 100)}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.6s ease' }} />
@@ -85,14 +117,14 @@ function Funnel({ steps }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 15 }}>{step.icon}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{step.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.ink, fontFamily: '"General Sans", sans-serif' }}>{step.label}</span>
                 {dropPct !== null && (
-                  <span style={{ fontSize: 12, color: C.muted, background: `${C.muted}12`, borderRadius: 6, padding: '1px 7px', fontFamily: '"DM Sans",sans-serif' }}>
+                  <span style={{ fontSize: 12, color: C.muted, background: `${C.muted}12`, borderRadius: 6, padding: '1px 7px', fontFamily: '"General Sans", sans-serif' }}>
                     −{dropPct}% drop-off
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: 14, fontWeight: 400, color: step.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em' }}>{fmt(step.value)}</span>
+              <span style={{ fontSize: 14, fontWeight: 400, color: step.color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>{fmt(step.value)}</span>
             </div>
             <div style={{ height: 10, background: `${step.color}18`, borderRadius: 99, overflow: 'hidden' }}>
               <div style={{ width: `${width}%`, height: '100%', background: step.color, borderRadius: 99, transition: 'width 0.7s ease' }} />
@@ -108,10 +140,10 @@ function Funnel({ steps }) {
 function SectionHeading({ children, sub }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, fontFamily: '"General Sans", sans-serif' }}>
         {children}
       </div>
-      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 3, fontFamily: '"DM Sans",sans-serif' }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 3, fontFamily: '"General Sans", sans-serif' }}>{sub}</div>}
     </div>
   )
 }
@@ -131,17 +163,17 @@ function StatCard({ icon, label, value, desc, accent = C.tc, iconBg }) {
       onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(40,3,15,0.04)'; e.currentTarget.style.transform = 'none' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, fontFamily: '"General Sans", sans-serif' }}>
           {label}
         </div>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
           {icon}
         </div>
       </div>
-      <div style={{ fontSize: 32, fontWeight: 400, color: C.ink, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-0.03em' }}>
+      <div style={{ fontSize: 32, fontWeight: 400, color: C.ink, fontFamily: '"Gambetta", serif', lineHeight: 1, letterSpacing: '-0.03em' }}>
         {fmt(value)}
       </div>
-      <div style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.5 }}>
+      <div style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif', lineHeight: 1.5 }}>
         {desc}
       </div>
     </div>
@@ -155,10 +187,10 @@ function ProgressMetric({ label, desc, value, max, color }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
         <div>
-          <span style={{ fontSize: 13, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 600 }}>{label}</span>
+          <span style={{ fontSize: 13, color: C.ink, fontFamily: '"General Sans", sans-serif', fontWeight: 600 }}>{label}</span>
           {desc && <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>{desc}</div>}
         </div>
-        <span style={{ fontSize: 22, fontWeight: 400, color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em' }}>{pctVal}%</span>
+        <span style={{ fontSize: 22, fontWeight: 400, color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>{pctVal}%</span>
       </div>
       <div style={{ width: '100%', background: `${color}18`, borderRadius: 99, height: 8, overflow: 'hidden' }}>
         <div style={{ width: `${Math.min(pctVal, 100)}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.7s cubic-bezier(.4,0,.2,1)' }} />
@@ -173,7 +205,7 @@ function Badge({ label, color }) {
     <span style={{
       fontSize: 13, padding: '3px 8px', borderRadius: 6, fontWeight: 600,
       background: `${color}15`, color, border: `1px solid ${color}28`,
-      fontFamily: '"DM Sans",sans-serif', whiteSpace: 'nowrap',
+      fontFamily: '"General Sans", sans-serif', whiteSpace: 'nowrap',
     }}>
       {label}
     </span>
@@ -185,7 +217,7 @@ function Chip({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
       padding: '5px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-      fontFamily: '"DM Sans",sans-serif', fontWeight: active ? 600 : 400,
+      fontFamily: '"General Sans", sans-serif', fontWeight: active ? 600 : 400,
       background: active ? C.ink : C.white,
       color: active ? '#F9F4F1' : '#4A2B35',
       border: active ? `1px solid ${C.ink}` : `1px solid ${C.border}`,
@@ -202,7 +234,7 @@ function DayFilter({ active, onChange }) {
       {DAY_OPTIONS.map(d => (
         <button key={d} onClick={() => onChange(d)} style={{
           padding: '5px 13px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-          fontFamily: '"DM Sans",sans-serif', fontWeight: active === d ? 600 : 400,
+          fontFamily: '"General Sans", sans-serif', fontWeight: active === d ? 600 : 400,
           background: active === d ? 'rgba(252,250,248,0.95)' : 'rgba(252,250,248,0.12)',
           color: active === d ? C.ink : 'rgba(252,250,248,0.65)',
           border: active === d ? '1px solid rgba(252,250,248,0.7)' : '1px solid rgba(252,250,248,0.15)',
@@ -228,7 +260,7 @@ function Avatar({ name, idx = 0 }) {
       width: 28, height: 28, borderRadius: '50%', background: `${color}20`,
       border: `1.5px solid ${color}40`, color, fontSize: 12, fontWeight: 700,
       display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-      fontFamily: '"DM Sans",sans-serif',
+      fontFamily: '"General Sans", sans-serif',
     }}>
       {initials(name)}
     </div>
@@ -241,7 +273,7 @@ function TH({ children, center }) {
       textAlign: center ? 'center' : 'left',
       padding: '11px 12px', fontSize: 13, color: C.muted, fontWeight: 700,
       whiteSpace: 'nowrap', background: '#F5F1EB',
-      fontFamily: '"DM Sans",sans-serif',
+      fontFamily: '"General Sans", sans-serif',
     }}>{children}</th>
   )
 }
@@ -258,7 +290,7 @@ function TD({ children, center, muted, bold, color, nowrap, small, maxW }) {
       maxWidth: maxW,
       overflow: maxW ? 'hidden' : undefined,
       textOverflow: maxW ? 'ellipsis' : undefined,
-      fontFamily: '"DM Sans",sans-serif',
+      fontFamily: '"General Sans", sans-serif',
     }}>{children}</td>
   )
 }
@@ -269,9 +301,12 @@ const TABS = [
   { id: 'engagement',    icon: '📈', label: 'Engagement',    desc: 'Activity, rates & funnel' },
   { id: 'users',         icon: '👤', label: 'Users',         desc: 'Directory & demographics' },
   { id: 'letters',       icon: '📬', label: 'Letters',       desc: 'Recent activity & moods' },
+  { id: 'connections',   icon: '🤝', label: 'Connections',   desc: 'Known-contact letter delivery' },
   { id: 'notifications', icon: '🔔', label: 'Notifications', desc: 'Platform notifications' },
   { id: 'trends',        icon: '📉', label: 'Trends',        desc: 'Daily activity charts' },
   { id: 'reports',       icon: '🚨', label: 'Reports',       desc: 'User reports & moderation' },
+  { id: 'onboarding',    icon: '🌿', label: 'Onboarding',   desc: 'Questionnaire insights' },
+  { id: 'therapists',    icon: '🩺', label: 'Therapists',   desc: 'Applications & verification' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -308,14 +343,49 @@ export default function AdminDashboardPage() {
   const [resolvingId,    setResolvingId]    = useState(null)
   const reportsInitialized = useRef(false)
 
+  // ── Connections tab state ─────────────────────────────────────────────────
+  const [connections,        setConnections]        = useState([])
+  const [connectionsTotal,   setConnectionsTotal]   = useState(0)
+  const [connectionsSummary, setConnectionsSummary] = useState(null)
+  const [connectionsLoading, setConnectionsLoading] = useState(false)
+  const [connectionsSearch,  setConnectionsSearch]  = useState('')
+  const [connectionsPage,    setConnectionsPage]    = useState(1)
+  const [connectionsFilter,  setConnectionsFilter]  = useState('all')
+  const connectionsInitialized = useRef(false)
+
+  // ── Onboarding Insights tab state ─────────────────────────────────────────
+  const [onboardingInsights,  setOnboardingInsights]  = useState(null)
+  const [onboardingLoading,   setOnboardingLoading]   = useState(false)
+  const onboardingInitialized = useRef(false)
+
+  // ── Therapists tab state ──────────────────────────────────────────────────
+  const [therapistList,       setTherapistList]       = useState([])
+  const [therapistCounts,     setTherapistCounts]     = useState({ pending: 0, verified: 0, rejected: 0 })
+  const [therapistLoading,    setTherapistLoading]    = useState(false)
+  const [therapistFilter,     setTherapistFilter]     = useState('pending')
+  const [updatingTherapistId, setUpdatingTherapistId] = useState(null)
+  const therapistInitialized = useRef(false)
+
+  // ── Restore key from localStorage on mount ────────────────────────────────────
+  useEffect(() => {
+    const saved = localStorage.getItem('adminKey')
+    if (saved) {
+      setKey(saved)
+      fetchData(saved, days)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const fetchData = useCallback(async (k, d) => {
     setLoading(true)
     setError('')
     try {
-      const res  = await fetch(`${API}/api/admin/analytics?key=${encodeURIComponent(k)}&days=${d}`)
+      const res  = await fetch(`${API}/api/admin/analytics?days=${d}`, {
+        headers: { 'x-admin-key': k },
+      })
       const json = await res.json()
       if (!res.ok) { setError(json.error || 'Failed to fetch.'); return }
       setData(json.data)
+      localStorage.setItem('adminKey', k)
       setUnlocked(true)
     } catch {
       setError('Network error — is the server running?')
@@ -327,9 +397,11 @@ export default function AdminDashboardPage() {
   const fetchReports = useCallback(async (adminKey, filter, search, pg) => {
     setReportsLoading(true)
     try {
-      const params = new URLSearchParams({ key: adminKey, status: filter, page: pg, limit: 50 })
+      const params = new URLSearchParams({ status: filter, page: pg, limit: 50 })
       if (search.trim()) params.set('search', search.trim())
-      const res  = await fetch(`${API}/api/reports?${params}`)
+      const res  = await fetch(`${API}/api/reports?${params}`, {
+        headers: { 'x-admin-key': adminKey },
+      })
       const json = await res.json()
       if (!res.ok) return
       setReports(json.data || [])
@@ -341,10 +413,12 @@ export default function AdminDashboardPage() {
   const fetchLetters = useCallback(async (adminKey, search, type, pg) => {
     setLettersLoading(true)
     try {
-      const params = new URLSearchParams({ key: adminKey, page: pg, limit: 50 })
+      const params = new URLSearchParams({ page: pg, limit: 50 })
       if (search.trim()) params.set('search', search.trim())
       if (type !== 'all') params.set('type', type)
-      const res  = await fetch(`${API}/api/admin/letters?${params}`)
+      const res  = await fetch(`${API}/api/admin/letters?${params}`, {
+        headers: { 'x-admin-key': adminKey },
+      })
       const json = await res.json()
       if (!res.ok) return
       setAllLetters(json.data || [])
@@ -356,9 +430,9 @@ export default function AdminDashboardPage() {
   const resolveReport = useCallback(async (reportId, newStatus) => {
     setResolvingId(reportId)
     try {
-      const res = await fetch(`${API}/api/reports/${reportId}/status?key=${encodeURIComponent(key)}`, {
+      const res = await fetch(`${API}/api/reports/${reportId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
         body: JSON.stringify({ status: newStatus }),
       })
       if (res.ok) {
@@ -369,6 +443,84 @@ export default function AdminDashboardPage() {
     } catch { /* silently fail */ }
     finally { setResolvingId(null) }
   }, [key])
+
+  const fetchConnections = useCallback(async (adminKey, search, pg, acctFilter = 'all') => {
+    setConnectionsLoading(true)
+    try {
+      const params = new URLSearchParams({ page: pg, limit: 50 })
+      if (search.trim()) params.set('search', search.trim())
+      if (acctFilter && acctFilter !== 'all') params.set('accountFilter', acctFilter)
+      const res  = await fetch(`${API}/api/admin/known-connections?${params}`, {
+        headers: { 'x-admin-key': adminKey },
+      })
+      const json = await res.json()
+      if (!res.ok) return
+      setConnections(json.data || [])
+      setConnectionsTotal(json.total || 0)
+      setConnectionsSummary(json.summary || null)
+    } catch { /* silently fail */ }
+    finally { setConnectionsLoading(false) }
+  }, [])
+
+  const fetchOnboardingInsights = useCallback(async (adminKey) => {
+    setOnboardingLoading(true)
+    try {
+      const res  = await fetch(`${API}/api/admin/onboarding-insights`, {
+        headers: { 'x-admin-key': adminKey },
+      })
+      const json = await res.json()
+      if (!res.ok) return
+      setOnboardingInsights(json.data || null)
+    } catch { /* silently fail */ }
+    finally { setOnboardingLoading(false) }
+  }, [])
+
+  const fetchTherapists = useCallback(async (adminKey, statusFilter) => {
+    setTherapistLoading(true)
+    try {
+      const params = statusFilter && statusFilter !== 'all' ? `?status=${statusFilter}` : ''
+      const url = `${API}/api/admin/therapists${params}`
+      console.log('[therapists] fetching', url, 'key length:', adminKey?.length)
+      const res    = await fetch(url, {
+        headers: { 'x-admin-key': adminKey },
+      })
+      console.log('[therapists] status:', res.status)
+      const json = await res.json()
+      console.log('[therapists] json:', json)
+      if (!res.ok) return
+      setTherapistList(json.data || [])
+      setTherapistCounts(json.counts || { pending: 0, verified: 0, rejected: 0 })
+    } catch (err) {
+      console.error('[therapists] fetch error:', err)
+    }
+    finally { setTherapistLoading(false) }
+  }, [])
+
+  const updateTherapistStatus = useCallback(async (therapistId, newStatus) => {
+    setUpdatingTherapistId(therapistId)
+    try {
+      const res = await fetch(`${API}/api/admin/therapists/${therapistId}/status`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+        body:    JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        setTherapistList(prev => prev.map(t =>
+          t._id === therapistId ? { ...t, status: newStatus } : t
+        ))
+        setTherapistCounts(prev => {
+          const next = { ...prev }
+          const found = therapistList.find(t => t._id === therapistId)
+          if (found) {
+            next[found.status] = Math.max(0, (next[found.status] || 0) - 1)
+            next[newStatus]    = (next[newStatus] || 0) + 1
+          }
+          return next
+        })
+      }
+    } catch { /* silently fail */ }
+    finally { setUpdatingTherapistId(null) }
+  }, [key, therapistList])
 
   // Must be before early returns — Rules of Hooks
   const filteredUsers = useMemo(() => {
@@ -419,14 +571,35 @@ export default function AdminDashboardPage() {
     fetchReports(key, reportsFilter, reportsSearch, reportsPage)
   }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch connections exactly once when the connections tab first becomes active
+  useEffect(() => {
+    if (activeTab !== 'connections' || connectionsInitialized.current) return
+    connectionsInitialized.current = true
+    fetchConnections(key, connectionsSearch, connectionsPage, connectionsFilter)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch onboarding insights exactly once when the tab first becomes active
+  useEffect(() => {
+    if (activeTab !== 'onboarding' || onboardingInitialized.current) return
+    onboardingInitialized.current = true
+    fetchOnboardingInsights(key)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch therapists exactly once when the tab first becomes active
+  useEffect(() => {
+    if (activeTab !== 'therapists' || therapistInitialized.current) return
+    therapistInitialized.current = true
+    fetchTherapists(key, therapistFilter)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Lock screen ──────────────────────────────────────────────────────────────
   if (!unlocked) {
     return (
-      <div style={{ minHeight: '100vh', background: C.paper, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans",sans-serif', padding: 16 }}>
+      <div style={{ minHeight: '100vh', background: C.paper, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"General Sans", sans-serif', padding: 16 }}>
         <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, padding: '44px 40px', width: '100%', maxWidth: 400, boxShadow: '0 12px 40px rgba(40,3,15,0.10)' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ width: 56, height: 56, borderRadius: 16, background: `${C.ink}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, margin: '0 auto 16px' }}>🔐</div>
-            <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink, marginBottom: 6 }}>Admin Dashboard</div>
+            <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink, marginBottom: 6 }}>Admin Dashboard</div>
             <div style={{ fontSize: 13, color: C.muted }}>Letter from Heart — internal analytics</div>
           </div>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -437,7 +610,7 @@ export default function AdminDashboardPage() {
               style={{
                 padding: '12px 16px', borderRadius: 12, fontSize: 14,
                 border: error ? `1.5px solid ${C.tc}` : `1px solid ${C.border}`,
-                outline: 'none', fontFamily: '"DM Sans",sans-serif', color: C.ink,
+                outline: 'none', fontFamily: '"General Sans", sans-serif', color: C.ink,
                 background: '#FAFAFA', transition: 'border 0.15s',
               }}
               onFocus={e => !error && (e.target.style.border = `1.5px solid ${C.ink}`)}
@@ -451,7 +624,7 @@ export default function AdminDashboardPage() {
             <button type="submit" disabled={loading} style={{
               padding: '12px', borderRadius: 99, background: loading ? '#aaa' : C.ink,
               color: '#F9F4F1', border: 'none', fontSize: 14, fontWeight: 600,
-              fontFamily: '"DM Sans",sans-serif', cursor: loading ? 'default' : 'pointer',
+              fontFamily: '"General Sans", sans-serif', cursor: loading ? 'default' : 'pointer',
               transition: 'background 0.15s',
             }}>
               {loading ? 'Verifying…' : 'Enter Dashboard →'}
@@ -472,7 +645,7 @@ export default function AdminDashboardPage() {
   const funnel    = d.letterFunnel || {}
 
   return (
-    <div style={{ minHeight: '100vh', background: C.paper, fontFamily: '"DM Sans",sans-serif', paddingBottom: 80 }}>
+    <div style={{ minHeight: '100vh', background: C.paper, fontFamily: '"General Sans", sans-serif', paddingBottom: 80 }}>
 
       {/* ── Top Bar ── */}
       <div style={{
@@ -491,13 +664,13 @@ export default function AdminDashboardPage() {
           <DayFilter active={days} onChange={handleDayChange} />
           <button
             onClick={() => fetchData(key, days)}
-            style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(252,250,248,0.1)', color: '#F9F4F1', border: '1px solid rgba(252,250,248,0.18)', transition: 'background 0.15s', fontFamily: '"DM Sans",sans-serif' }}
+            style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(252,250,248,0.1)', color: '#F9F4F1', border: '1px solid rgba(252,250,248,0.18)', transition: 'background 0.15s', fontFamily: '"General Sans", sans-serif' }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(252,250,248,0.2)'}
             onMouseLeave={e => e.currentTarget.style.background = 'rgba(252,250,248,0.1)'}
           >↻ Refresh</button>
           <button
-            onClick={() => { setUnlocked(false); setData(null); setKey('') }}
-            style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(40,3,15,0.15)', color: '#f0a080', border: '1px solid rgba(40,3,15,0.25)', fontFamily: '"DM Sans",sans-serif' }}
+            onClick={() => { localStorage.removeItem('adminKey'); setUnlocked(false); setData(null); setKey('') }}
+            style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(40,3,15,0.15)', color: '#f0a080', border: '1px solid rgba(40,3,15,0.25)', fontFamily: '"General Sans", sans-serif' }}
           >🔒 Lock</button>
         </div>
       </div>
@@ -505,7 +678,7 @@ export default function AdminDashboardPage() {
       {/* ── KPI sub-header ── */}
       <div style={{ background: C.white, padding: '14px clamp(16px,4vw,52px)', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink }}>Analytics</div>
+          <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink }}>Analytics</div>
           <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
             Last <strong style={{ color: C.ink }}>{d.days}d</strong> ·{' '}
             <strong style={{ color: C.ink }}>{fmt(d.totalUsers)}</strong> total users ·{' '}
@@ -521,7 +694,7 @@ export default function AdminDashboardPage() {
           ].map((kpi, i, arr) => (
             <div key={kpi.label} style={{ display: 'flex', gap: 20 }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 22, fontWeight: 400, color: kpi.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{kpi.value}</div>
+                <div style={{ fontSize: 22, fontWeight: 400, color: kpi.color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{kpi.value}</div>
                 <div style={{ fontSize: 13, color: C.muted, marginTop: 3 }}>{kpi.label}</div>
               </div>
               {i < arr.length - 1 && <div style={{ width: 1, background: C.border, alignSelf: 'stretch' }} />}
@@ -536,7 +709,7 @@ export default function AdminDashboardPage() {
           <button key={tab.id} onClick={() => tab.id === 'letters' ? handleLettersTabOpen() : setActiveTab(tab.id)} style={{
             padding: '12px 20px', fontSize: 13, border: 'none', whiteSpace: 'nowrap',
             background: activeTab === tab.id ? C.white : 'transparent',
-            fontFamily: '"DM Sans",sans-serif', cursor: 'pointer',
+            fontFamily: '"General Sans", sans-serif', cursor: 'pointer',
             color: activeTab === tab.id ? C.ink : C.muted,
             fontWeight: activeTab === tab.id ? 600 : 400,
             borderBottom: activeTab === tab.id ? `2.5px solid ${C.tc}` : '2.5px solid transparent',
@@ -625,7 +798,7 @@ export default function AdminDashboardPage() {
                 <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 28px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 24 }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openSources?.email ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openSources?.email ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📧 Opened via Email</div>
@@ -636,7 +809,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openSources?.platform ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openSources?.platform ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📱 Opened via App</div>
@@ -647,7 +820,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openedLetters ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openedLetters ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>👁 Unique Opens (Total)</div>
@@ -771,7 +944,7 @@ export default function AdminDashboardPage() {
                     style={{
                       padding: '8px 14px', borderRadius: 6, fontSize: 13,
                       border: `1px solid ${C.border}`, outline: 'none',
-                      fontFamily: '"DM Sans",sans-serif', color: C.ink,
+                      fontFamily: '"General Sans", sans-serif', color: C.ink,
                       background: C.white, width: '100%', maxWidth: 280,
                       transition: 'border 0.15s',
                     }}
@@ -815,7 +988,7 @@ export default function AdminDashboardPage() {
                     <tbody>
                       {filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={12} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"DM Sans",sans-serif', fontSize: 13 }}>
+                          <td colSpan={12} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"General Sans", sans-serif', fontSize: 13 }}>
                             {search ? `No users match "${search}"` : 'No users registered yet.'}
                           </td>
                         </tr>
@@ -828,18 +1001,18 @@ export default function AdminDashboardPage() {
                           <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <Avatar name={u.name} idx={i} />
-                              <span style={{ fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontSize: 13 }}>{u.name || '—'}</span>
+                              <span style={{ fontWeight: 600, color: C.ink, fontFamily: '"General Sans", sans-serif', fontSize: 13 }}>{u.name || '—'}</span>
                             </div>
                           </td>
                           <TD small muted maxW={200} nowrap>{u.email}</TD>
                           <td style={{ padding: '10px 12px' }}><Badge label={u.provider} color={PROVIDER_COLOR[u.provider] || '#4A2B35'} /></td>
                           <td style={{ padding: '10px 12px' }}><Badge label={u.role || 'both'} color={ROLE_COLOR[u.role] || C.purple} /></td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: C.tc, fontFamily: '"DM Sans",sans-serif' }}>{u.written}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.gold, fontFamily: '"DM Sans",sans-serif' }}>{u.sent}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.sage, fontFamily: '"DM Sans",sans-serif' }}>{u.opened}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: C.purple, fontFamily: '"DM Sans",sans-serif' }}>{u.scheduled}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#4A2B35', fontFamily: '"DM Sans",sans-serif' }}>{u.personal}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#755760', fontFamily: '"DM Sans",sans-serif' }}>{u.stranger}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: C.tc, fontFamily: '"General Sans", sans-serif' }}>{u.written}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.gold, fontFamily: '"General Sans", sans-serif' }}>{u.sent}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.sage, fontFamily: '"General Sans", sans-serif' }}>{u.opened}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: C.purple, fontFamily: '"General Sans", sans-serif' }}>{u.scheduled}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#4A2B35', fontFamily: '"General Sans", sans-serif' }}>{u.personal}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#755760', fontFamily: '"General Sans", sans-serif' }}>{u.stranger}</td>
                           <TD small muted nowrap>{fmtDate(u.joinedAt)}</TD>
                           <TD small muted nowrap>{fmtDate(u.lastActive)}</TD>
                         </tr>
@@ -851,14 +1024,14 @@ export default function AdminDashboardPage() {
                 {filteredUsers.length > PER_PAGE && (
                   <div style={{ padding: '14px 18px', borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page === 1 ? 'default' : 'pointer', fontFamily: '"DM Sans",sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page === 1 ? 0.35 : 1 }}>
+                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page === 1 ? 'default' : 'pointer', fontFamily: '"General Sans", sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page === 1 ? 0.35 : 1 }}>
                       ← Previous
                     </button>
                     <span style={{ fontSize: 13, color: C.muted }}>
                       Page <strong style={{ color: C.ink }}>{page}</strong> of <strong style={{ color: C.ink }}>{totalPages}</strong>
                     </span>
                     <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
-                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page >= totalPages ? 'default' : 'pointer', fontFamily: '"DM Sans",sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page >= totalPages ? 0.35 : 1 }}>
+                      style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page >= totalPages ? 'default' : 'pointer', fontFamily: '"General Sans", sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page >= totalPages ? 0.35 : 1 }}>
                       Next →
                     </button>
                   </div>
@@ -905,12 +1078,12 @@ export default function AdminDashboardPage() {
                   onChange={e => setLettersSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { setLettersPage(1); fetchLetters(key, lettersSearch, lettersType, 1) } }}
                   placeholder="Search subject, message, email…"
-                  style={{ flex: 1, minWidth: 220, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', outline: 'none', background: C.white }}
+                  style={{ flex: 1, minWidth: 220, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"General Sans", sans-serif', outline: 'none', background: C.white }}
                 />
                 <select
                   value={lettersType}
                   onChange={e => { setLettersType(e.target.value); setLettersPage(1); fetchLetters(key, lettersSearch, e.target.value, 1) }}
-                  style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"DM Sans",sans-serif', background: C.white, cursor: 'pointer' }}
+                  style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"General Sans", sans-serif', background: C.white, cursor: 'pointer' }}
                 >
                   <option value="all">All types</option>
                   <option value="sent">Sent</option>
@@ -919,7 +1092,7 @@ export default function AdminDashboardPage() {
                 </select>
                 <button
                   onClick={() => { setLettersPage(1); fetchLetters(key, lettersSearch, lettersType, 1) }}
-                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans",sans-serif' }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"General Sans", sans-serif' }}
                 >Search</button>
               </div>
 
@@ -972,7 +1145,7 @@ export default function AdminDashboardPage() {
                             <td style={{ padding: '10px 12px' }}>
                               <button
                                 onClick={() => setViewingLetter(l)}
-                                style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(40,3,15,0.08)', color: C.tc, border: `1px solid rgba(40,3,15,0.2)`, fontFamily: '"DM Sans",sans-serif', fontWeight: 500 }}
+                                style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(40,3,15,0.08)', color: C.tc, border: `1px solid rgba(40,3,15,0.2)`, fontFamily: '"General Sans", sans-serif', fontWeight: 500 }}
                               >View</button>
                             </td>
                           </tr>
@@ -989,9 +1162,9 @@ export default function AdminDashboardPage() {
                   <span>Showing {((lettersPage - 1) * 50) + 1}–{Math.min(lettersPage * 50, lettersTotal)} of {fmt(lettersTotal)}</span>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button disabled={lettersPage === 1} onClick={() => { const p = lettersPage - 1; setLettersPage(p); fetchLetters(key, lettersSearch, lettersType, p) }}
-                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage === 1 ? 'default' : 'pointer', opacity: lettersPage === 1 ? 0.4 : 1, fontFamily: '"DM Sans",sans-serif', fontSize: 12 }}>← Prev</button>
+                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage === 1 ? 'default' : 'pointer', opacity: lettersPage === 1 ? 0.4 : 1, fontFamily: '"General Sans", sans-serif', fontSize: 12 }}>← Prev</button>
                     <button disabled={lettersPage >= Math.ceil(lettersTotal / 50)} onClick={() => { const p = lettersPage + 1; setLettersPage(p); fetchLetters(key, lettersSearch, lettersType, p) }}
-                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage >= Math.ceil(lettersTotal / 50) ? 'default' : 'pointer', opacity: lettersPage >= Math.ceil(lettersTotal / 50) ? 0.4 : 1, fontFamily: '"DM Sans",sans-serif', fontSize: 12 }}>Next →</button>
+                      style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: C.white, cursor: lettersPage >= Math.ceil(lettersTotal / 50) ? 'default' : 'pointer', opacity: lettersPage >= Math.ceil(lettersTotal / 50) ? 0.4 : 1, fontFamily: '"General Sans", sans-serif', fontSize: 12 }}>Next →</button>
                   </div>
                 </div>
               )}
@@ -1010,7 +1183,7 @@ export default function AdminDashboardPage() {
                   {/* Modal header */}
                   <div style={{ padding: '18px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexShrink: 0 }}>
                     <div>
-                      <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink }}>
+                      <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink }}>
                         {viewingLetter.subject || 'No subject'}
                       </div>
                       <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>
@@ -1029,7 +1202,7 @@ export default function AdminDashboardPage() {
                   {/* Letter body */}
                   <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
                     <div
-                      style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 14.5, lineHeight: 1.85, color: C.ink, whiteSpace: 'pre-wrap' }}
+                      style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 14.5, lineHeight: 1.85, color: C.ink, whiteSpace: 'pre-wrap' }}
                       dangerouslySetInnerHTML={{ __html: viewingLetter.message || '<em>No content.</em>' }}
                     />
                   </div>
@@ -1057,7 +1230,7 @@ export default function AdminDashboardPage() {
                     { label: 'Messages Sent', value: d.totalRepliesSent,    color: C.sage },
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                      <div style={{ fontSize: 22, fontWeight: 400, color: s.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 22, fontWeight: 400, color: s.color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(s.value)}</div>
                       <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{s.label}</div>
                     </div>
                   ))}
@@ -1087,7 +1260,7 @@ export default function AdminDashboardPage() {
                     { label: 'Unread', value: d.unreadNotifs, color: C.tc },
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                      <div style={{ fontSize: 22, fontWeight: 400, color: s.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 22, fontWeight: 400, color: s.color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(s.value)}</div>
                       <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{s.label}</div>
                     </div>
                   ))}
@@ -1125,14 +1298,14 @@ export default function AdminDashboardPage() {
             <section>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 22, fontWeight: 400, color: C.ink, fontFamily: '"Lora",serif', letterSpacing: '-0.03em' }}>🚨 Reports Management</div>
+                  <div style={{ fontSize: 22, fontWeight: 400, color: C.ink, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>🚨 Reports Management</div>
                   <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{reportsTotal} total reports</div>
                 </div>
                 {/* CSV download */}
                 <a
                   href={`${API}/api/reports/export?key=${encodeURIComponent(key)}&status=${reportsFilter}`}
                   download
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: C.sage, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: '"DM Sans",sans-serif' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: C.sage, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: '"General Sans", sans-serif' }}
                 >
                   ⬇ Download CSV
                 </a>
@@ -1151,7 +1324,7 @@ export default function AdminDashboardPage() {
                   value={reportsSearch}
                   onChange={e => setReportsSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { setReportsPage(1); fetchReports(key, reportsFilter, reportsSearch, 1) } }}
-                  style={{ padding: '6px 12px', border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, outline: 'none', width: 220, fontFamily: '"DM Sans",sans-serif', color: C.ink }}
+                  style={{ padding: '6px 12px', border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, outline: 'none', width: 220, fontFamily: '"General Sans", sans-serif', color: C.ink }}
                 />
                 <button onClick={() => { setReportsPage(1); fetchReports(key, reportsFilter, reportsSearch, 1) }}
                   style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.paper, fontSize: 12, cursor: 'pointer', color: C.muted }}>
@@ -1216,6 +1389,214 @@ export default function AdminDashboardPage() {
           )
         })()}
 
+        {/* ═══════════════════════════════════════════════════════════════════
+            TAB: CONNECTIONS  — "Someone I Know" letter delivery analytics
+        ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'connections' && (() => {
+          const s = connectionsSummary
+          const convPct = s?.conversionRate ?? 0
+
+          return (
+            <section>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 400, color: C.ink, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>🤝 Known Connections</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>
+                    "Someone I Know" letters — who sent them and whether recipients joined.
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Summary stat cards ── */}
+              {s && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(170px,1fr))', gap: 12, marginBottom: 22 }}>
+                  {[
+                    { label: 'Total Letters Sent',      value: fmt(s.totalConnections), color: C.ink,    icon: '📬' },
+                    { label: 'Unique Recipients',        value: fmt(s.uniqueRecipients), color: C.gold,   icon: '👥' },
+                    { label: 'Recipients w/ Account',   value: fmt(s.withAccount),      color: C.sage,   icon: '✅' },
+                    { label: 'No Account Yet',           value: fmt(s.withoutAccount),   color: C.muted,  icon: '⭕' },
+                  ].map(stat => (
+                    <div key={stat.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                      <div style={{ fontSize: 18, marginBottom: 6 }}>{stat.icon}</div>
+                      <div style={{ fontSize: 22, fontWeight: 400, color: stat.color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{stat.value}</div>
+                      <div style={{ fontSize: 12, color: C.muted, marginTop: 5, fontFamily: '"General Sans", sans-serif', lineHeight: 1.4 }}>{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── Conversion rate bar ── */}
+              {s && (
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: C.ink, fontFamily: '"General Sans", sans-serif' }}>Recipient conversion rate</span>
+                      <span style={{ fontSize: 13, fontWeight: 400, color: convPct >= 50 ? C.sage : C.tc, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>{convPct}%</span>
+                    </div>
+                    <div style={{ width: '100%', background: `${C.border}`, borderRadius: 99, height: 8, overflow: 'hidden' }}>
+                      <div style={{ width: `${Math.min(convPct, 100)}%`, height: '100%', background: convPct >= 50 ? C.sage : C.tc, borderRadius: 99, transition: 'width 0.6s ease' }} />
+                    </div>
+                    <div style={{ fontSize: 12, color: C.muted, marginTop: 5, fontFamily: '"General Sans", sans-serif' }}>
+                      {s.withAccount} of {s.uniqueRecipients} unique recipients have registered accounts
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Search + refresh toolbar ── */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                <input
+                  value={connectionsSearch}
+                  onChange={e => setConnectionsSearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { setConnectionsPage(1); fetchConnections(key, connectionsSearch, 1, connectionsFilter) } }}
+                  placeholder="Search sender name, email or recipient…"
+                  style={{ flex: 1, minWidth: 240, padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: '"General Sans", sans-serif', outline: 'none', background: C.white, color: C.ink }}
+                />
+                <button
+                  onClick={() => { setConnectionsPage(1); fetchConnections(key, connectionsSearch, 1, connectionsFilter) }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: C.tc, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: '"General Sans", sans-serif' }}
+                >Search</button>
+                <button
+                  onClick={() => fetchConnections(key, connectionsSearch, connectionsPage, connectionsFilter)}
+                  style={{ padding: '8px 14px', borderRadius: 8, background: C.paper, color: C.muted, border: `1px solid ${C.border}`, fontSize: 13, cursor: 'pointer', fontFamily: '"General Sans", sans-serif' }}
+                >↻</button>
+              </div>
+
+              {/* ── Account filter pills ── */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+                {[
+                  { id: 'all',          label: 'All' },
+                  { id: 'with_account', label: '✅ Has Account' },
+                  { id: 'no_account',   label: '⭕ No Account' },
+                ].map(f => {
+                  const active = connectionsFilter === f.id
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => {
+                        setConnectionsFilter(f.id)
+                        setConnectionsPage(1)
+                        fetchConnections(key, connectionsSearch, 1, f.id)
+                      }}
+                      style={{
+                        padding: '6px 16px', borderRadius: 6, fontSize: 13, fontFamily: '"General Sans", sans-serif',
+                        fontWeight: active ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s',
+                        border: `1px solid ${active ? C.tc : C.border}`,
+                        background: active ? `${C.tc}14` : C.white,
+                        color: active ? C.tc : C.muted,
+                      }}
+                    >{f.label}</button>
+                  )
+                })}
+              </div>
+
+              {/* ── Table ── */}
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                {connectionsLoading ? (
+                  <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontSize: 13, fontFamily: '"General Sans", sans-serif' }}>Loading connections…</div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
+                        <tr>
+                          <TH>Sender</TH>
+                          <TH>Sender Email</TH>
+                          <TH>Recipient Email</TH>
+                          <TH>Account</TH>
+                          <TH>Type</TH>
+                          <TH>Status</TH>
+                          <TH>Sent</TH>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {connections.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"General Sans", sans-serif', fontSize: 14 }}>
+                              {connectionsFilter === 'with_account'
+                                ? 'No recipients have created accounts yet.'
+                                : connectionsFilter === 'no_account'
+                                  ? 'All recipients have accounts — great conversion!'
+                                  : 'No known-contact letters found.'}
+                            </td>
+                          </tr>
+                        ) : connections.map((c, i) => (
+                          <tr
+                            key={c.letterId || i}
+                            style={{ borderTop: `1px solid rgba(40,3,15,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
+                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                          >
+                            {/* Sender */}
+                            <td style={{ padding: '10px 12px', maxWidth: 160 }}>
+                              <div style={{ fontWeight: 600, color: C.ink, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.senderName}</div>
+                            </td>
+                            {/* Sender email */}
+                            <td style={{ padding: '10px 12px', maxWidth: 180 }}>
+                              <div style={{ fontSize: 12, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.senderEmail}</div>
+                            </td>
+                            {/* Recipient email */}
+                            <td style={{ padding: '10px 12px', maxWidth: 200 }}>
+                              <div style={{ fontSize: 12, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.recipientEmail}</div>
+                            </td>
+                            {/* Account status badge */}
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
+                              {c.recipientExists ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: 'rgba(107,158,138,0.1)', color: C.sage, border: `1px solid rgba(107,158,138,0.25)`, whiteSpace: 'nowrap' }}>
+                                  ✅ Has account
+                                </span>
+                              ) : (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: 'rgba(40,3,15,0.04)', color: C.muted, border: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>
+                                  ⭕ No account
+                                </span>
+                              )}
+                            </td>
+                            {/* Account type */}
+                            <td style={{ padding: '10px 12px' }}>
+                              {c.recipientExists && c.recipientAccountType ? (
+                                <Badge
+                                  label={c.recipientAccountType === 'google' ? 'Google' : 'Email'}
+                                  color={c.recipientAccountType === 'google' ? C.google : C.muted}
+                                />
+                              ) : (
+                                <span style={{ fontSize: 12, color: C.border }}>—</span>
+                              )}
+                            </td>
+                            {/* Letter status */}
+                            <td style={{ padding: '10px 12px' }}>
+                              <Badge label={c.status || '—'} color={STATUS_COLOR[c.status] || '#4A2B35'} />
+                            </td>
+                            {/* Date */}
+                            <TD small muted nowrap>{fmtDate(c.createdAt)}</TD>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Pagination ── */}
+              {connectionsTotal > 50 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 13, color: C.muted }}>
+                  <span>{connectionsTotal} total · page {connectionsPage} of {Math.ceil(connectionsTotal / 50)}</span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      disabled={connectionsPage === 1}
+                      onClick={() => { const p = connectionsPage - 1; setConnectionsPage(p); fetchConnections(key, connectionsSearch, p, connectionsFilter) }}
+                      style={{ padding: '5px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 12, color: C.muted }}
+                    >← Prev</button>
+                    <button
+                      disabled={connectionsPage >= Math.ceil(connectionsTotal / 50)}
+                      onClick={() => { const p = connectionsPage + 1; setConnectionsPage(p); fetchConnections(key, connectionsSearch, p, connectionsFilter) }}
+                      style={{ padding: '5px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 12, color: C.muted }}
+                    >Next →</button>
+                  </div>
+                </div>
+              )}
+            </section>
+          )
+        })()}
+
         {activeTab === 'trends' && (
           <section>
             <SectionHeading sub={`Daily activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Daily Trends</SectionHeading>
@@ -1237,7 +1618,7 @@ export default function AdminDashboardPage() {
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
                         <div>
                           <div style={{ fontSize: 13, fontWeight: 700, color: C.muted }}>{title}</div>
-                          <div style={{ fontSize: 22, fontWeight: 400, color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
+                          <div style={{ fontSize: 22, fontWeight: 400, color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
                           <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>total this period</div>
                         </div>
                       </div>
@@ -1247,6 +1628,539 @@ export default function AdminDashboardPage() {
                 })}
               </div>
             )}
+          </section>
+        )}
+
+        {activeTab === 'onboarding' && (() => {
+          const oi   = onboardingInsights
+          const dist = key => (oi?.distributions?.[key] || [])
+          const top  = key => dist(key)[0] || null
+          const pctOf = (key) => {
+            const t = top(key); if (!t || !oi?.total) return 0
+            return Math.round((t.count / oi.total) * 100)
+          }
+
+          // ── Derived highlights for community summary ──
+          const topAge     = top('ageRange')
+          const topSupport = top('supportStyle')
+          const topUnsaid  = top('unsaidFeelings')
+          const topBenefit = top('writingBenefit')
+          const topStruggle = top('unspokenReason')
+
+          // Total new users base for overview percentages
+          const newUserBase = oi?.totalNewUsers || oi?.total || 1
+
+          // Age donut segments
+          const AGE_COLORS  = [C.tc, C.sage, C.purple, C.gold]
+          const ageSegments = dist('ageRange').map((r, i) => ({ value: r.count, color: AGE_COLORS[i % AGE_COLORS.length], label: r.answer }))
+
+          // Funnel: map server {label,count,icon,color} → Funnel {label,value,icon,color}
+          const funnelSteps = (oi?.funnel || []).map(f => ({
+            label: f.label, value: f.count, icon: f.icon, color: f.color,
+          }))
+
+          // Reusable EmotionCard for per-question breakdown
+          function EmotionCard({ qKey, question, accentColor }) {
+            const rows  = dist(qKey)
+            const total = rows.reduce((s, r) => s + r.count, 0)
+            const lead  = rows[0]
+            if (!lead) return null
+            const leadPct = Math.round((lead.count / Math.max(total, 1)) * 100)
+            return (
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 22px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: accentColor, marginBottom: 5 }}>Insight</div>
+                  <div style={{ fontSize: 13, color: C.ink, fontFamily: '"General Sans", sans-serif', fontWeight: 500, lineHeight: 1.5 }}>{question}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+                  <div style={{ fontSize: 44, fontWeight: 400, color: accentColor, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{leadPct}%</div>
+                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif', lineHeight: 1.5, paddingBottom: 4, maxWidth: 200 }}>
+                    "{lead.answer}"
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {rows.map((r, i) => {
+                    const p = Math.round((r.count / Math.max(total, 1)) * 100)
+                    return (
+                      <div key={r.answer}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                          <span style={{ fontSize: 12, color: C.ink, fontFamily: '"General Sans", sans-serif' }}>{r.answer}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? accentColor : C.muted }}>{p}%</span>
+                        </div>
+                        <div style={{ height: 4, background: 'rgba(40,3,15,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                          <div style={{ width: `${p}%`, height: '100%', background: i === 0 ? accentColor : 'rgba(40,3,15,0.12)', borderRadius: 99, transition: 'width 0.6s ease' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <section>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+                <div>
+                  <SectionHeading sub="How new users are engaging with the onboarding questionnaire">Onboarding Insights</SectionHeading>
+                </div>
+                <button
+                  onClick={() => fetchOnboardingInsights(key)}
+                  disabled={onboardingLoading}
+                  style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(40,3,15,0.06)', color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"General Sans", sans-serif', opacity: onboardingLoading ? 0.5 : 1 }}
+                >↻ Refresh</button>
+              </div>
+
+              {onboardingLoading ? (
+                <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontSize: 13, fontFamily: '"General Sans", sans-serif' }}>Loading insights…</div>
+              ) : !oi ? (
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"General Sans", sans-serif' }}>
+                  No onboarding data yet. Data will appear here once users sign up after the onboarding launch date.
+                </div>
+              ) : (<>
+
+                {/* ══════════════════════════════════════════════════
+                    ONBOARDING OVERVIEW — status breakdown
+                ═══════════════════════════════════════════════════ */}
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 12 }}>Overview</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(185px,1fr))', gap: 12, marginBottom: 28 }}>
+
+                  {/* Total new users */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.muted }}>New Users</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: 'rgba(40,3,15,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👥</div>
+                    </div>
+                    <div style={{ fontSize: 32, fontWeight: 400, color: C.ink, fontFamily: '"Gambetta", serif', lineHeight: 1, letterSpacing: '-0.03em', marginBottom: 6 }}>
+                      {fmt(oi.totalNewUsers || 0)}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.muted }}>Since onboarding launched</div>
+                  </div>
+
+                  {/* Completed */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.muted }}>Completed</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.sage}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✅</div>
+                    </div>
+                    <div style={{ fontSize: 32, fontWeight: 400, color: C.sage, fontFamily: '"Gambetta", serif', lineHeight: 1, letterSpacing: '-0.03em', marginBottom: 6 }}>
+                      {fmt(oi.completed || 0)}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.muted }}>
+                      {pct(oi.completed || 0, newUserBase)}% of new users · all 12 answered
+                    </div>
+                  </div>
+
+                  {/* Partially completed */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.muted }}>Partial</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.purple}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📝</div>
+                    </div>
+                    <div style={{ fontSize: 32, fontWeight: 400, color: C.purple, fontFamily: '"Gambetta", serif', lineHeight: 1, letterSpacing: '-0.03em', marginBottom: 6 }}>
+                      {fmt(oi.partiallyCompleted || 0)}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.muted }}>
+                      {pct(oi.partiallyCompleted || 0, newUserBase)}% of new users · answered some then skipped
+                    </div>
+                  </div>
+
+                  {/* Skipped */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.muted }}>Skipped</div>
+                      <div style={{ fontSize: 16, width: 32, height: 32, borderRadius: 10, background: `${C.gold}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏭️</div>
+                    </div>
+                    <div style={{ fontSize: 32, fontWeight: 400, color: C.gold, fontFamily: '"Gambetta", serif', lineHeight: 1, letterSpacing: '-0.03em', marginBottom: 6 }}>
+                      {fmt(oi.skipped || 0)}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.muted }}>
+                      {pct(oi.skipped || 0, newUserBase)}% skip rate · dismissed immediately
+                    </div>
+                  </div>
+                </div>
+
+                {/* Completion rate stacked bar */}
+                {(oi.totalNewUsers || 0) > 0 && (() => {
+                  const base       = oi.totalNewUsers
+                  const completedP = pct(oi.completed || 0, base)
+                  const partialP   = pct(oi.partiallyCompleted || 0, base)
+                  const skippedP   = pct(oi.skipped || 0, base)
+                  const pendingP   = Math.max(0, 100 - completedP - partialP - skippedP)
+                  return (
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px', marginBottom: 28 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 10, fontFamily: '"General Sans", sans-serif', letterSpacing: '0.5px' }}>
+                        Onboarding Completion Breakdown
+                      </div>
+                      <div style={{ height: 14, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 2, background: 'rgba(40,3,15,0.04)', marginBottom: 12 }}>
+                        {completedP > 0 && <div style={{ width: `${completedP}%`, background: C.sage,   borderRadius: 99, transition: 'width 0.7s ease' }} />}
+                        {partialP   > 0 && <div style={{ width: `${partialP}%`,   background: C.purple, borderRadius: 99, transition: 'width 0.7s ease' }} />}
+                        {skippedP   > 0 && <div style={{ width: `${skippedP}%`,   background: C.gold,   borderRadius: 99, transition: 'width 0.7s ease' }} />}
+                        {pendingP   > 0 && <div style={{ width: `${pendingP}%`,   background: 'rgba(40,3,15,0.08)', borderRadius: 99 }} />}
+                      </div>
+                      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                        {[
+                          { label: 'Completed',  pct: completedP, color: C.sage   },
+                          { label: 'Partial',    pct: partialP,   color: C.purple },
+                          { label: 'Skipped',    pct: skippedP,   color: C.gold   },
+                          { label: 'Not started',pct: pendingP,   color: C.muted  },
+                        ].map(s => (
+                          <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, color: C.ink, fontFamily: '"General Sans", sans-serif' }}>{s.label}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: s.color }}>{s.pct}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* ══════════════════════════════════════════════════
+                    COMPLETION FUNNEL
+                ═══════════════════════════════════════════════════ */}
+                {funnelSteps.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 12 }}>Completion Funnel</div>
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)', marginBottom: 28 }}>
+                      <div style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif', marginBottom: 18, lineHeight: 1.5 }}>
+                        How far users progress through the 12 questions — drop-off indicates where to focus re-engagement.
+                      </div>
+                      <Funnel steps={funnelSteps} />
+                    </div>
+                  </>
+                )}
+
+                {/* ══════════════════════════════════════════════════
+                    COMMUNITY INSIGHTS SUMMARY  (auto-generated)
+                ═══════════════════════════════════════════════════ */}
+                {oi.total > 0 && (topBenefit || topStruggle || topSupport || topAge) && (
+                  <>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 12 }}>🌿 Community Insights Summary</div>
+                    <div style={{ background: `linear-gradient(135deg, ${C.tc}0A 0%, ${C.sage}0A 100%)`, border: `1px solid ${C.tc}20`, borderRadius: 16, padding: '22px 24px', marginBottom: 28 }}>
+                      <div style={{ fontSize: 13, color: C.muted, fontFamily: '"General Sans", sans-serif', marginBottom: 18, fontStyle: 'italic' }}>
+                        Auto-generated from {fmt(oi.total)} onboarding responses
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
+                        {[
+                          {
+                            icon: '✍️', label: 'Most common reason users join',
+                            value: topBenefit?.answer || '—', color: C.tc,
+                          },
+                          {
+                            icon: '💭', label: 'Most common struggle',
+                            value: topStruggle?.answer || '—', color: C.purple,
+                          },
+                          {
+                            icon: '🤝', label: 'Most selected support type',
+                            value: topSupport?.answer || '—', color: C.sage,
+                          },
+                          {
+                            icon: '👤', label: 'Most common age group',
+                            value: topAge?.answer || '—', color: C.gold,
+                          },
+                        ].map(insight => (
+                          <div key={insight.label} style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '14px 16px', border: `1px solid ${insight.color}18` }}>
+                            <div style={{ fontSize: 18, marginBottom: 6 }}>{insight.icon}</div>
+                            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 6 }}>{insight.label}</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 400, color: insight.color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', lineHeight: 1.4 }}>{insight.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Only show detailed charts if anyone responded */}
+                {oi.total > 0 && (<>
+
+                  {/* ── Summary insight chips ── */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 28 }}>
+                    {[
+                      { label: 'Responded',       value: fmt(oi.total),          sub: 'answered at least 1 question', color: C.tc },
+                      { label: 'Top Age Group',   value: topAge?.answer || '—',  sub: `${pctOf('ageRange')}% of respondents`, color: C.sage },
+                      { label: 'Top Support',     value: topSupport ? topSupport.answer.split(',')[0] : '—',
+                                                  sub: `${pctOf('supportStyle')}% prefer this`, color: C.purple },
+                      { label: 'What Goes Unsaid', value: topUnsaid ? topUnsaid.answer.split(',')[0] : '—',
+                                                  sub: `${pctOf('unsaidFeelings')}% said this`, color: C.gold },
+                      { label: 'Writing Reason',  value: topBenefit ? topBenefit.answer.split(',')[0] : '—',
+                                                  sub: `${pctOf('writingBenefit')}% chose this`, color: C.tc },
+                    ].map(card => (
+                      <div key={card.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 6 }}>{card.label}</div>
+                        <div style={{ fontSize: 22, fontWeight: 400, color: card.color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: 4 }}>{card.value}</div>
+                        <div style={{ fontSize: 12, color: C.muted }}>{card.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* ── Demographics: Age donut + Identity bars ── */}
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 12 }}>Demographics</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16, marginBottom: 16 }}>
+
+                    {/* Age donut */}
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Age Distribution</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <DonutChart segments={ageSegments} size={130} thickness={24} />
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                            <div style={{ fontSize: 22, fontWeight: 400, color: C.ink, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>{oi.total}</div>
+                            <div style={{ fontSize: 12, color: C.muted }}>responses</div>
+                          </div>
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {ageSegments.map((seg, i) => {
+                            const p = Math.round((seg.value / Math.max(oi.total, 1)) * 100)
+                            return (
+                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+                                <span style={{ fontSize: 12, color: C.ink, flex: 1, fontFamily: '"General Sans", sans-serif' }}>{seg.label}</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: seg.color }}>{p}%</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Identity bars */}
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Identity Distribution</div>
+                      {dist('identity').map((r, i) => {
+                        const p = Math.round((r.count / Math.max(oi.total, 1)) * 100)
+                        const ICOLS = [C.tc, C.sage, C.purple, C.gold]
+                        return (
+                          <div key={r.answer} style={{ marginBottom: 12 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                              <span style={{ fontSize: 13, color: C.ink, fontFamily: '"General Sans", sans-serif' }}>{r.answer}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: ICOLS[i % ICOLS.length] }}>{p}%</span>
+                            </div>
+                            <div style={{ height: 7, background: 'rgba(40,3,15,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                              <div style={{ width: `${p}%`, height: '100%', background: ICOLS[i % ICOLS.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Occupation / Profession breakdown */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)', marginBottom: 16 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Occupation Distribution</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '10px 32px' }}>
+                      {dist('profession').map((r, i) => {
+                        const p    = Math.round((r.count / Math.max(oi.total, 1)) * 100)
+                        const PCOL = [C.tc, C.sage, C.purple, C.gold, C.red, C.muted]
+                        return (
+                          <div key={r.answer}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                              <span style={{ fontSize: 13, color: C.ink, fontFamily: '"General Sans", sans-serif' }}>{r.answer}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: PCOL[i % PCOL.length] }}>{p}%</span>
+                            </div>
+                            <div style={{ height: 7, background: 'rgba(40,3,15,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                              <div style={{ width: `${p}%`, height: '100%', background: PCOL[i % PCOL.length], borderRadius: 99, transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* ── Question-by-Question: Emotional Insights ── */}
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 12 }}>Emotional Insights</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
+                    <EmotionCard qKey="unsaidFeelings"         question="What usually goes unsaid for you?"                         accentColor={C.tc} />
+                    <EmotionCard qKey="unfinishedRelationship" question="Is there a relationship in your life that feels unfinished?" accentColor={C.sage} />
+                    <EmotionCard qKey="feelingHeard"           question="When did you last feel truly heard by someone?"             accentColor={C.purple} />
+                    <EmotionCard qKey="unspokenReason"         question="What stopped you from saying what you needed to say?"       accentColor={C.gold} />
+                    <EmotionCard qKey="selfTreatment"          question="How do you treat yourself when you're struggling?"          accentColor={C.tc} />
+                  </div>
+
+                  {/* ── Question-by-Question: Writing Psychology ── */}
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 12 }}>Writing Psychology</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
+                    <EmotionCard qKey="writingExperience" question="What does writing feel like for you?"                 accentColor={C.sage} />
+                    <EmotionCard qKey="writingBenefit"    question="What would writing a letter here actually give you?"  accentColor={C.purple} />
+                    <EmotionCard qKey="writingRelief"     question="Have you felt relief just from writing something down?" accentColor={C.gold} />
+                  </div>
+
+                  {/* ── Support Preferences ── */}
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 12 }}>Support Preferences</div>
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: C.ink, fontFamily: '"General Sans", sans-serif', marginBottom: 16 }}>
+                      What kind of support feels most natural to receive?
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
+                      {dist('supportStyle').map((r, i) => {
+                        const total = dist('supportStyle').reduce((s, x) => s + x.count, 0)
+                        const p    = Math.round((r.count / Math.max(total, 1)) * 100)
+                        const SCOL = [C.tc, C.sage, C.purple, C.gold]
+                        const SICO = ['💬', '🤝', '🔭', '🌿']
+                        return (
+                          <div key={r.answer} style={{ background: `${SCOL[i % SCOL.length]}0C`, border: `1px solid ${SCOL[i % SCOL.length]}30`, borderRadius: 12, padding: '14px 16px' }}>
+                            <div style={{ fontSize: 20, marginBottom: 6 }}>{SICO[i % SICO.length]}</div>
+                            <div style={{ fontSize: 12, color: C.ink, fontFamily: '"General Sans", sans-serif', lineHeight: 1.45, marginBottom: 8 }}>{r.answer}</div>
+                            <div style={{ fontSize: 22, fontWeight: 400, color: SCOL[i % SCOL.length], fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>{p}%</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>)}
+
+              </>)}
+
+            </section>
+          )
+        })()}
+
+        {activeTab === 'therapists' && (
+          <section style={{ padding: '0 0 40px' }}>
+            <>
+                {/* Count summary */}
+                <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Pending',  sk: 'pending',  color: C.gold },
+                    { label: 'Verified', sk: 'verified', color: C.sage },
+                    { label: 'Rejected', sk: 'rejected', color: C.red  },
+                  ].map(({ label, sk, color }) => (
+                    <div key={sk} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 100 }}>
+                      <span style={{ fontSize: 22, fontWeight: 400, color, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>{therapistCounts[sk] ?? 0}</span>
+                      <span style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Filter tabs */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+                  {['all', 'pending', 'verified', 'rejected'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => {
+                        setTherapistFilter(f)
+                        therapistInitialized.current = false
+                        fetchTherapists(key, f)
+                      }}
+                      style={{
+                        padding: '6px 16px', borderRadius: 6, fontSize: 13, fontFamily: '"General Sans", sans-serif', fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+                        background: therapistFilter === f ? C.tc : C.white,
+                        color:      therapistFilter === f ? '#fff' : C.ink,
+                        border:     `1px solid ${therapistFilter === f ? C.tc : C.border}`,
+                      }}
+                    >
+                      {f.charAt(0).toUpperCase() + f.slice(1)}
+                      {f !== 'all' && therapistCounts[f] != null && (
+                        <span style={{ marginLeft: 6, fontSize: 12, opacity: 0.8 }}>({therapistCounts[f]})</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {therapistLoading ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[1,2,3].map(i => (
+                      <div key={i} style={{ height: 80, background: C.white, borderRadius: 12, border: `1px solid ${C.border}` }} className="animate-pulse" />
+                    ))}
+                  </div>
+                ) : therapistList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '60px 24px', color: C.muted, fontFamily: '"General Sans", sans-serif', fontSize: 14 }}>
+                    No therapist applications found
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {therapistList.map(t => {
+                      const statusColors = { pending: C.gold, verified: C.sage, rejected: C.red }
+                      const sc = statusColors[t.status] ?? C.muted
+                      return (
+                        <div key={t._id} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 20px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+                            {/* Left: info */}
+                            <div style={{ flex: 1, minWidth: 200 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                {t.profileImage ? (
+                                  <img src={t.profileImage} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}` }} />
+                                ) : (
+                                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${C.tc}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: C.tc, fontFamily: '"General Sans", sans-serif' }}>
+                                    {(t.firstName?.[0] ?? '') + (t.lastName?.[0] ?? '')}
+                                  </div>
+                                )}
+                                <div>
+                                  <div style={{ fontSize: 14.5, fontWeight: 600, color: C.ink, fontFamily: '"General Sans", sans-serif' }}>
+                                    {t.firstName} {t.lastName}
+                                  </div>
+                                  <div style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif' }}>{t.email}</div>
+                                </div>
+                                <span style={{ marginLeft: 4, fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 6, background: `${sc}18`, color: sc, border: `1px solid ${sc}40`, textTransform: 'capitalize', fontFamily: '"General Sans", sans-serif' }}>
+                                  {t.status}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                                {t.location && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif' }}>📍 {t.location}</span>
+                                )}
+                                {t.licenseNumber && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif' }}>🪪 {t.licenseNumber}</span>
+                                )}
+                                {t.sessionType && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif' }}>🖥 {t.sessionType}</span>
+                                )}
+                                {t.submittedAt && (
+                                  <span style={{ fontSize: 12, color: C.muted, fontFamily: '"General Sans", sans-serif' }}>
+                                    {new Date(t.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </span>
+                                )}
+                              </div>
+                              {t.specializations?.length > 0 && (
+                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                                  {t.specializations.map(s => (
+                                    <span key={s} style={{ fontSize: 12, padding: '2px 9px', borderRadius: 6, background: `${C.tc}10`, color: C.tc, border: `1px solid ${C.tc}25`, fontFamily: '"General Sans", sans-serif' }}>{s}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Right: actions */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                              {t.about && (
+                                <details style={{ fontSize: 12, color: C.ink, fontFamily: '"General Sans", sans-serif', maxWidth: 280, cursor: 'pointer', marginBottom: 4 }}>
+                                  <summary style={{ color: C.muted, listStyle: 'none', cursor: 'pointer' }}>View bio ▾</summary>
+                                  <div style={{ marginTop: 6, lineHeight: 1.55, color: C.ink }}>{t.about}</div>
+                                </details>
+                              )}
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                {t.status !== 'verified' && (
+                                  <button
+                                    disabled={updatingTherapistId === t._id}
+                                    onClick={() => updateTherapistStatus(t._id, 'verified')}
+                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: C.sage, color: '#fff', border: 'none', fontFamily: '"General Sans", sans-serif', transition: 'opacity 0.15s' }}
+                                  >
+                                    {updatingTherapistId === t._id ? '…' : 'Verify'}
+                                  </button>
+                                )}
+                                {t.status !== 'rejected' && (
+                                  <button
+                                    disabled={updatingTherapistId === t._id}
+                                    onClick={() => updateTherapistStatus(t._id, 'rejected')}
+                                    style={{ padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: updatingTherapistId === t._id ? 'not-allowed' : 'pointer', opacity: updatingTherapistId === t._id ? 0.6 : 1, background: '#f5f5f5', color: C.red, border: `1px solid ${C.red}40`, fontFamily: '"General Sans", sans-serif', transition: 'opacity 0.15s' }}
+                                  >
+                                    {updatingTherapistId === t._id ? '…' : 'Reject'}
+                                  </button>
+                                )}
+                                {t.website && (
+                                  <a href={t.website} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, background: C.white, color: C.ink, border: `1px solid ${C.border}`, fontFamily: '"General Sans", sans-serif', textDecoration: 'none' }}>
+                                    Visit ↗
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+            </>
           </section>
         )}
 

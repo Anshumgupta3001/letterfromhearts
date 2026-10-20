@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import GoogleLoginBtn from '../components/auth/GoogleLoginBtn'
+import {
+  trackLoginPageViewed,
+  trackSignupPageViewed,
+  trackLoginSuccess,
+  trackLoginFailed,
+  trackSignupSuccess,
+  trackSignupFailed,
+  identifyUser,
+} from '../utils/mixpanel'
 
 // ── Terms & Conditions Modal ───────────────────────────────────────────────────
 const TERMS_SECTIONS = [
@@ -120,6 +129,13 @@ function TermsModal({ onClose }) {
 
 const ROLES = [
   {
+    id:          'both',
+    short:       'Both',
+    label:       'Seeker + Listener',
+    desc:        'I want to write and listen — give words and receive them.',
+    recommended: true,
+  },
+  {
     id:    'seeker',
     short: 'Write',
     label: 'Seeker',
@@ -130,12 +146,6 @@ const ROLES = [
     short: 'Listen',
     label: 'Listener',
     desc:  'I want to read letters and show up for people who need to be heard.',
-  },
-  {
-    id:    'both',
-    short: 'Both',
-    label: 'Seeker + Listener',
-    desc:  'I want to write and listen — give words and receive them.',
   },
 ]
 
@@ -264,12 +274,21 @@ function FloatingCard({ style, children }) {
 function getEmailFromUrl() {
   return new URLSearchParams(window.location.search).get('email') || ''
 }
+function getReplyFromUrl() {
+  return new URLSearchParams(window.location.search).get('reply') || ''
+}
 
-export default function AuthPage({ initialMode, onBack }) {
+export default function AuthPage({ initialMode = 'signup', onBack }) {
   const { login } = useApp()
   const emailFromUrl = getEmailFromUrl()
-  const [mode, setMode] = useState(() => emailFromUrl ? 'signup' : (initialMode || 'login'))
+  const replyFromUrl = getReplyFromUrl()
   const hasDraft = (() => { try { return !!localStorage.getItem('lfh_draft') } catch { return false } })()
+  // Priority: ?reply → login (existing user), ?email → signup (invite), initialMode (URL-driven)
+  const [mode, setMode] = useState(() => {
+    if (replyFromUrl) return 'login'
+    if (emailFromUrl) return 'signup'
+    return initialMode
+  })
 
   const [name,            setName]            = useState('')
   const [email,           setEmail]           = useState(() => emailFromUrl)
@@ -294,10 +313,20 @@ export default function AuthPage({ initialMode, onBack }) {
     }
   }, [])
 
+  // Track page views — fires on mount and on tab switch between Login / Signup
+  useEffect(() => {
+    if (mode === 'login') trackLoginPageViewed()
+    else trackSignupPageViewed()
+  }, [mode])
+
   function reset() {
     setError(''); setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setRole('both'); setSource(''); setOtherSource('')
   }
-  function switchMode(m) { reset(); setMode(m) }
+  function switchMode(m) {
+    reset()
+    setMode(m)
+    window.history.replaceState({}, '', m === 'login' ? '/login' : '/signup')
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -326,10 +355,25 @@ export default function AuthPage({ initialMode, onBack }) {
         body: JSON.stringify(body),
       })
       const json = await res.json()
-      if (!res.ok) { setError(json.error || 'Something went wrong.'); return }
+      if (!res.ok) {
+        const errMsg = json.error || 'Something went wrong.'
+        setError(errMsg)
+        if (mode === 'login') trackLoginFailed(errMsg)
+        else trackSignupFailed(errMsg)
+        return
+      }
+      if (mode === 'login') {
+        trackLoginSuccess('email')
+      } else {
+        trackSignupSuccess('email', role)
+      }
+      identifyUser(json.user)
       await login(json.token, json.user)
     } catch (e) {
-      setError(e.message || 'Network error.')
+      const errMsg = e.message || 'Network error.'
+      setError(errMsg)
+      if (mode === 'login') trackLoginFailed(errMsg)
+      else trackSignupFailed(errMsg)
     } finally {
       setLoading(false)
     }
@@ -376,7 +420,12 @@ export default function AuthPage({ initialMode, onBack }) {
                 Your letter is saved. Create your account and we’ll take you straight back to it.
               </div>
             )}
-            {emailFromUrl && isSignup && (
+            {replyFromUrl && (
+              <div style={{ marginBottom: 20, padding: '12px 14px', borderRadius: 8, background: 'var(--lemon)', fontSize: 14, lineHeight: 1.5, color: 'var(--ink)' }}>
+                Someone sent you a letter. Log in to read it, or create an account if you're new.
+              </div>
+            )}
+            {emailFromUrl && isSignup && !replyFromUrl && (
               <div style={{ marginBottom: 20, padding: '12px 14px', borderRadius: 8, background: 'var(--lemon)', fontSize: 14, lineHeight: 1.5, color: 'var(--ink)' }}>
                 Someone wrote you a letter. Create an account to read it and write back.
               </div>
@@ -424,7 +473,10 @@ export default function AuthPage({ initialMode, onBack }) {
                             color: active ? 'var(--paper)' : 'var(--ink)',
                             border: active ? '1px solid var(--ink)' : '1px solid var(--rose)',
                           }}>
-                          {r.short}
+                          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            {r.short}
+                            {r.recommended && <span style={{ fontSize: 12, fontWeight: 400, opacity: 0.75 }}>Recommended</span>}
+                          </span>
                         </button>
                       )
                     })}

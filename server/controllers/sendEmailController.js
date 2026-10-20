@@ -4,7 +4,7 @@ import Letter from '../models/Letter.js'
 import User from '../models/User.js'
 import config from '../config/index.js'
 import { decrypt } from './emailAccountController.js'
-import { checkContentSafety } from '../utils/moderation.js'
+import { checkFieldsSafety, MSG_FLAGGED, MSG_UNAVAILABLE } from '../utils/moderation.js'
 import { createNotification } from './notificationController.js'
 import {
   generateTrackingId,
@@ -31,14 +31,16 @@ export async function sendEmail(req, res) {
   if (!message?.trim())                 return res.status(400).json({ error: 'Message body is required.' })
 
   try {
-    await checkContentSafety(message.trim())
-  } catch {
-    return res.status(400).json({ success: false, error: 'You have written restricted content. Please revise your message before saving or sending.' })
+    await checkFieldsSafety(subject, message)
+  } catch (err) {
+    const status = err.status || 400
+    const error  = err.moderation ? MSG_FLAGGED : MSG_UNAVAILABLE
+    return res.status(status).json({ success: false, error })
   }
 
   const trackingId = generateTrackingId(userId.toString())
-  const html       = buildEmailHtml(message.trim(), trackingId, to.trim())
   const text       = buildEmailText(message.trim())
+  // html is built after letter creation so we can embed the letterId in the CTA URL
 
   let transporter, fromEmail
   let resendEmailId = null
@@ -74,9 +76,26 @@ export async function sendEmail(req, res) {
 
   const subjectLine = subject?.trim() || 'A letter from my heart 💌'
 
+  // ── Create letter record first so we have the _id for the CTA URL ─────────
+  const letterData = {
+    userId,
+    type:      'sent',
+    fromEmail: fromEmail || config.emailFrom,
+    toEmail:   to.trim(),
+    subject:   subjectLine,
+    message:   message.trim(),
+    trackingId,
+    status:    'sent',
+  }
+  const letter = await Letter.create(letterData)
+
+  // Build HTML now that we have the letter _id — CTA embeds it for smart redirect
+  const html = buildEmailHtml(message.trim(), trackingId, to.trim(), letter._id.toString())
+
   // ── System path: Resend ───────────────────────────────────────────────────
   if (useSystemFinal) {
     if (!config.resendApiKey) {
+      await Letter.findByIdAndDelete(letter._id)
       return res.status(500).json({
         error: 'System email is not configured on this server. Please connect your own email account in Connections.',
       })
@@ -85,6 +104,7 @@ export async function sendEmail(req, res) {
       resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text, replyTo })
       fromEmail = config.emailFrom
     } catch (err) {
+      await Letter.findByIdAndDelete(letter._id)
       return res.status(500).json({ error: `Failed to send: ${err.message}` })
     }
   } else {
@@ -104,28 +124,21 @@ export async function sendEmail(req, res) {
           resendEmailId = await sendViaResend({ to: to.trim(), subject: subjectLine, html, text, replyTo })
           fromEmail = config.emailFrom
         } catch (sysErr) {
+          await Letter.findByIdAndDelete(letter._id)
           return res.status(500).json({ error: `Failed to send: ${sysErr.message}` })
         }
       } else {
+        await Letter.findByIdAndDelete(letter._id)
         return res.status(500).json({ error: `Failed to send: ${err.message}` })
       }
     }
   }
 
-  // ── Record sent letter ────────────────────────────────────────────────────
-  const letterData = {
-    userId,
-    type:      'sent',
-    fromEmail,
-    toEmail:   to.trim(),
-    subject:   subjectLine,
-    message:   message.trim(),
-    trackingId,
-    status:    'sent',
-  }
-  if (resendEmailId) letterData.resendEmailId = resendEmailId
-
-  const letter = await Letter.create(letterData)
+  // Update fromEmail and resendEmailId on the letter now that we know them
+  const updatePatch = {}
+  if (fromEmail) updatePatch.fromEmail = fromEmail
+  if (resendEmailId) updatePatch.resendEmailId = resendEmailId
+  if (Object.keys(updatePatch).length) await Letter.findByIdAndUpdate(letter._id, updatePatch)
 
   // ── Notify the recipient if they have a registered account ───────────────
   try {
@@ -138,7 +151,7 @@ export async function sendEmail(req, res) {
         letterId: letter._id,
         message:  `Someone sent you a letter 💌`,
         type:     'delivery',
-        link:     `/myspace`,
+        link:     `/welcome`,
       })
     }
   } catch (err) {

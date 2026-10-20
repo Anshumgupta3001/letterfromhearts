@@ -55,7 +55,7 @@ function ReportLetterModal({ letterId, onClose }) {
         {done ? (
           <div style={{ textAlign: 'center', padding: '12px 0' }}>
             <div style={{ fontSize: 28, marginBottom: 12 }}>✅</div>
-            <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 8 }}>
+            <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 8 }}>
               Report received
             </div>
             <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
@@ -63,14 +63,14 @@ function ReportLetterModal({ letterId, onClose }) {
             </p>
             <button
               onClick={onClose}
-              style={{ marginTop: 20, padding: '9px 24px', borderRadius: 8, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans",sans-serif', fontSize: 13, fontWeight: 500 }}
+              style={{ marginTop: 20, padding: '9px 24px', borderRadius: 8, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 500 }}
             >
               Close
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 6 }}>
+            <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 6 }}>
               🚩 Report this letter
             </div>
             <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.6, marginBottom: 16 }}>
@@ -84,18 +84,18 @@ function ReportLetterModal({ letterId, onClose }) {
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 9, fontSize: 15,
                 border: err ? '1.5px solid var(--tc)' : '1px solid rgba(40,3,15,0.14)',
-                outline: 'none', resize: 'vertical', fontFamily: '"DM Sans",sans-serif',
+                outline: 'none', resize: 'vertical', fontFamily: '"General Sans", sans-serif',
                 color: 'var(--ink)', lineHeight: 1.6, boxSizing: 'border-box',
               }}
             />
             {err && <div style={{ fontSize: 12, color: 'var(--tc)', marginTop: 6 }}>{err}</div>}
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
               <button type="button" onClick={onClose}
-                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(40,3,15,0.14)', background: 'transparent', fontSize: 13, cursor: 'pointer', color: 'var(--ink-muted)', fontFamily: '"DM Sans",sans-serif' }}>
+                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(40,3,15,0.14)', background: 'transparent', fontSize: 13, cursor: 'pointer', color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>
                 Cancel
               </button>
               <button type="submit" disabled={submitting}
-                style={{ padding: '8px 20px', borderRadius: 8, background: '#B85450', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.6 : 1, fontFamily: '"DM Sans",sans-serif' }}>
+                style={{ padding: '8px 20px', borderRadius: 8, background: '#B85450', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.6 : 1, fontFamily: '"General Sans", sans-serif' }}>
                 {submitting ? 'Sending…' : 'Submit Report'}
               </button>
             </div>
@@ -477,7 +477,7 @@ export default function ListenerReadPage() {
 
         {/* ── Page header ── */}
         <div style={{ marginBottom: 20 }}>
-          <h1 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.05, letterSpacing: '-0.045em', marginBottom: 5 }}>
+          <h1 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: 5 }}>
             Listener feed
           </h1>
           <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>

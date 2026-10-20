@@ -28,8 +28,8 @@ function LetterCard({ letter, onClick }) {
           <h3 style={{ fontFamily: '"Gambetta", serif', fontSize: 22, fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
             {letter.subject}
           </h3>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, padding: '3px 8px', borderRadius: 6, fontWeight: 600, background: '#fdf0ee', color: 'var(--tc)', flexShrink: 0, border: '1px solid #f5d4ce' }}>
-            ✦ Personal
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, padding: '3px 8px', borderRadius: 6, fontWeight: 500, background: 'var(--lemon)', color: 'var(--ink)', flexShrink: 0, border: '1px solid var(--lemon)' }}>
+            Personal
           </span>
         </div>
         <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -106,18 +106,20 @@ function QuickNavCard({ card }) {
       {/* Left accent bar */}
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: card.accent, borderRadius: '4px 0 0 4px', opacity: hov ? 1 : 0.4, transition: 'opacity 0.2s', display: 'none' }} />
       <div style={{ paddingLeft: 6 }}>
-        {/* Icon + count row */}
+        {/* Icon + [Explore → / count] row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
           <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 10, background: card.iconBg || 'var(--lemon)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={card.iconColor || 'var(--ink)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.iconPath || 'M4 6h16v12H4zM4 7l8 6 8-6'} /></svg>
           </span>
-          <span style={{
-            fontFamily: '"Gambetta", serif', fontSize: 32, fontWeight: 400,
-            color: 'var(--ink)', letterSpacing: '-0.03em', lineHeight: 1,
-            flexShrink: 0,
-          }}>
-            {card.count}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+            <span aria-hidden="true" style={{ fontSize: 13, fontFamily: '"General Sans", sans-serif', fontWeight: 500, color: 'var(--ink-muted)', opacity: hov ? 1 : 0.7, transition: 'opacity 0.2s ease', display: 'flex', alignItems: 'center', pointerEvents: 'none', userSelect: 'none' }}>
+              Explore
+              <span style={{ display: 'inline-block', marginLeft: 3, transform: hov ? 'translateX(3px)' : 'translateX(0)', transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)' }}>→</span>
+            </span>
+            <span style={{ fontFamily: '"Gambetta", serif', fontSize: 32, fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.03em', lineHeight: 1 }}>
+              {card.count}
+            </span>
+          </div>
         </div>
         {/* Label */}
         <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.3, marginTop: 10, marginBottom: 5 }}>
@@ -137,7 +139,7 @@ function SectionHeader({ title, subtitle, seeAll, onSeeAll }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
       <div>
-        <h2 style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.04em', fontSize: 30, fontWeight: 400, color: 'inherit', marginBottom: 3, lineHeight: 1.1 }}>{title}</h2>
+        <h2 style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 30, fontWeight: 400, color: 'inherit', marginBottom: 3, lineHeight: 1.1 }}>{title}</h2>
         {subtitle && <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'inherit', opacity: 0.75, lineHeight: 1.6 }}>{subtitle}</p>}
       </div>
       {seeAll && (
@@ -286,7 +288,7 @@ export default function HomePage() {
             {/* Decorative symbol */}
 
             <div style={{ paddingLeft: 8 }}>
-              <div style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(28px, 3vw, 40px)', color: 'var(--ink)', fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.045em' }}>
+              <div style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(28px, 3vw, 40px)', color: 'var(--ink)', fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.03em' }}>
                 Pour your heart into a <em style={{ fontStyle: 'italic' }}>new letter.</em>
               </div>
               <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 16, color: 'var(--ink)', marginTop: 8, lineHeight: 1.5 }}>

@@ -427,35 +427,42 @@ export default function LetterDrawer() {
                 position: 'relative', overflow: 'hidden',
               }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: `linear-gradient(180deg, ${meta.color}, var(--gold))`, borderRadius: '0 0 0 16px', display: 'none' }} />
-                {/* "From" banner for recipients */}
-                {isKnownRecipient && letter.senderInfo && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20,
-                    padding: '10px 14px', borderRadius: 10,
-                    background: '#E4EAF1', border: '1px solid #E4EAF1',
-                  }}>
-                    <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 14, color: '#33557F', lineHeight: 1.45 }}>
-                      From <strong style={{ color: 'var(--ink)' }}>
-                        {letter.senderInfo.name && letter.senderInfo.name !== '—'
-                          ? `${letter.senderInfo.name} (${letter.senderInfo.email})`
-                          : letter.senderInfo.email}
-                      </strong>
-                    </div>
+                <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 14, color: 'var(--ink-muted)', marginBottom: 14 }}>{date}</div>
+                <h2 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(30px, 4vw, 40px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.08, letterSpacing: '-0.03em', marginBottom: 0, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                  {letter.subject || 'A letter from my heart'}
+                </h2>
+
+                {/* With: — shown for known-contact letters on both sides */}
+                {letter.type === 'sent' && letter.toEmail && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
+                    <span style={{ fontSize: 14, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>With</span>
+                    <span style={{ fontSize: 14, color: '#33557F', background: '#E4EAF1', padding: '3px 8px', borderRadius: 6, fontFamily: '"General Sans", sans-serif', fontWeight: 500, wordBreak: 'break-all' }}>
+                      {letter.toEmail}
+                    </span>
                   </div>
                 )}
-                <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 14, color: 'var(--ink-muted)', marginBottom: 14 }}>{date}</div>
-                <h2 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(30px, 4vw, 40px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.08, letterSpacing: '-0.04em', marginBottom: 0 }}>
-                  {letter.subject}
-                </h2>
+                {isKnownRecipient && (() => {
+                  const sName  = letter.senderInfo?.name
+                  const sEmail = letter.senderInfo?.email || letter.fromEmail
+                  const label  = sName && sName !== '—' ? sName : sEmail || null
+                  return label ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
+                      <span style={{ fontSize: 14, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>With</span>
+                      <span style={{ fontSize: 14, color: '#33557F', background: '#E4EAF1', padding: '3px 8px', borderRadius: 6, fontFamily: '"General Sans", sans-serif', fontWeight: 500, wordBreak: 'break-all' }}>
+                        {label}
+                      </span>
+                    </div>
+                  ) : null
+                })()}
                 <div style={{ height: 1, background: '#EFE7E2', margin: '22px 0 24px' }} />
-                <div style={{ fontFamily: '"General Sans", sans-serif', letterSpacing: 'normal', fontSize: 17, lineHeight: 1.75, color: '#4A2B35', whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                  {letter.message}
+                <div style={{ fontFamily: '"General Sans", sans-serif', letterSpacing: 'normal', fontSize: 17, lineHeight: 1.75, color: '#4A2B35', whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'break-word', maxWidth: '100%' }}>
+                  {letter.message || '(No content)'}
                 </div>
                 <div style={{ marginTop: 36, paddingTop: 20, borderTop: '1px solid #EFE7E2', display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ width: 28, height: 28, borderRadius: '50%', background: '#28030F', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="#FBF582" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.6.1.2.3.2.4 0 .7-1.4 2.2-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>
                   </span>
-                  <span style={{ fontSize: 18, color: 'var(--ink)', fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>Letter from Heart</span>
+                  <span style={{ fontSize: 22, color: 'var(--ink)', fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>Letter from Heart</span>
                 </div>
               </div>
 

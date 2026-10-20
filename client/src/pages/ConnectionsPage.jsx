@@ -124,7 +124,7 @@ export default function ConnectionsPage() {
 
       {/* ── Page header ──────────────────────────────────────────────── */}
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.05, letterSpacing: '-0.045em', marginBottom: 5 }}>
+        <h1 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: 5 }}>
           Connections
         </h1>
         <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>

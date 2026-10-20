@@ -112,7 +112,7 @@ export default function SentLettersPage() {
             <span style={{ width: 18, height: 1, background: BD, display: 'inline-block' }} />
             Your outbox
           </div>
-          <h1 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.05, letterSpacing: '-0.045em', marginBottom: 12 }}>
+          <h1 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: 12 }}>
             <span style={{ display: 'inline-block', width: 38, height: 38, background: 'linear-gradient(135deg, #FCFAF8, #FCFAF8)', borderRadius: 10, textAlign: 'center', lineHeight: '38px', fontSize: 20, marginRight: 10, verticalAlign: 'middle', position: 'relative', top: -3, border: `1px solid ${BD}` }}>📬</span>
             Sent Letters
           </h1>
