@@ -62,17 +62,9 @@ export async function signup(req, res) {
       return res.status(400).json({ error: 'Account type is required.' })
     }
 
-    if (!source?.trim()) {
-      console.warn('[Auth] Signup failed: missing source — email:', email)
-      return res.status(400).json({ error: 'Please tell us where you heard about us.' })
-    }
-    if (source === 'Other' && !otherSource?.trim()) {
-      console.warn('[Auth] Signup failed: missing otherSource — email:', email)
-      return res.status(400).json({ error: 'Please specify where you heard about us.' })
-    }
-
+    // "Where did you hear about us" is optional — it no longer blocks signup
     const normalEmail = email.toLowerCase().trim()
-    const heardFrom   = source === 'Other' ? otherSource.trim() : source.trim()
+    const heardFrom   = source === 'Other' ? (otherSource?.trim() || 'Other') : (source?.trim() || 'Not specified')
 
     const emailExists = await User.findOne({ email: normalEmail })
     if (emailExists) {

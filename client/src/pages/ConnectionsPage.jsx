@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import { apiFetch } from '../utils/api'
 
-const BD = '#E0D4BC'
-const FT = '#F2EBE0'
+const BD = '#F0DFD1'
+const FT = '#F0DFD1'
 
 const SMTP_PRESETS = {
   '':        { label: 'Custom',               host: '',                                   port: '587', secure: false },
@@ -19,14 +19,14 @@ const PROVIDER_ICON = { gmail: '📧', zoho: '📮', outlook: '📨', smtp: '�
 
 const INPUT_STYLE = {
   width: '100%', padding: '10px 13px', borderRadius: 10,
-  fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink)',
+  fontFamily: '"General Sans", sans-serif', fontSize: 13, color: 'var(--ink)',
   outline: 'none', background: 'rgba(248,244,239,0.9)',
   border: '1.5px solid rgba(224,212,188,0.8)',
   transition: 'border-color 0.18s', boxSizing: 'border-box',
 }
 const LABEL_STYLE = {
   fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px',
-  fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif',
+  fontWeight: 600, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif',
 }
 
 function Toast({ msg, type, onDone }) {
@@ -34,7 +34,7 @@ function Toast({ msg, type, onDone }) {
   return (
     <div
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-pill text-[13px] font-sans font-medium text-cream shadow-xl animate-fade-up"
-      style={{ background: type === 'error' ? '#c4633a' : '#7a9e8e', border: '0.5px solid rgba(255,255,255,0.15)', pointerEvents: 'none' }}
+      style={{ background: type === 'error' ? '#28030F' : '#588F60', border: '0.5px solid rgba(255,255,255,0.15)', pointerEvents: 'none' }}
     >
       {type === 'error' ? '✗ ' : '✓ '}{msg}
     </div>
@@ -124,10 +124,10 @@ export default function ConnectionsPage() {
 
       {/* ── Page header ──────────────────────────────────────────────── */}
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: '"Lora", serif', fontSize: 26, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.4px', marginBottom: 5 }}>
+        <h1 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.05, letterSpacing: '-0.045em', marginBottom: 5 }}>
           Connections
         </h1>
-        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>
+        <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>
           Choose how your letters travel — from your inbox, or ours.
         </p>
       </div>
@@ -143,7 +143,7 @@ export default function ConnectionsPage() {
             onClick={() => setActiveTab(t.id)}
             style={{
               padding: '10px 22px',
-              fontFamily: '"DM Sans", sans-serif',
+              fontFamily: '"General Sans", sans-serif',
               fontSize: 13,
               fontWeight: 500,
               cursor: 'pointer',
@@ -169,32 +169,32 @@ export default function ConnectionsPage() {
 
           {/* ── How letters are sent ───────────────────────────────── */}
           <section>
-            <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 14, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>
+            <div style={{ fontSize: 13, color: 'var(--ink-muted)', marginBottom: 14, fontWeight: 500, fontFamily: '"General Sans", sans-serif' }}>
               Email Settings
             </div>
 
             {/* Intro blurb */}
-            <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, margin: '0 0 14px' }}>
+            <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.7, margin: '0 0 14px' }}>
               Your letters are sent securely using our platform email — no setup needed.
             </p>
 
             {/* Sending-from card */}
             <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden', position: 'relative', marginBottom: 10 }}>
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'linear-gradient(180deg, var(--sage), var(--gold))', borderRadius: '4px 0 0 4px' }} />
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'linear-gradient(180deg, var(--sage), var(--gold))', borderRadius: '4px 0 0 4px', display: 'none' }} />
               <div style={{ padding: '16px 20px 16px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: 22, flexShrink: 0 }}>📮</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 600, color: 'var(--ink-muted)', marginBottom: 4 }}>
+                  <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--ink-muted)', marginBottom: 4 }}>
                     Sending from
                   </div>
-                  <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>
+                  <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 3 }}>
                     {emailFrom || 'noreply@letterfromheart.com'}
                   </div>
-                  <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)' }}>
+                  <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)' }}>
                     Always available · No configuration required
                   </div>
                 </div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.3)', flexShrink: 0, fontFamily: '"DM Sans", sans-serif' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, padding: '4px 10px', borderRadius: 6, fontWeight: 600, background: 'rgba(88,143,96,0.1)', color: 'var(--sage)', border: '1px solid rgba(88,143,96,0.3)', flexShrink: 0, fontFamily: '"General Sans", sans-serif' }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--sage)' }} />
                   Default
                 </span>
@@ -207,14 +207,14 @@ export default function ConnectionsPage() {
           <section>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 16, flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 4, fontWeight: 500, fontFamily: '"DM Sans", sans-serif' }}>My Connected Accounts</div>
-                <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>
+                <div style={{ fontSize: 13, color: 'var(--ink-muted)', marginBottom: 4, fontWeight: 500, fontFamily: '"General Sans", sans-serif' }}>My Connected Accounts</div>
+                <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>
                   {emailAccounts.length === 0 ? 'No personal accounts connected yet.' : `${emailAccounts.length} account${emailAccounts.length !== 1 ? 's' : ''} connected.`}
                 </p>
               </div>
               <button
                 onClick={() => setActiveTab('setup')}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(26,18,8,0.18)', transition: 'all 0.2s', flexShrink: 0 }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(26,18,8,0.18)', transition: 'all 0.2s', flexShrink: 0 }}
                 onMouseEnter={e => { e.currentTarget.style.background = '#2a2016'; e.currentTarget.style.transform = 'translateY(-1px)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'var(--ink)'; e.currentTarget.style.transform = 'translateY(0)' }}
               >
@@ -225,13 +225,13 @@ export default function ConnectionsPage() {
             {emailAccounts.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 32px', borderRadius: 16, background: 'rgba(255,255,255,0.5)', border: `1.5px dashed ${BD}` }}>
                 <div style={{ fontSize: 38, marginBottom: 14, opacity: 0.35 }}>📭</div>
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>No personal account connected</div>
-                <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 280, margin: '0 auto 20px' }}>
+                <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 8 }}>No personal account connected</div>
+                <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.7, maxWidth: 280, margin: '0 auto 20px' }}>
                   Connect Gmail, Zoho, or any SMTP — your email will be used for reply identification.
                 </p>
                 <button
                   onClick={() => setActiveTab('setup')}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(139,58,42,0.22)', transition: 'all 0.2s' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--tc)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 4px 14px rgba(139,58,42,0.22)', transition: 'all 0.2s' }}
                 >
                   ✦ Connect your first account
                 </button>
@@ -242,14 +242,14 @@ export default function ConnectionsPage() {
                   const isOk = acc.status === 'connected'
                   return (
                     <div key={acc.id} style={{ background: '#fff', borderRadius: 14, border: `1px solid ${BD}`, overflow: 'hidden', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: isOk ? 'linear-gradient(180deg, var(--sage), var(--gold))' : 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px' }} />
+                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: isOk ? 'linear-gradient(180deg, var(--sage), var(--gold))' : 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px', display: 'none' }} />
                       <div style={{ padding: '18px 20px 16px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
                         <div style={{ fontSize: 22, flexShrink: 0 }}>{PROVIDER_ICON[acc.provider] || '📬'}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: '"Lora", serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{acc.emailAddress}</div>
-                          <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-muted)' }}>{acc.provider} · connected {new Date(acc.connectedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                          <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{acc.emailAddress}</div>
+                          <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)' }}>{acc.provider} · connected {new Date(acc.connectedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                         </div>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', background: isOk ? 'rgba(122,158,142,0.1)' : 'rgba(196,99,58,0.1)', color: isOk ? 'var(--sage)' : 'var(--tc)', border: `1px solid ${isOk ? 'rgba(122,158,142,0.3)' : 'rgba(196,99,58,0.3)'}`, flexShrink: 0, fontFamily: '"DM Sans", sans-serif' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, padding: '4px 10px', borderRadius: 6, fontWeight: 600, background: isOk ? 'rgba(88,143,96,0.1)' : 'rgba(40,3,15,0.1)', color: isOk ? 'var(--sage)' : 'var(--tc)', border: `1px solid ${isOk ? 'rgba(88,143,96,0.3)' : 'rgba(40,3,15,0.3)'}`, flexShrink: 0, fontFamily: '"General Sans", sans-serif' }}>
                           <span style={{ width: 5, height: 5, borderRadius: '50%', background: isOk ? 'var(--sage)' : 'var(--tc)' }} />
                           {isOk ? 'Connected' : 'Error'}
                         </span>
@@ -257,7 +257,7 @@ export default function ConnectionsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 20px 8px 24px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)' }}>
                         <button
                           onClick={() => setDeleteId(acc.id)}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 13px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', transition: 'all 0.15s', border: '1.5px solid #f5d4ce', color: 'var(--tc)', background: 'transparent' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 13px', borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: '"General Sans", sans-serif', transition: 'all 0.15s', border: '1.5px solid #f5d4ce', color: 'var(--tc)', background: 'transparent' }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'var(--tc)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1.5px solid var(--tc)' }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--tc)'; e.currentTarget.style.border = '1.5px solid #f5d4ce' }}
                         >
@@ -282,8 +282,8 @@ export default function ConnectionsPage() {
           {/* ── Form column ────────────────────────────────────────── */}
           <section>
             <div style={{ marginBottom: 22 }}>
-              <h2 style={{ fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px', marginBottom: 5 }}>Add Email Account</h2>
-              <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.6, margin: 0 }}>
+              <h2 style={{ fontFamily: '"Gambetta", serif', fontSize: 22, fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.03em', marginBottom: 5 }}>Add Email Account</h2>
+              <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.6, margin: 0 }}>
                 Connect via SMTP — your email will appear as the reply address on letters you send.
               </p>
             </div>
@@ -297,7 +297,7 @@ export default function ConnectionsPage() {
                   value={preset}
                   onChange={e => applyPreset(e.target.value)}
                   style={INPUT_STYLE}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
+                  onFocus={e => (e.target.style.borderColor = 'rgba(40,3,15,0.5)')}
                   onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
                 >
                   {Object.entries(SMTP_PRESETS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
@@ -313,7 +313,7 @@ export default function ConnectionsPage() {
                     onChange={e => setHost(e.target.value)}
                     placeholder="smtp.example.com"
                     style={INPUT_STYLE}
-                    onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
+                    onFocus={e => (e.target.style.borderColor = 'rgba(40,3,15,0.5)')}
                     onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
                   />
                 </label>
@@ -324,7 +324,7 @@ export default function ConnectionsPage() {
                     onChange={e => setPort(e.target.value)}
                     placeholder="587"
                     style={INPUT_STYLE}
-                    onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
+                    onFocus={e => (e.target.style.borderColor = 'rgba(40,3,15,0.5)')}
                     onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
                   />
                 </label>
@@ -335,11 +335,11 @@ export default function ConnectionsPage() {
                 <div
                   onClick={() => setSecure(s => !s)}
                   className="toggle-track"
-                  style={{ background: secure ? 'var(--sage)' : 'rgba(28,26,23,0.14)' }}
+                  style={{ background: secure ? 'var(--sage)' : 'rgba(40,3,15,0.14)' }}
                 >
                   <div className="toggle-thumb" style={{ transform: secure ? 'translateX(18px)' : 'translateX(2px)' }} />
                 </div>
-                <span style={{ fontSize: 13, fontFamily: '"DM Sans", sans-serif', color: 'var(--ink-soft)' }}>Use SSL/TLS (port 465)</span>
+                <span style={{ fontSize: 13, fontFamily: '"General Sans", sans-serif', color: 'var(--ink-soft)' }}>Use SSL/TLS (port 465)</span>
               </label>
 
               {/* Username */}
@@ -351,7 +351,7 @@ export default function ConnectionsPage() {
                   onChange={e => setUsername(e.target.value)}
                   placeholder="you@example.com"
                   style={INPUT_STYLE}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
+                  onFocus={e => (e.target.style.borderColor = 'rgba(40,3,15,0.5)')}
                   onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
                 />
               </label>
@@ -365,7 +365,7 @@ export default function ConnectionsPage() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   style={INPUT_STYLE}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(196,99,58,0.5)')}
+                  onFocus={e => (e.target.style.borderColor = 'rgba(40,3,15,0.5)')}
                   onBlur={e => (e.target.style.borderColor = 'rgba(224,212,188,0.8)')}
                 />
               </label>
@@ -374,9 +374,9 @@ export default function ConnectionsPage() {
               <button
                 onClick={handleConnectSmtp}
                 disabled={connecting}
-                style={{ marginTop: 4, width: '100%', padding: '13px 0', borderRadius: 100, border: 'none', cursor: connecting ? 'not-allowed' : 'pointer', fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 600, color: '#fff', background: connecting ? 'rgba(28,26,23,0.35)' : 'linear-gradient(135deg, #1c1a17 0%, #3d3020 100%)', boxShadow: connecting ? 'none' : '0 4px 18px rgba(28,18,8,0.22)', opacity: connecting ? 0.75 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                onMouseEnter={e => { if (!connecting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(28,18,8,0.28)' } }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = connecting ? 'none' : '0 4px 18px rgba(28,18,8,0.22)' }}
+                style={{ marginTop: 4, width: '100%', padding: '13px 0', borderRadius: 100, border: 'none', cursor: connecting ? 'not-allowed' : 'pointer', fontFamily: '"General Sans", sans-serif', fontSize: 14, fontWeight: 600, color: '#fff', background: connecting ? 'rgba(40,3,15,0.35)' : 'linear-gradient(135deg, #28030F 0%, #3d3020 100%)', boxShadow: connecting ? 'none' : '0 4px 18px rgba(40,3,15,0.22)', opacity: connecting ? 0.75 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                onMouseEnter={e => { if (!connecting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(40,3,15,0.28)' } }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = connecting ? 'none' : '0 4px 18px rgba(40,3,15,0.22)' }}
               >
                 {connecting && (
                   <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -389,11 +389,11 @@ export default function ConnectionsPage() {
 
               {/* Gmail OAuth — disabled */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4, borderTop: `1px solid ${FT}` }}>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--ink-muted)', fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>OAuth (Coming Soon)</div>
+                <div style={{ fontSize: 13, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif', fontWeight: 500 }}>OAuth (Coming Soon)</div>
                 <div style={{ position: 'relative', display: 'inline-block' }} className="group">
                   <button
                     disabled
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderRadius: 100, background: '#fff', color: '#3c4043', border: '1.5px solid #dadce0', fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'not-allowed', opacity: 0.45, width: '100%', justifyContent: 'center' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderRadius: 6, background: '#fff', color: '#3c4043', border: '1.5px solid #dadce0', fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'not-allowed', opacity: 0.45, width: '100%', justifyContent: 'center' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -405,7 +405,7 @@ export default function ConnectionsPage() {
                   </button>
                   <span
                     className="group-hover:opacity-100 group-hover:visible"
-                    style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', background: '#1c1a17', color: '#fff', fontSize: 11, padding: '4px 10px', borderRadius: 6, whiteSpace: 'nowrap', opacity: 0, visibility: 'hidden', transition: 'opacity 0.15s', pointerEvents: 'none', fontFamily: '"DM Sans", sans-serif' }}
+                    style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', background: '#28030F', color: '#fff', fontSize: 12, padding: '4px 10px', borderRadius: 6, whiteSpace: 'nowrap', opacity: 0, visibility: 'hidden', transition: 'opacity 0.15s', pointerEvents: 'none', fontFamily: '"General Sans", sans-serif' }}
                   >
                     Coming Soon
                   </span>
@@ -418,10 +418,10 @@ export default function ConnectionsPage() {
           <aside style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 80 }}>
 
             {/* How to connect */}
-            <div style={{ background: 'rgba(122,158,142,0.06)', borderRadius: 14, border: '1px solid rgba(122,158,142,0.22)', padding: '20px' }}>
+            <div style={{ background: 'rgba(88,143,96,0.06)', borderRadius: 14, border: '1px solid rgba(88,143,96,0.22)', padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                 <span style={{ fontSize: 16 }}>🧠</span>
-                <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, fontWeight: 600, color: 'var(--sage)', textTransform: 'uppercase', letterSpacing: '1px' }}>How to connect</span>
+                <span style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--sage)', }}>How to connect</span>
               </div>
               <ol style={{ margin: 0, padding: '0 0 0 16px', display: 'flex', flexDirection: 'column', gap: 9 }}>
                 {[
@@ -430,7 +430,7 @@ export default function ConnectionsPage() {
                   'Copy your provider\'s SMTP details below',
                   'Paste them into the form and connect',
                 ].map((step, i) => (
-                  <li key={i} style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{step}</li>
+                  <li key={i} style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{step}</li>
                 ))}
               </ol>
             </div>
@@ -449,7 +449,7 @@ export default function ConnectionsPage() {
                     onClick={() => setGuideTab(t.id)}
                     style={{
                       flex: 1, padding: '9px 4px', border: 'none', background: 'transparent', cursor: 'pointer',
-                      fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, fontWeight: guideTab === t.id ? 600 : 400,
+                      fontFamily: '"General Sans", sans-serif', fontSize: 12, fontWeight: guideTab === t.id ? 600 : 400,
                       color: guideTab === t.id ? 'var(--tc)' : 'var(--ink-muted)',
                       borderBottom: guideTab === t.id ? '2px solid var(--tc)' : '2px solid transparent',
                       marginBottom: '-1px', transition: 'color 0.15s, border-color 0.15s',
@@ -464,7 +464,7 @@ export default function ConnectionsPage() {
               <div style={{ padding: '18px 20px' }}>
                 {guideTab === 'gmail' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Gmail Setup</div>
+                    <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--ink-muted)', marginBottom: 2 }}>Gmail Setup</div>
                     {[
                       { n: 1, text: 'Go to your Google Account → Security' },
                       { n: 2, text: 'Enable 2-Step Verification (if not already on)' },
@@ -473,13 +473,13 @@ export default function ConnectionsPage() {
                       { n: 5, text: 'Copy the 16-char password and paste it above' },
                     ].map(s => (
                       <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
-                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
+                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(40,3,15,0.1)', color: 'var(--tc)', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"General Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
+                        <span style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
                       </div>
                     ))}
-                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
+                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(88,143,96,0.07)', border: '1px solid rgba(88,143,96,0.2)' }}>
+                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
+                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
                         <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.gmail.com</span></div>
                         <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
                         <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your App Password</span></div>
@@ -490,7 +490,7 @@ export default function ConnectionsPage() {
 
                 {guideTab === 'outlook' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Outlook / Microsoft 365</div>
+                    <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--ink-muted)', marginBottom: 2 }}>Outlook / Microsoft 365</div>
                     {[
                       { n: 1, text: 'Go to account.microsoft.com → Security' },
                       { n: 2, text: 'Enable two-step verification' },
@@ -499,13 +499,13 @@ export default function ConnectionsPage() {
                       { n: 5, text: 'Paste the app password into the form above' },
                     ].map(s => (
                       <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
-                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
+                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(40,3,15,0.1)', color: 'var(--tc)', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"General Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
+                        <span style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
                       </div>
                     ))}
-                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
+                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(88,143,96,0.07)', border: '1px solid rgba(88,143,96,0.2)' }}>
+                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
+                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
                         <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.office365.com</span></div>
                         <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
                         <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your App Password</span></div>
@@ -516,7 +516,7 @@ export default function ConnectionsPage() {
 
                 {guideTab === 'zoho' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>Zoho Mail</div>
+                    <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--ink-muted)', marginBottom: 2 }}>Zoho Mail</div>
                     {[
                       { n: 1, text: 'Log in to mail.zoho.com → Settings' },
                       { n: 2, text: 'Go to Mail Accounts → SMTP' },
@@ -525,19 +525,19 @@ export default function ConnectionsPage() {
                       { n: 5, text: 'Use your Zoho password (or app-specific password)' },
                     ].map(s => (
                       <div key={s.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(196,99,58,0.1)', color: 'var(--tc)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
-                        <span style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
+                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(40,3,15,0.1)', color: 'var(--tc)', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"General Sans", sans-serif', marginTop: 1 }}>{s.n}</span>
+                        <span style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{s.text}</span>
                       </div>
                     ))}
-                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(122,158,142,0.07)', border: '1px solid rgba(122,158,142,0.2)' }}>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
-                      <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
+                    <div style={{ marginTop: 6, padding: '10px 12px', borderRadius: 9, background: 'rgba(88,143,96,0.07)', border: '1px solid rgba(88,143,96,0.2)' }}>
+                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--sage)', fontWeight: 600, marginBottom: 4 }}>SMTP settings to use</div>
+                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.8 }}>
                         <div>Host: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>smtp.zoho.com</span></div>
                         <div>Port: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>587</span></div>
                         <div>Password: <span style={{ color: 'var(--ink-soft)', fontWeight: 500 }}>Your Zoho password</span></div>
                       </div>
                     </div>
-                    <div style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-muted)', lineHeight: 1.5, marginTop: 2 }}>
+                    <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', lineHeight: 1.5, marginTop: 2 }}>
                       Indian accounts may use smtp.zoho.in — we try both automatically.
                     </div>
                   </div>
@@ -553,24 +553,24 @@ export default function ConnectionsPage() {
       {deleteId && (
         <div
           className="fixed inset-0 z-[600] flex items-center justify-center px-4"
-          style={{ background: 'rgba(28,18,8,0.32)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+          style={{ background: 'rgba(40,3,15,0.32)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
           onClick={e => { if (e.target === e.currentTarget) setDeleteId(null) }}
         >
           <div
             className="w-full max-w-[360px] animate-fade-up"
-            style={{ background: 'linear-gradient(150deg, #ffffff 0%, #faf7f2 100%)', borderRadius: 20, border: `1px solid ${BD}`, boxShadow: '0 24px 60px rgba(28,18,8,0.18)', overflow: 'hidden' }}
+            style={{ background: 'linear-gradient(150deg, #ffffff 0%, #faf7f2 100%)', borderRadius: 20, border: `1px solid ${BD}`, boxShadow: '0 24px 60px rgba(40,3,15,0.18)', overflow: 'hidden' }}
           >
             <div style={{ padding: '32px 28px 28px', textAlign: 'center' }}>
               <div style={{ fontSize: 36, marginBottom: 14 }}>🗑️</div>
-              <h3 style={{ fontFamily: '"Lora", serif', fontSize: 19, fontWeight: 700, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.3px' }}>Remove account?</h3>
-              <p style={{ fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 24 }}>
+              <h3 style={{ fontFamily: '"Gambetta", serif', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 10, letterSpacing: '-0.03em' }}>Remove account?</h3>
+              <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 24 }}>
                 This email account will be disconnected.<br />You can reconnect any time.
               </p>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                 <button
                   onClick={() => setDeleteId(null)}
-                  style={{ padding: '10px 22px', borderRadius: 100, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: 'var(--ink-muted)', border: `1.5px solid rgba(224,212,188,0.9)`, transition: 'all 0.18s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(28,26,23,0.05)'; e.currentTarget.style.color = 'var(--ink)' }}
+                  style={{ padding: '10px 22px', borderRadius: 6, fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: 'var(--ink-muted)', border: `1.5px solid rgba(224,212,188,0.9)`, transition: 'all 0.18s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(40,3,15,0.05)'; e.currentTarget.style.color = 'var(--ink)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-muted)' }}
                 >
                   Cancel
@@ -578,9 +578,9 @@ export default function ConnectionsPage() {
                 <button
                   onClick={() => handleDelete(deleteId)}
                   disabled={deleting}
-                  style={{ padding: '10px 22px', borderRadius: 100, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, cursor: deleting ? 'not-allowed' : 'pointer', border: 'none', background: 'linear-gradient(135deg, #c4633a, #a84d28)', color: '#fff', boxShadow: '0 4px 14px rgba(196,99,58,0.3)', opacity: deleting ? 0.6 : 1, transition: 'all 0.18s' }}
-                  onMouseEnter={e => { if (!deleting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(196,99,58,0.38)' } }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,99,58,0.3)' }}
+                  style={{ padding: '10px 22px', borderRadius: 6, fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, cursor: deleting ? 'not-allowed' : 'pointer', border: 'none', background: 'linear-gradient(135deg, #28030F, #a84d28)', color: '#fff', boxShadow: '0 4px 14px rgba(40,3,15,0.3)', opacity: deleting ? 0.6 : 1, transition: 'all 0.18s' }}
+                  onMouseEnter={e => { if (!deleting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(40,3,15,0.38)' } }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(40,3,15,0.3)' }}
                 >
                   {deleting ? 'Removing…' : 'Yes, Remove'}
                 </button>

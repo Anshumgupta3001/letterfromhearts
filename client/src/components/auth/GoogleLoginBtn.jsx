@@ -37,15 +37,15 @@ export default function GoogleLoginBtn({ mode = 'login' }) {
       <button
         type="button"
         onClick={handleClick}
-        className="w-full flex items-center justify-center gap-3 py-[11px] px-4 rounded-[10px] font-sans text-[13.5px] font-medium cursor-pointer transition-all duration-200 hover:-translate-y-px"
+        className="w-full flex items-center justify-center gap-3 px-4 rounded-[8px] font-sans text-[15px] font-medium cursor-pointer transition-all duration-200"
         style={{
-          background: '#fff',
-          border: '1px solid rgba(28,26,23,0.16)',
+          background: '#fff', height: 50,
+          border: '1px solid var(--rose)',
           color: 'var(--ink)',
-          boxShadow: '0 1px 4px rgba(28,26,23,0.08)',
+          boxShadow: '0 1px 4px rgba(40,3,15,0.08)',
         }}
-        onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(28,26,23,0.12)' }}
-        onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(28,26,23,0.08)' }}
+        onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(40,3,15,0.12)' }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(40,3,15,0.08)' }}
       >
         <GoogleIcon />
         {label}
@@ -54,7 +54,7 @@ export default function GoogleLoginBtn({ mode = 'login' }) {
       {showError && (
         <div
           className="text-[12px] px-3 py-2 rounded-[8px] text-center font-sans"
-          style={{ background: 'rgba(196,99,58,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(196,99,58,0.2)' }}
+          style={{ background: 'rgba(40,3,15,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(40,3,15,0.2)' }}
         >
           {googleAuthError}
         </div>

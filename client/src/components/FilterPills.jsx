@@ -13,7 +13,7 @@ export default function FilterPills({ pills, active, onChange }) {
           style={
             active === pill.id
               ? { border: '0.5px solid var(--ink)' }
-              : { border: '0.5px solid rgba(28,26,23,0.1)' }
+              : { border: '0.5px solid rgba(40,3,15,0.1)' }
           }
         >
           {pill.dot && active !== pill.id && (

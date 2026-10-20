@@ -17,6 +17,7 @@ export function AppProvider({ children }) {
     setToken(token)
     localStorage.setItem('lfh_user', JSON.stringify(user))
     setAuthUser(user)
+    try { if (localStorage.getItem('lfh_draft')) setCurrentPage('write') } catch { /* ignore */ }
   }
 
   function logout() {

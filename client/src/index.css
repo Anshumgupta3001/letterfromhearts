@@ -1,23 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600&f[]=gambetta@400,401,500,501&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --cream: #F7F2EA;
-  --warm: #F2EBE0;
-  --paper: #FDF9F3;
-  --ink: #1C1A17;
-  --ink-soft: #4A4640;
-  --ink-muted: #8C8478;
-  --tc: #C4633A;
-  --tc-s: rgba(196, 99, 58, 0.08);
-  --sage: #7A9E8E;
-  --sage-s: rgba(122, 158, 142, 0.09);
-  --gold: #C9A84C;
-  --gold-s: rgba(201, 168, 76, 0.1);
-  --purple: #8B7EC8;
-  --purple-s: rgba(139, 126, 200, 0.09);
+  /* Heidi-inspired palette */
+  --cream: #F9F4F1;
+  --warm: #F0DFD1;
+  --paper: #FCFAF8;
+  --ink: #28030F;
+  --ink-soft: #4A2B35;
+  --ink-muted: #755760;
+  --tc: #28030F;
+  --tc-s: rgba(40,3,15, 0.06);
+  --sage: #588F60;
+  --sage-s: rgba(88,143,96, 0.1);
+  --gold: #755760;
+  --gold-s: rgba(117,87,96, 0.1);
+  --purple: #33557F;
+  --purple-s: rgba(51,85,127, 0.09);
+  --lemon: #FBF582;
+  --lemon-s: rgba(251,245,130, 0.45);
+  --sand: #F0DFD1;
+  --rose: #D4C4C9;
+  --slate: #33557F;
+  --fern: #194B22;
+  --radius: 8px;
 }
 
 html {
@@ -25,23 +33,19 @@ html {
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'General Sans', sans-serif;
   background: var(--cream);
   color: var(--ink);
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Paper grain overlay */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.5;
-}
+/* Heidi-style: clean surfaces, no grain */
+/* Type system — one serif for headings, one sans for everything else */
+h1, h2, h3 { font-family: 'Gambetta', Georgia, serif; font-weight: 400; letter-spacing: -0.03em; }
+.font-lora, .font-playfair { letter-spacing: -0.03em; font-weight: 400; }
+p, li, label, input, textarea, select, button { font-family: 'General Sans', system-ui, sans-serif; }
+::selection { background: #FBF582; color: #28030F; }
 
 /* ── ANIMATIONS ── */
 @keyframes spin {
@@ -87,7 +91,7 @@ body::after {
 .card-accent.mood-joy::before { background: var(--gold); }
 .card-accent.mood-love::before { background: var(--tc); }
 .card-accent.mood-grief::before { background: var(--sage); }
-.card-accent.mood-gratitude::before { background: #7A6E5C; }
+.card-accent.mood-gratitude::before { background: #755760; }
 .card-accent.mood-longing::before { background: var(--purple); }
 .card-accent.mood-anger::before { background: #B85450; }
 
@@ -137,8 +141,8 @@ body::after {
   background-image: repeating-linear-gradient(
     transparent,
     transparent 31px,
-    rgba(28, 26, 23, 0.028) 31px,
-    rgba(28, 26, 23, 0.028) 32px
+    rgba(40,3,15, 0.028) 31px,
+    rgba(40,3,15, 0.028) 32px
   );
   background-position: 0 76px;
   pointer-events: none;
@@ -150,7 +154,7 @@ body::after {
   bottom: 0;
   left: 68px;
   width: 1px;
-  background: rgba(196, 99, 58, 0.1);
+  background: rgba(40,3,15, 0.1);
   pointer-events: none;
 }
 
@@ -161,13 +165,14 @@ body::after {
 }
 .drawer-panel.open {
   transform: translateX(0);
+  box-shadow: -20px 0 80px rgba(40,3,15,0.13);
 }
 
 /* ── TOGGLE ── */
 .toggle-track {
   width: 32px;
   height: 17px;
-  background: rgba(28, 26, 23, 0.1);
+  background: rgba(40,3,15, 0.1);
   border-radius: 100px;
   position: relative;
   transition: background 0.2s;
@@ -191,7 +196,7 @@ body::after {
 /* ── SCROLL CUSTOMIZATION ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(28, 26, 23, 0.15); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(40,3,15, 0.15); border-radius: 2px; }
 
 /* ── GLOBAL SOFT TRANSITIONS ── */
 button, a, input, textarea, select {
@@ -201,7 +206,7 @@ button, a, input, textarea, select {
 /* ── SECTION DIVIDER ── */
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(28,26,23,0.07) 20%, rgba(28,26,23,0.07) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(40,3,15,0.07) 20%, rgba(40,3,15,0.07) 80%, transparent);
 }
 
 /* ── LETTER CARD PAPER FEEL ── */
@@ -210,12 +215,12 @@ button, a, input, textarea, select {
 }
 .letter-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 36px rgba(28,26,23,0.1);
+  box-shadow: 0 12px 36px rgba(40,3,15,0.1);
 }
 
 /* ── SOFT FOCUS RING ── */
 input:focus, textarea:focus, select:focus {
-  box-shadow: 0 0 0 3px rgba(196,99,58,0.07);
+  box-shadow: 0 0 0 3px rgba(40,3,15,0.07);
 }
 
 /* ── PAGE FADE IN ── */
@@ -242,17 +247,15 @@ input:focus, textarea:focus, select:focus {
 }
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 42px rgba(28,26,23,0.1);
+  box-shadow: 0 16px 42px rgba(40,3,15,0.1);
 }
 
 /* ── NAV GROUP LABEL ── */
 .nav-group-label {
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(245,240,232,0.25);
+  font-size: 13px;
+  color: var(--ink-muted);
   padding: 0 10px 6px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'General Sans', sans-serif;
   font-weight: 500;
 }
 
@@ -263,8 +266,8 @@ input:focus, textarea:focus, select:focus {
   gap: 12px;
   padding: 16px 20px;
   border-radius: 14px;
-  background: rgba(139,126,200,0.06);
-  border: 1px solid rgba(139,126,200,0.18);
+  background: rgba(51,85,127,0.06);
+  border: 1px solid rgba(51,85,127,0.18);
   margin-bottom: 32px;
 }
 
@@ -273,9 +276,7 @@ input:focus, textarea:focus, select:focus {
   padding-bottom: 36px;
 }
 .page-header-eyebrow {
-  font-size: 10px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
+  font-size: 14px;
   color: var(--ink-muted);
   margin-bottom: 12px;
   display: flex;
@@ -283,17 +284,16 @@ input:focus, textarea:focus, select:focus {
   gap: 8px;
 }
 .page-header-title {
-  font-family: 'Lora', serif;
-  font-weight: 700;
+  font-family: 'Gambetta', Georgia, serif;
+  font-weight: 400;
   color: var(--ink);
-  line-height: 1.1;
-  letter-spacing: -0.5px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
   margin-bottom: 12px;
 }
 .page-header-sub {
-  font-family: Lora, serif;
-  font-style: italic;
-  color: var(--ink-soft);
-  line-height: 1.65;
+  font-family: 'General Sans', sans-serif;
+  color: var(--ink-muted);
+  line-height: 1.55;
   max-width: 440px;
 }

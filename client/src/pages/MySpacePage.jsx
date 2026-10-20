@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { apiFetch } from "../utils/api";
 
-const BD = "#E0D4BC";
-const FT = "#F2EBE0";
+const BD = "#F0DFD1";
+const FT = "#F0DFD1";
 
 // ── Shared letter card (same design as global system) ─────────────────────────
 function LetterCard({
@@ -56,8 +56,7 @@ function LetterCard({
           bottom: 0,
           width: 4,
           background: accentGrad,
-          borderRadius: "4px 0 0 4px",
-        }}
+          borderRadius: "4px 0 0 4px", display: 'none' }}
       />
 
       {/* Card body — clickable to open */}
@@ -76,9 +75,9 @@ function LetterCard({
         >
           <h3
             style={{
-              fontFamily: '"Lora", serif',
-              fontSize: 19,
-              fontWeight: 600,
+              fontFamily: '"Gambetta", serif',
+              fontSize: 22,
+              fontWeight: 400,
               color: "var(--ink)",
               lineHeight: 1.2,
               letterSpacing: "-0.2px",
@@ -100,18 +99,16 @@ function LetterCard({
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 5,
-                fontSize: 10.5,
+                fontSize: 13,
                 padding: "5px 11px",
-                borderRadius: 20,
+                borderRadius: 6,
                 fontWeight: 600,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
                 background: tagBg,
                 color: tagColor,
                 border: `1px solid ${tagBorder}`,
               }}
             >
-              ✦ {tagLabel}
+              {tagLabel}
             </span>
             {/* "Heard" indicator — stranger letters claimed by a listener */}
             {letter.type === "stranger" &&
@@ -121,13 +118,13 @@ function LetterCard({
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 4,
-                    fontSize: 10,
+                    fontSize: 12,
                     padding: "3px 9px",
-                    borderRadius: 20,
+                    borderRadius: 6,
                     fontWeight: 500,
-                    background: "rgba(139,126,200,0.1)",
+                    background: "rgba(51,85,127,0.1)",
                     color: "var(--purple)",
-                    border: "1px solid rgba(139,126,200,0.25)",
+                    border: "1px solid rgba(51,85,127,0.25)",
                   }}
                 >
                   ✓ Heard by a listener
@@ -141,13 +138,13 @@ function LetterCard({
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 4,
-                    fontSize: 10,
+                    fontSize: 12,
                     padding: "3px 9px",
-                    borderRadius: 20,
+                    borderRadius: 6,
                     fontWeight: 500,
-                    background: "rgba(28,26,23,0.04)",
+                    background: "rgba(40,3,15,0.04)",
                     color: "var(--ink-muted)",
-                    border: "1px solid rgba(28,26,23,0.1)",
+                    border: "1px solid rgba(40,3,15,0.1)",
                   }}
                 >
                   · Waiting to be heard
@@ -160,13 +157,13 @@ function LetterCard({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4,
-                  fontSize: 10,
+                  fontSize: 12,
                   padding: "3px 9px",
-                  borderRadius: 20,
+                  borderRadius: 6,
                   fontWeight: 600,
-                  background: "rgba(122,158,142,0.1)",
+                  background: "rgba(88,143,96,0.1)",
                   color: "var(--sage)",
-                  border: "1px solid rgba(122,158,142,0.28)",
+                  border: "1px solid rgba(88,143,96,0.28)",
                 }}
               >
                 🌿 {letter.replyCount}{" "}
@@ -178,9 +175,7 @@ function LetterCard({
 
         <p
           style={{
-            fontFamily: "Lora, serif",
-            fontStyle: "italic",
-            fontSize: 13.5,
+            fontFamily: '"General Sans", sans-serif', fontSize: 15,
             color: "var(--ink-muted)",
             lineHeight: 1.7,
             display: "-webkit-box",
@@ -261,20 +256,20 @@ function LetterCard({
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,
-                      fontSize: 10.5,
+                      fontSize: 12,
                       padding: "3px 9px",
-                      borderRadius: 20,
+                      borderRadius: 6,
                       fontWeight: 500,
                       letterSpacing: "0.3px",
-                      fontFamily: '"DM Sans", sans-serif',
+                      fontFamily: '"General Sans", sans-serif',
                       background: hasOpens
                         ? "rgba(90,158,122,0.1)"
-                        : "rgba(28,26,23,0.05)",
+                        : "rgba(40,3,15,0.05)",
                       color: hasOpens ? "var(--sage)" : "var(--ink-muted)",
                       border: `1px solid ${
                         hasOpens
                           ? "rgba(90,158,122,0.25)"
-                          : "rgba(28,26,23,0.1)"
+                          : "rgba(40,3,15,0.1)"
                       }`,
                     }}
                   >
@@ -289,9 +284,9 @@ function LetterCard({
                       {emailOpens > 0 && (
                         <span
                           style={{
-                            fontSize: 9.5,
+                            fontSize: 12,
                             color: "var(--ink-muted)",
-                            fontFamily: '"DM Sans", sans-serif',
+                            fontFamily: '"General Sans", sans-serif',
                           }}
                         >
                           📧 {emailOpens} email
@@ -300,9 +295,9 @@ function LetterCard({
                       {platformOpens > 0 && (
                         <span
                           style={{
-                            fontSize: 9.5,
+                            fontSize: 12,
                             color: "var(--ink-muted)",
-                            fontFamily: '"DM Sans", sans-serif',
+                            fontFamily: '"General Sans", sans-serif',
                           }}
                         >
                           📱 {platformOpens} app
@@ -333,13 +328,13 @@ function LetterCard({
                 fontSize: 12,
                 fontWeight: 500,
                 cursor: "pointer",
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"General Sans", sans-serif',
                 transition: "all 0.15s",
                 border: editHov
                   ? "1.5px solid var(--gold)"
-                  : "1.5px solid #E0D4BC",
+                  : "1.5px solid #F0DFD1",
                 color: editHov ? "var(--gold)" : "var(--ink-soft)",
-                background: editHov ? "#fef9f2" : "transparent",
+                background: editHov ? "#FCFAF8" : "transparent",
               }}
             >
               ✏ Edit
@@ -360,7 +355,7 @@ function LetterCard({
                 fontSize: 12,
                 fontWeight: 500,
                 cursor: "pointer",
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"General Sans", sans-serif',
                 transition: "all 0.15s",
                 border: delHov
                   ? "1.5px solid var(--tc)"
@@ -433,9 +428,9 @@ function EditModal({ letter, onSave, onClose }) {
         >
           <span
             style={{
-              fontFamily: '"Lora", serif',
-              fontSize: 18,
-              fontWeight: 600,
+              fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em',
+              fontSize: 22,
+              fontWeight: 400,
               color: "var(--ink)",
             }}
           >
@@ -452,7 +447,7 @@ function EditModal({ letter, onSave, onClose }) {
         <div className="px-6 py-5 flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span
-              className="text-[11px] uppercase tracking-[1px] font-medium"
+              className="text-[13px] font-medium"
               style={{ color: "var(--ink-muted)" }}
             >
               Subject
@@ -470,7 +465,7 @@ function EditModal({ letter, onSave, onClose }) {
           </label>
           <label className="flex flex-col gap-1">
             <span
-              className="text-[11px] uppercase tracking-[1px] font-medium"
+              className="text-[13px] font-medium"
               style={{ color: "var(--ink-muted)" }}
             >
               Message
@@ -492,8 +487,8 @@ function EditModal({ letter, onSave, onClose }) {
               className="text-[12px] px-3 py-2 rounded-[7px]"
               style={{
                 color: "var(--tc)",
-                background: "rgba(196,99,58,0.07)",
-                border: "1px solid rgba(196,99,58,0.2)",
+                background: "rgba(40,3,15,0.07)",
+                border: "1px solid rgba(40,3,15,0.2)",
               }}
             >
               {error}
@@ -545,9 +540,9 @@ function DeleteModal({ letter, onConfirm, onClose, deleting }) {
           <div className="text-[32px] mb-3">🗑️</div>
           <div
             style={{
-              fontFamily: '"Lora", serif',
-              fontSize: 18,
-              fontWeight: 600,
+              fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em',
+              fontSize: 22,
+              fontWeight: 400,
               color: "var(--ink)",
               marginBottom: 8,
             }}
@@ -604,9 +599,9 @@ function EmptyState({ icon, title, subtitle, cta, onCta }) {
       <div style={{ fontSize: 44, marginBottom: 16, opacity: 0.4 }}>{icon}</div>
       <div
         style={{
-          fontFamily: '"Lora", serif',
-          fontSize: 20,
-          fontWeight: 600,
+          fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em',
+          fontSize: 22,
+          fontWeight: 400,
           color: "var(--ink)",
           marginBottom: 10,
         }}
@@ -616,9 +611,7 @@ function EmptyState({ icon, title, subtitle, cta, onCta }) {
       {subtitle && (
         <p
           style={{
-            fontFamily: "Lora, serif",
-            fontStyle: "italic",
-            fontSize: 13.5,
+            fontFamily: '"General Sans", sans-serif', fontSize: 15,
             color: "var(--ink-muted)",
             lineHeight: 1.7,
             maxWidth: 300,
@@ -640,7 +633,7 @@ function EmptyState({ icon, title, subtitle, cta, onCta }) {
             border: "none",
             borderRadius: 10,
             padding: "12px 22px",
-            fontFamily: '"DM Sans", sans-serif',
+            fontFamily: '"General Sans", sans-serif',
             fontSize: 13,
             fontWeight: 500,
             cursor: "pointer",
@@ -663,31 +656,29 @@ function Tab({ label, count, active, onClick }) {
         display: "inline-flex",
         alignItems: "center",
         gap: 7,
-        padding: "6px 13px",
+        height: 40,
+        padding: "0 14px",
         borderRadius: 8,
-        border: `1px solid ${
-          active ? "rgba(196,99,58,0.35)" : "rgba(28,26,23,0.1)"
-        }`,
-        background: active ? "rgba(196,99,58,0.06)" : "var(--paper)",
-        color: active ? "var(--tc)" : "var(--ink-soft)",
-        fontFamily: '"DM Sans", sans-serif',
-        fontSize: 12.5,
-        fontWeight: active ? 500 : 400,
+        border: "none",
+        background: active ? "var(--ink)" : "transparent",
+        color: active ? "var(--paper)" : "var(--ink)",
+        fontFamily: '"General Sans", sans-serif',
+        fontSize: 14,
+        fontWeight: 500,
         cursor: "pointer",
-        transition: "all 0.18s",
-        boxShadow: active ? "0 2px 10px rgba(196,99,58,0.1)" : "none",
+        transition: "background 0.15s",
       }}
     >
       {label}
       {count != null && (
         <span
           style={{
-            fontSize: 10.5,
+            fontSize: 12,
             padding: "2px 8px",
-            borderRadius: 20,
+            borderRadius: 6,
             fontWeight: 600,
-            background: active ? "rgba(196,99,58,0.12)" : "rgba(26,18,8,0.05)",
-            color: active ? "var(--tc)" : "var(--ink-muted)",
+            background: active ? "var(--lemon)" : "var(--cream)",
+            color: "var(--ink)",
           }}
         >
           {count}
@@ -736,8 +727,7 @@ function ReceivedLetterCard({ letter, onOpen }) {
           bottom: 0,
           width: 4,
           background: "linear-gradient(180deg, var(--purple), var(--tc))",
-          borderRadius: "4px 0 0 4px",
-        }}
+          borderRadius: "4px 0 0 4px", display: 'none' }}
       />
 
       <div style={{ padding: "22px 22px 18px 28px" }}>
@@ -762,16 +752,14 @@ function ReceivedLetterCard({ letter, onOpen }) {
             >
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 13,
                   padding: "3px 9px",
-                  borderRadius: 20,
+                  borderRadius: 6,
                   fontWeight: 600,
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase",
-                  background: "rgba(139,126,200,0.1)",
+                  background: "rgba(51,85,127,0.1)",
                   color: "var(--purple)",
-                  border: "1px solid rgba(139,126,200,0.25)",
-                  fontFamily: '"DM Sans", sans-serif',
+                  border: "1px solid rgba(51,85,127,0.25)",
+                  fontFamily: '"General Sans", sans-serif',
                 }}
               >
                 📥 Received
@@ -779,9 +767,9 @@ function ReceivedLetterCard({ letter, onOpen }) {
             </div>
             <h3
               style={{
-                fontFamily: '"Lora", serif',
-                fontSize: 18,
-                fontWeight: 600,
+                fontFamily: '"Gambetta", serif',
+                fontSize: 22,
+                fontWeight: 400,
                 color: "var(--ink)",
                 lineHeight: 1.2,
                 letterSpacing: "-0.2px",
@@ -794,7 +782,7 @@ function ReceivedLetterCard({ letter, onOpen }) {
               style={{
                 fontSize: 12,
                 color: "var(--ink-muted)",
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"General Sans", sans-serif',
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
@@ -812,9 +800,7 @@ function ReceivedLetterCard({ letter, onOpen }) {
         </div>
         <p
           style={{
-            fontFamily: "Lora, serif",
-            fontStyle: "italic",
-            fontSize: 13.5,
+            fontFamily: '"General Sans", sans-serif', fontSize: 15,
             color: "var(--ink-muted)",
             lineHeight: 1.7,
             display: "-webkit-box",
@@ -864,9 +850,9 @@ function ReceivedLetterCard({ letter, onOpen }) {
         </div>
         <span
           style={{
-            fontSize: 11.5,
+            fontSize: 12,
             color: "var(--purple)",
-            fontFamily: '"DM Sans", sans-serif',
+            fontFamily: '"General Sans", sans-serif',
             fontWeight: 500,
           }}
         >
@@ -882,30 +868,30 @@ const CARD_CONFIG = {
   personal: {
     accentGrad: "linear-gradient(180deg, var(--tc), var(--gold))",
     tagLabel: "Personal",
-    tagBg: "#fdf0ee",
-    tagColor: "var(--tc)",
-    tagBorder: "#f5d4ce",
+    tagBg: "var(--lemon)",
+    tagColor: "var(--ink)",
+    tagBorder: "var(--lemon)",
   },
   stranger: {
     accentGrad: "linear-gradient(180deg, var(--sage), var(--gold))",
-    tagLabel: "Caring Stranger",
-    tagBg: "rgba(122,158,142,0.1)",
-    tagColor: "var(--sage)",
-    tagBorder: "rgba(122,158,142,0.25)",
+    tagLabel: "Caring stranger",
+    tagBg: "#E3EEE4",
+    tagColor: "var(--fern)",
+    tagBorder: "#E3EEE4",
   },
   read: {
     accentGrad: "linear-gradient(180deg, var(--purple), var(--gold))",
-    tagLabel: "Listener Read",
-    tagBg: "rgba(139,126,200,0.1)",
-    tagColor: "var(--purple)",
-    tagBorder: "rgba(139,126,200,0.25)",
+    tagLabel: "Listener read",
+    tagBg: "var(--sand)",
+    tagColor: "var(--ink)",
+    tagBorder: "var(--sand)",
   },
   sent: {
     accentGrad: "linear-gradient(180deg, var(--gold), var(--ink-muted))",
-    tagLabel: "Send to Someone I Know",
-    tagBg: "#EDE5D4",
-    tagColor: "var(--ink-muted)",
-    tagBorder: "#E0D4BC",
+    tagLabel: "Sent to someone",
+    tagBg: "#E4EAF1",
+    tagColor: "var(--slate)",
+    tagBorder: "#E4EAF1",
   },
 };
 
@@ -1054,12 +1040,12 @@ export default function MySpacePage() {
           <div>
             <h1
               style={{
-                fontFamily: '"Lora", serif',
-                fontSize: 26,
-                fontWeight: 700,
+                fontFamily: '"Gambetta", serif',
+                fontSize: 'clamp(36px, 4vw, 52px)',
+                fontWeight: 400,
                 color: "var(--ink)",
-                lineHeight: 1.2,
-                letterSpacing: "-0.4px",
+                lineHeight: 1.05,
+                letterSpacing: '-0.045em',
                 marginBottom: 5,
               }}
             >
@@ -1067,7 +1053,7 @@ export default function MySpacePage() {
             </h1>
             <p
               style={{
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"General Sans", sans-serif',
                 fontSize: 13,
                 color: "var(--ink-muted)",
                 margin: 0,
@@ -1082,12 +1068,10 @@ export default function MySpacePage() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 5,
-                fontSize: 10.5,
+                fontSize: 13,
                 padding: "4px 11px",
-                borderRadius: 20,
+                borderRadius: 6,
                 fontWeight: 600,
-                letterSpacing: "0.6px",
-                textTransform: "uppercase",
                 background: `${ROLE_COLOR[userRole]}12`,
                 color: ROLE_COLOR[userRole],
                 border: `1px solid ${ROLE_COLOR[userRole]}35`,
@@ -1114,8 +1098,8 @@ export default function MySpacePage() {
                 border: "none",
                 borderRadius: 8,
                 padding: "8px 16px",
-                fontFamily: '"DM Sans", sans-serif',
-                fontSize: 12.5,
+                fontFamily: '"General Sans", sans-serif',
+                fontSize: 13,
                 fontWeight: 500,
                 cursor: "pointer",
                 transition: "all 0.2s",
@@ -1135,8 +1119,12 @@ export default function MySpacePage() {
         {/* ── Tabs ────────────────────────────────────────────────────── */}
         <div
           style={{
-            display: "flex",
-            gap: 6,
+            display: "inline-flex",
+            background: "#FFFFFF",
+            border: "1px solid #EFE7E2",
+            borderRadius: 12,
+            padding: 6,
+            gap: 4,
             flexWrap: "wrap",
             marginBottom: 18,
           }}
@@ -1164,13 +1152,13 @@ export default function MySpacePage() {
           >
             <span
               style={{
-                background: "rgba(28,26,23,0.06)",
+                background: "rgba(40,3,15,0.06)",
                 color: "var(--ink-soft)",
                 padding: "4px 12px",
-                borderRadius: 20,
+                borderRadius: 6,
                 fontSize: 12,
                 fontWeight: 500,
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"General Sans", sans-serif',
               }}
             >
               {visibleLetters.length}{" "}
@@ -1180,9 +1168,7 @@ export default function MySpacePage() {
               style={{
                 fontSize: 12.5,
                 color: "var(--ink-muted)",
-                fontFamily: "Lora, serif",
-                fontStyle: "italic",
-              }}
+                fontFamily: '"General Sans", sans-serif', }}
             >
               sorted by newest
             </span>
@@ -1324,7 +1310,7 @@ function ComposeTeaserBar({ onClick }) {
           width: 40,
           height: 40,
           borderRadius: "50%",
-          background: hov ? "#fde8e4" : "#EDE5D4",
+          background: hov ? "#fde8e4" : "#F0DFD1",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -1339,9 +1325,9 @@ function ComposeTeaserBar({ onClick }) {
       <div>
         <div
           style={{
-            fontFamily: '"Lora", serif',
-            fontSize: 16,
-            fontWeight: 600,
+            fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em',
+            fontSize: 22,
+            fontWeight: 400,
             color: "var(--ink)",
             marginBottom: 3,
           }}
@@ -1350,9 +1336,7 @@ function ComposeTeaserBar({ onClick }) {
         </div>
         <div
           style={{
-            fontFamily: "Lora, serif",
-            fontStyle: "italic",
-            fontSize: 13,
+            fontFamily: '"General Sans", sans-serif', fontSize: 13,
             color: "var(--ink-muted)",
           }}
         >

@@ -38,15 +38,15 @@ function TermsModal({ onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ background: 'rgba(28,26,23,0.45)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(40,3,15,0.45)', backdropFilter: 'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
         className="relative w-full max-w-[560px] rounded-[20px] overflow-hidden"
         style={{
           background: 'var(--paper)',
-          border: '0.5px solid rgba(28,26,23,0.1)',
-          boxShadow: '0 24px 64px rgba(28,26,23,0.18)',
+          border: '0.5px solid rgba(40,3,15,0.1)',
+          boxShadow: '0 24px 64px rgba(40,3,15,0.18)',
           maxHeight: '82vh',
           display: 'flex',
           flexDirection: 'column',
@@ -55,18 +55,18 @@ function TermsModal({ onClose }) {
         {/* Header */}
         <div
           className="flex items-center justify-between px-7 py-5 flex-shrink-0"
-          style={{ borderBottom: '0.5px solid rgba(28,26,23,0.08)' }}
+          style={{ borderBottom: '0.5px solid rgba(40,3,15,0.08)' }}
         >
           <div>
-            <div className="font-lora text-[18px] font-medium" style={{ color: 'var(--ink)' }}>Terms &amp; Conditions</div>
-            <div className="text-[11px] mt-0.5 font-light" style={{ color: 'var(--ink-muted)' }}>Last updated April 2025</div>
+            <div className="font-lora text-[18px] font-normal tracking-[-0.03em]" style={{ color: 'var(--ink)' }}>Terms &amp; Conditions</div>
+            <div className="text-[12px] mt-0.5 font-light" style={{ color: 'var(--ink-muted)' }}>Last updated April 2025</div>
           </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-150"
-            style={{ background: 'rgba(28,26,23,0.06)', color: 'var(--ink-soft)', border: 'none', cursor: 'pointer', fontSize: 16 }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(28,26,23,0.11)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(28,26,23,0.06)'}
+            style={{ background: 'rgba(40,3,15,0.06)', color: 'var(--ink-soft)', border: 'none', cursor: 'pointer', fontSize: 16 }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(40,3,15,0.11)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(40,3,15,0.06)'}
           >
             ✕
           </button>
@@ -80,7 +80,7 @@ function TermsModal({ onClose }) {
 
           {TERMS_SECTIONS.map(s => (
             <div key={s.title}>
-              <div className="text-[12px] uppercase tracking-[1px] font-semibold mb-1.5" style={{ color: 'var(--tc)' }}>
+              <div className="text-[13px] font-semibold mb-1.5" style={{ color: 'var(--tc)' }}>
                 {s.title}
               </div>
               <p className="text-[13px] font-light leading-[1.75]" style={{ color: 'var(--ink-soft)' }}>
@@ -91,7 +91,7 @@ function TermsModal({ onClose }) {
 
           <div
             className="rounded-[12px] px-4 py-3.5 mt-1"
-            style={{ background: 'rgba(196,99,58,0.05)', border: '0.5px solid rgba(196,99,58,0.15)' }}
+            style={{ background: 'rgba(40,3,15,0.05)', border: '0.5px solid rgba(40,3,15,0.15)' }}
           >
             <p className="text-[12px] font-light leading-[1.7] italic" style={{ color: 'var(--ink-muted)' }}>
               For questions or concerns, please contact us at{' '}
@@ -103,12 +103,12 @@ function TermsModal({ onClose }) {
         {/* Footer */}
         <div
           className="px-7 py-4 flex-shrink-0 flex justify-end"
-          style={{ borderTop: '0.5px solid rgba(28,26,23,0.08)' }}
+          style={{ borderTop: '0.5px solid rgba(40,3,15,0.08)' }}
         >
           <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-pill font-sans text-[13px] font-medium border-none cursor-pointer transition-all duration-200 hover:-translate-y-px"
-            style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 12px rgba(28,26,23,0.15)' }}
+            style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 12px rgba(40,3,15,0.15)' }}
           >
             Got it
           </button>
@@ -121,19 +121,19 @@ function TermsModal({ onClose }) {
 const ROLES = [
   {
     id:    'seeker',
-    icon:  '✍️',
+    short: 'Write',
     label: 'Seeker',
     desc:  'I want to write letters — to myself, a stranger, or someone I know.',
   },
   {
     id:    'listener',
-    icon:  '👂',
+    short: 'Listen',
     label: 'Listener',
     desc:  'I want to read letters and show up for people who need to be heard.',
   },
   {
     id:    'both',
-    icon:  '🌿',
+    short: 'Both',
     label: 'Seeker + Listener',
     desc:  'I want to write and listen — give words and receive them.',
   },
@@ -180,7 +180,7 @@ function FieldInput({ label, type = 'text', value, onChange, placeholder, hint, 
   const [focused, setFocused] = useState(false)
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] uppercase tracking-[1.2px] font-medium" style={{ color: 'var(--ink-muted)' }}>{label}</span>
+      <span className="text-[13px] font-medium" style={{ color: 'var(--ink-muted)' }}>{label}</span>
       <div className="relative">
         {icon && (
           <span
@@ -202,53 +202,39 @@ function FieldInput({ label, type = 'text', value, onChange, placeholder, hint, 
             paddingLeft: icon ? '40px' : '14px',
             paddingRight: '14px',
             background: 'var(--cream)',
-            border: `1px solid ${focused ? 'var(--tc)' : 'rgba(28,26,23,0.14)'}`,
-            boxShadow: focused ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
+            border: `1px solid ${focused ? 'var(--tc)' : 'rgba(40,3,15,0.14)'}`,
+            boxShadow: focused ? '0 0 0 3px rgba(40,3,15,0.08)' : 'none',
           }}
         />
       </div>
-      {hint && <span className="text-[10px] font-light" style={{ color: 'var(--ink-muted)' }}>{hint}</span>}
+      {hint && <span className="text-[12px] font-light" style={{ color: 'var(--ink-muted)' }}>{hint}</span>}
     </label>
   )
 }
 
 function PasswordInput({ label, value, onChange, placeholder }) {
-  const [focused,  setFocused]  = useState(false)
-  const [showPw,   setShowPw]   = useState(false)
+  const [showPw, setShowPw] = useState(false)
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] uppercase tracking-[1.2px] font-medium" style={{ color: 'var(--ink-muted)' }}>{label}</span>
-      <div className="relative">
-        <span
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: focused ? 'var(--tc)' : 'var(--ink-muted)' }}
-        >
-          <IconLock />
-        </span>
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{label}</span>
+      <div style={{ position: 'relative' }}>
         <input
           type={showPw ? 'text' : 'password'}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          className="w-full py-[11px] rounded-[10px] font-sans text-[14px] text-ink outline-none transition-all duration-200"
+          autoComplete="current-password"
           style={{
-            paddingLeft: '40px',
-            paddingRight: '44px',
-            background: 'var(--cream)',
-            border: `1px solid ${focused ? 'var(--tc)' : 'rgba(28,26,23,0.14)'}`,
-            boxShadow: focused ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
+            width: '100%', height: 48, padding: '0 48px 0 14px', borderRadius: 8, boxSizing: 'border-box',
+            background: '#FFFFFF', border: '1px solid var(--rose)', outline: 'none',
+            fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink)',
           }}
         />
         <button
           type="button"
-          tabIndex={-1}
           onClick={() => setShowPw(v => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-colors duration-150"
-          style={{ color: 'var(--ink-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
+          aria-label={showPw ? 'Hide password' : 'Show password'}
+          style={{ position: 'absolute', right: 2, top: 2, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           <IconEye open={showPw} />
         </button>
@@ -264,8 +250,8 @@ function FloatingCard({ style, children }) {
       className="absolute rounded-[12px] px-4 py-3"
       style={{
         background: 'rgba(255,255,255,0.65)',
-        border: '0.5px solid rgba(196,99,58,0.15)',
-        boxShadow: '0 8px 32px rgba(28,26,23,0.08)',
+        border: '0.5px solid rgba(40,3,15,0.15)',
+        boxShadow: '0 8px 32px rgba(40,3,15,0.08)',
         backdropFilter: 'blur(6px)',
         ...style,
       }}
@@ -279,10 +265,11 @@ function getEmailFromUrl() {
   return new URLSearchParams(window.location.search).get('email') || ''
 }
 
-export default function AuthPage() {
+export default function AuthPage({ initialMode, onBack }) {
   const { login } = useApp()
   const emailFromUrl = getEmailFromUrl()
-  const [mode, setMode] = useState(() => emailFromUrl ? 'signup' : 'login')
+  const [mode, setMode] = useState(() => emailFromUrl ? 'signup' : (initialMode || 'login'))
+  const hasDraft = (() => { try { return !!localStorage.getItem('lfh_draft') } catch { return false } })()
 
   const [name,            setName]            = useState('')
   const [email,           setEmail]           = useState(() => emailFromUrl)
@@ -321,16 +308,8 @@ export default function AuthPage() {
         setError('Password must be at least 6 characters.')
         return
       }
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.')
-        return
-      }
-      if (!source) {
-        setError('Please tell us where you heard about us.')
-        return
-      }
-      if (source === 'Other' && !otherSource.trim()) {
-        setError('Please specify where you heard about us.')
+      if (!name.trim()) {
+        setError('Please add your name.')
         return
       }
     }
@@ -339,7 +318,7 @@ export default function AuthPage() {
     try {
       const url  = mode === 'signup' ? '/api/auth/signup' : '/api/auth/login'
       const body = mode === 'signup'
-        ? { name, email, password, role, source, otherSource }
+        ? { name, email, password, role, source: source === 'Other' && !otherSource.trim() ? '' : source, otherSource }
         : { email, password }
       const res  = await fetch(url, {
         method: 'POST',
@@ -356,321 +335,168 @@ export default function AuthPage() {
     }
   }
 
+  const isSignup = mode === 'signup'
+  const inputStyle = {
+    width: '100%', height: 48, padding: '0 14px', borderRadius: 8, boxSizing: 'border-box',
+    background: '#FFFFFF', border: '1px solid var(--rose)', outline: 'none',
+    fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink)',
+  }
+
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--cream)' }}>
+    <div className="min-h-screen flex" style={{ background: 'var(--paper)' }}>
 
-      {/* ── LEFT PANEL — emotional hero ──────────────────────────────────── */}
-      <div
-        className="hidden lg:flex flex-col justify-between px-14 py-12 relative overflow-hidden flex-shrink-0"
-        style={{
-          width: '44%',
-          background: 'linear-gradient(145deg, #fdf6ec 0%, #f5e9d8 50%, #ede0cc 100%)',
-          borderRight: '0.5px solid rgba(196,99,58,0.12)',
-        }}
-      >
-        {/* Soft blur blobs */}
-        <div
-          className="absolute rounded-full pointer-events-none"
-          style={{ width: 320, height: 320, top: -80, right: -80, background: 'rgba(196,99,58,0.06)', filter: 'blur(60px)' }}
-        />
-        <div
-          className="absolute rounded-full pointer-events-none"
-          style={{ width: 240, height: 240, bottom: 60, left: -60, background: 'rgba(122,158,142,0.08)', filter: 'blur(50px)' }}
-        />
-
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <img src="/favicon.png" alt="Letter from Heart" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, borderRadius: 8, filter: 'drop-shadow(0 1px 3px rgba(28,26,23,0.12))' }} />
-          <div className="font-lora text-[20px] italic font-medium" style={{ color: 'var(--ink)' }}>Letter from Heart</div>
+      {/* ── LEFT — form ─────────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col" style={{ minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px clamp(20px, 4vw, 40px)' }}>
+          <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: onBack ? 'pointer' : 'default', padding: 0 }}>
+            <span style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--lemon)" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.6.1.2.3.2.4 0 .7-1.4 2.2-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>
+            </span>
+            <span style={{ fontFamily: '"Gambetta", Georgia, serif', fontSize: 22, letterSpacing: '-0.03em', color: 'var(--ink)' }}>Letter from Heart</span>
+          </button>
+          <div style={{ fontSize: 14, color: 'var(--ink-muted)' }}>
+            {isSignup ? 'Already have an account?' : 'New here?'}{' '}
+            <button type="button" onClick={() => switchMode(isSignup ? 'login' : 'signup')} style={{ background: 'none', border: 'none', padding: '10px 0', cursor: 'pointer', color: 'var(--ink)', fontWeight: 500, fontSize: 14, fontFamily: '"General Sans", sans-serif', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+              {isSignup ? 'Log in' : 'Create an account'}
+            </button>
+          </div>
         </div>
 
-        {/* Center — main copy + floating cards */}
-        <div className="flex-1 flex flex-col justify-center py-12 relative">
-          {/* Floating letter card 1 */}
-          <FloatingCard style={{ top: '0%', right: '4%', transform: 'rotate(3deg)', maxWidth: 210 }}>
-            <div className="text-[10px] uppercase tracking-[1px] font-medium mb-1.5" style={{ color: 'var(--tc)' }}>To my future self</div>
-            <div className="font-lora text-[13px] leading-[1.7]" style={{ color: 'var(--ink-soft)' }}>
-              "I hope you've been kind to yourself. You deserved rest back then."
-            </div>
-            <div className="text-[10px] mt-2" style={{ color: 'var(--ink-muted)' }}>— Anonymous · Personal</div>
-          </FloatingCard>
-
-          {/* Floating letter card 2 */}
-          <FloatingCard style={{ bottom: '8%', left: '0%', transform: 'rotate(-2deg)', maxWidth: 200 }}>
-            <div className="text-[10px] uppercase tracking-[1px] font-medium mb-1.5" style={{ color: 'var(--sage)' }}>A stranger wrote</div>
-            <div className="font-lora text-[13px] leading-[1.7]" style={{ color: 'var(--ink-soft)' }}>
-              "You are not alone in feeling this way."
-            </div>
-            <div className="text-[10px] mt-2" style={{ color: 'var(--ink-muted)' }}>— Anonymous · Caring Stranger</div>
-          </FloatingCard>
-
-          {/* Main headline */}
-          <div className="pl-2">
-            <h1 className="font-lora text-[38px] font-medium leading-[1.25] tracking-[-0.5px] mb-4" style={{ color: 'var(--ink)' }}>
-              Words that<br />
-              <em className="italic" style={{ color: 'var(--tc)' }}>deserve</em> to be<br />
-              heard.
+        <div className="flex-1 flex items-center justify-center" style={{ padding: '12px 20px 48px' }}>
+          <div style={{ width: '100%', maxWidth: 420 }}>
+            <h1 style={{ margin: 0, fontFamily: '"Gambetta", Georgia, serif', fontWeight: 400, fontSize: 'clamp(34px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.03em', color: 'var(--ink)' }}>
+              {isSignup ? <>Say what you <em>never said.</em></> : <>Welcome <em>back.</em></>}
             </h1>
-            <p className="text-[14px] leading-[1.75] max-w-[280px]" style={{ color: 'var(--ink-muted)', fontWeight: 300 }}>
-              Write letters to yourself, strangers, or no one. Sometimes the act of writing is enough.
+            <p style={{ margin: '12px 0 28px', fontSize: 16, lineHeight: 1.5, color: 'var(--ink-muted)' }}>
+              {isSignup ? 'Create your free account. It takes less than a minute.' : 'Log in to keep writing.'}
             </p>
-          </div>
-        </div>
 
-        {/* Bottom tagline */}
-        <div className="text-[11px] font-light" style={{ color: 'var(--ink-muted)' }}>
-          Private · Anonymous · No judgment.
-        </div>
-      </div>
-
-      {/* ── RIGHT PANEL — auth form ──────────────────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center px-5 py-10">
-        <div className="w-full max-w-[400px]">
-
-          {/* Mobile logo */}
-          <div className="lg:hidden text-center mb-8">
-            <img src="/favicon.png" alt="Letter from Heart" style={{ width: 48, height: 48, objectFit: 'contain', margin: '0 auto 14px', borderRadius: 10, filter: 'drop-shadow(0 2px 6px rgba(28,26,23,0.12))' }} />
-            <p className="text-[13px] font-light mt-1" style={{ color: 'var(--ink-muted)' }}>
-              {mode === 'login' ? 'Welcome back.' : 'A place for words that matter.'}
-            </p>
-          </div>
-
-          {/* Card */}
-          <div
-            className="rounded-[20px] px-8 py-7"
-            style={{
-              background: 'var(--paper)',
-              border: '0.5px solid rgba(28,26,23,0.1)',
-              boxShadow: '0 16px 48px rgba(28,26,23,0.09)',
-            }}
-          >
-            {/* Heading */}
-            <div className={emailFromUrl && mode === 'signup' ? 'mb-4' : 'mb-6'}>
-              <h2 className="font-lora text-[22px] font-medium" style={{ color: 'var(--ink)' }}>
-                {mode === 'login' ? 'Welcome back' : 'Create account'}
-              </h2>
-              <p className="text-[13px] font-light mt-1" style={{ color: 'var(--ink-muted)' }}>
-                {mode === 'login' ? 'Sign in to continue writing.' : 'Join and start writing today.'}
-              </p>
-            </div>
-
-            {/* Email-link contextual banner */}
-            {emailFromUrl && mode === 'signup' && (
-              <div className="mb-5" style={{
-                padding: '11px 14px',
-                borderRadius: 12,
-                background: 'rgba(196,99,58,0.06)',
-                border: '1px solid rgba(196,99,58,0.18)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 9,
-              }}>
-                <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>💌</span>
-                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink)', fontFamily: '"DM Sans", sans-serif' }}>
-                  Someone wrote you a letter. Create an account to read it and reply.
-                </p>
+            {hasDraft && isSignup && (
+              <div style={{ marginBottom: 20, padding: '12px 14px', borderRadius: 8, background: 'var(--lemon)', fontSize: 14, lineHeight: 1.5, color: 'var(--ink)' }}>
+                Your letter is saved. Create your account and we’ll take you straight back to it.
+              </div>
+            )}
+            {emailFromUrl && isSignup && (
+              <div style={{ marginBottom: 20, padding: '12px 14px', borderRadius: 8, background: 'var(--lemon)', fontSize: 14, lineHeight: 1.5, color: 'var(--ink)' }}>
+                Someone wrote you a letter. Create an account to read it and write back.
               </div>
             )}
 
-            {/* Mode switcher */}
-            <div className="flex gap-1 p-1 rounded-[11px] mb-6" style={{ background: 'var(--cream)' }}>
-              {['login', 'signup'].map(m => (
-                <button
-                  key={m}
-                  onClick={() => switchMode(m)}
-                  className="flex-1 py-2 rounded-[9px] font-sans text-[13px] font-medium cursor-pointer transition-all duration-200 border-none capitalize"
-                  style={mode === m
-                    ? { background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 2px 8px rgba(28,26,23,0.15)' }
-                    : { background: 'transparent', color: 'var(--ink-muted)' }}
-                >
-                  {m === 'login' ? 'Log In' : 'Sign Up'}
-                </button>
-              ))}
+            <GoogleLoginBtn mode={mode} />
+
+            <div className="flex items-center gap-3" style={{ margin: '18px 0' }}>
+              <div className="flex-1 h-px" style={{ background: 'var(--sand)' }} />
+              <span style={{ fontSize: 13, color: 'var(--ink-muted)' }}>or with email</span>
+              <div className="flex-1 h-px" style={{ background: 'var(--sand)' }} />
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {mode === 'signup' && (
-                <FieldInput label="Your name" value={name} onChange={setName} placeholder="Your name" icon={<IconPerson />} />
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {isSignup && (
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Your name</span>
+                  <input value={name} onChange={e => setName(e.target.value)} placeholder="First name is fine" autoComplete="given-name" style={inputStyle} />
+                </label>
               )}
-              <FieldInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" icon={<IconMail />} />
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Email</span>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" style={inputStyle} />
+              </label>
+              <PasswordInput
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                placeholder={isSignup ? 'At least 6 characters' : 'Your password'}
+              />
 
-              {/* Password */}
-              <div className="flex flex-col gap-1">
-                <PasswordInput
-                  label="Password"
-                  value={password}
-                  onChange={setPassword}
-                  placeholder={mode === 'signup' ? 'At least 6 characters' : 'Your password'}
-                />
-                {mode === 'signup' && (
-                  <span className="text-[10px] font-light" style={{ color: 'var(--ink-muted)' }}>
-                    Minimum 6 characters
-                  </span>
-                )}
-              </div>
-
-              {/* Confirm password — signup only */}
-              {mode === 'signup' && (
-                <PasswordInput
-                  label="Confirm Password"
-                  value={confirmPassword}
-                  onChange={setConfirmPassword}
-                  placeholder="Re-enter your password"
-                />
-              )}
-
-              {/* Account type selector — signup only */}
-              {mode === 'signup' && (
-                <div>
-                  <div className="text-[11px] uppercase tracking-[1.2px] font-medium mb-2.5" style={{ color: 'var(--ink-muted)' }}>
-                    How do you want to use this?
-                  </div>
-                  <div className="flex flex-col gap-2">
+              {isSignup && (
+                <div role="group" aria-label="How do you want to use Letter from Heart?" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>I want to…</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6 }}>
                     {ROLES.map(r => {
                       const active = role === r.id
                       return (
-                        <button
-                          key={r.id}
-                          type="button"
-                          onClick={() => setRole(r.id)}
-                          className="flex items-start gap-3 px-4 py-3 rounded-[11px] text-left cursor-pointer border-none outline-none transition-all duration-200"
+                        <button key={r.id} type="button" onClick={() => setRole(r.id)} aria-pressed={active}
+                          title={r.desc}
                           style={{
-                            background: active ? 'rgba(196,99,58,0.06)' : 'var(--cream)',
-                            border: `1px solid ${active ? 'var(--tc)' : 'rgba(28,26,23,0.1)'}`,
-                            boxShadow: active ? '0 0 0 3px rgba(196,99,58,0.07)' : 'none',
-                          }}
-                        >
-                          <span className="text-[17px] flex-shrink-0 mt-0.5">{r.icon}</span>
-                          <div className="flex-1">
-                            <div className="text-[13px] font-medium font-sans" style={{ color: active ? 'var(--tc)' : 'var(--ink)' }}>
-                              {r.label}
-                            </div>
-                            <div className="text-[11px] font-light mt-0.5" style={{ color: 'var(--ink-muted)' }}>{r.desc}</div>
-                          </div>
-                          {active && (
-                            <span className="ml-auto flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center mt-1" style={{ background: 'var(--tc)' }}>
-                              <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                                <path d="M1.5 4L3.5 6L6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            </span>
-                          )}
+                            minHeight: 48, padding: '8px 6px', borderRadius: 8, cursor: 'pointer',
+                            fontFamily: '"General Sans", sans-serif', fontSize: 14, fontWeight: 500, lineHeight: 1.25,
+                            background: active ? 'var(--ink)' : '#FFFFFF',
+                            color: active ? 'var(--paper)' : 'var(--ink)',
+                            border: active ? '1px solid var(--ink)' : '1px solid var(--rose)',
+                          }}>
+                          {r.short}
                         </button>
                       )
                     })}
                   </div>
+                  <span style={{ fontSize: 13, color: 'var(--ink-muted)', lineHeight: 1.45 }}>{ROLES.find(r => r.id === role)?.desc}</span>
                 </div>
               )}
 
-              {/* Where did you hear about us — signup only */}
-              {mode === 'signup' && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[11px] uppercase tracking-[1.2px] font-medium" style={{ color: 'var(--ink-muted)' }}>
-                    Where did you hear about us?
-                  </span>
-                  <select
-                    value={source}
-                    onChange={e => { setSource(e.target.value); setOtherSource('') }}
-                    style={{
-                      width: '100%', padding: '11px 14px', borderRadius: 10,
-                      background: 'var(--cream)', border: `1px solid ${source ? 'var(--tc)' : 'rgba(28,26,23,0.14)'}`,
-                      fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: source ? 'var(--ink)' : 'rgba(28,26,23,0.4)',
-                      outline: 'none', cursor: 'pointer', appearance: 'none',
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231C1A17' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-                      backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-                      boxShadow: source ? '0 0 0 3px rgba(196,99,58,0.08)' : 'none',
-                      transition: 'border 0.2s, box-shadow 0.2s',
-                    }}
-                  >
-                    <option value="" disabled>Select an option</option>
-                    {['Instagram', 'Twitter (X)', 'Friend / Referral', 'Google Search', 'LinkedIn', 'Other'].map(opt => (
+              {isSignup && (
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Where did you hear about us? <span style={{ fontWeight: 400, color: 'var(--ink-muted)' }}>(optional)</span></span>
+                  <select value={source} onChange={e => { setSource(e.target.value); setOtherSource('') }} style={{ ...inputStyle, color: source ? 'var(--ink)' : 'var(--ink-muted)', cursor: 'pointer' }}>
+                    <option value="">Choose one</option>
+                    {['Instagram', 'TikTok', 'Twitter (X)', 'Friend / Referral', 'Google Search', 'LinkedIn', 'Other'].map(opt => (
                       <option key={opt} value={opt}>{opt}</option>
                     ))}
                   </select>
                   {source === 'Other' && (
-                    <input
-                      type="text"
-                      value={otherSource}
-                      onChange={e => setOtherSource(e.target.value)}
-                      placeholder="Please specify"
-                      style={{
-                        width: '100%', padding: '11px 14px', borderRadius: 10,
-                        background: 'var(--cream)', border: '1px solid rgba(28,26,23,0.14)',
-                        fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: 'var(--ink)',
-                        outline: 'none', transition: 'border 0.2s, box-shadow 0.2s',
-                        boxSizing: 'border-box',
-                      }}
-                      onFocus={e => { e.target.style.border = '1px solid var(--tc)'; e.target.style.boxShadow = '0 0 0 3px rgba(196,99,58,0.08)' }}
-                      onBlur={e => { e.target.style.border = '1px solid rgba(28,26,23,0.14)'; e.target.style.boxShadow = 'none' }}
-                    />
+                    <input type="text" value={otherSource} onChange={e => setOtherSource(e.target.value)} placeholder="Tell us where" style={inputStyle} />
                   )}
-                </div>
+                </label>
               )}
 
               {error && (
-                <div
-                  className="text-[12px] px-3 py-2.5 rounded-[9px] font-sans"
-                  style={{ background: 'rgba(196,99,58,0.07)', color: 'var(--tc)', border: '0.5px solid rgba(196,99,58,0.2)' }}
-                >
-                  {error}
-                </div>
+                <div role="alert" style={{ fontSize: 14, padding: '10px 12px', borderRadius: 8, background: 'var(--warm)', color: 'var(--ink)' }}>{error}</div>
               )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-[13px] rounded-pill font-sans text-[14px] font-medium border-none cursor-pointer transition-all duration-200 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
-                style={{ background: 'var(--ink)', color: 'var(--cream)', boxShadow: '0 4px 14px rgba(28,26,23,0.18)' }}
-              >
+              <button type="submit" disabled={loading}
+                style={{
+                  height: 50, marginTop: 4, borderRadius: 8, border: 'none', cursor: loading ? 'default' : 'pointer',
+                  background: 'var(--ink)', color: 'var(--paper)', opacity: loading ? 0.6 : 1,
+                  fontFamily: '"General Sans", sans-serif', fontSize: 16, fontWeight: 500,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}>
                 {loading && (
                   <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25"/>
                     <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
                   </svg>
                 )}
-                {loading
-                  ? (mode === 'login' ? 'Logging in…' : 'Creating account…')
-                  : (mode === 'login' ? 'Log In →' : 'Create Account →')}
+                {loading ? (isSignup ? 'Creating your account…' : 'Logging in…') : (isSignup ? 'Create free account' : 'Log in')}
               </button>
-
-              <p className="text-center text-[11px] font-light mt-2" style={{ color: 'var(--ink-muted)' }}>
-                {mode === 'signup' ? '🔒 Your information is private and securely protected.' : '🔐 Secure login. Your data is protected.'}
-              </p>
-
             </form>
 
-            {/* ── OR divider ── */}
-            <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px" style={{ background: 'rgba(28,26,23,0.1)' }} />
-              <span className="text-[11px] font-light tracking-wide" style={{ color: 'var(--ink-muted)' }}>or</span>
-              <div className="flex-1 h-px" style={{ background: 'rgba(28,26,23,0.1)' }} />
-            </div>
-
-            {/* Google button — mode-aware */}
-            <GoogleLoginBtn mode={mode} />
-
-          </div>
-
-          <p className="text-center text-[11px] font-light mt-5 leading-[1.6]" style={{ color: 'var(--ink-muted)' }}>
-            Your letters stay private. No ads. No judgment.
-          </p>
-
-          {/* Terms link */}
-          <div className="text-center mt-3">
-            <button
-              type="button"
-              onClick={() => setTermsOpen(true)}
-              className="text-[11px] font-light border-none bg-transparent cursor-pointer transition-colors duration-150 underline underline-offset-2"
-              style={{ color: 'var(--ink-muted)', textDecorationColor: 'rgba(28,26,23,0.25)' }}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--tc)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}
-            >
-              View Terms &amp; Conditions
-            </button>
+            <p style={{ margin: '18px 0 0', fontSize: 15, lineHeight: 1.6, color: 'var(--ink-muted)', textAlign: 'center' }}>
+              By continuing you agree to our{' '}
+              <button type="button" onClick={() => setTermsOpen(true)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--ink)', fontSize: 13, fontFamily: '"General Sans", sans-serif', textDecoration: 'underline', textUnderlineOffset: 3 }}>Terms &amp; Conditions</button>.
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Terms modal */}
+      {/* ── RIGHT — lemon panel with a letter ───────────────────────────── */}
+      <div className="hidden lg:flex" style={{ width: '46%', padding: 16, boxSizing: 'border-box' }}>
+        <div style={{ flex: 1, background: 'var(--lemon)', borderRadius: 24, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 48, gap: 28 }}>
+          <article style={{ position: 'relative', width: '100%', maxWidth: 420, background: '#FFFFFF', borderRadius: 16, padding: '32px 32px 28px', boxShadow: '0 16px 40px rgba(40,3,15,0.12)', boxSizing: 'border-box' }}>
+            <span style={{ position: 'absolute', top: -16, right: 22, background: 'var(--ink)', color: 'var(--paper)', borderRadius: 69, padding: '8px 14px', fontSize: 13, fontWeight: 500, transform: 'rotate(3deg)' }}>Written by a person</span>
+            <p style={{ margin: 0, fontFamily: '"Gambetta", Georgia, serif', fontSize: 30, letterSpacing: '-0.03em', color: 'var(--ink)' }}>Dear Mom,</p>
+            <p style={{ margin: '12px 0 0', fontFamily: '"Gambetta", Georgia, serif', letterSpacing: '-0.03em', fontSize: 22, lineHeight: 1.5, color: 'var(--ink)' }}>
+              I never thanked you for driving me to every practice in that old car. I notice it now, every time I drive my own kids.
+            </p>
+            <p style={{ margin: '14px 0 0', fontFamily: '"General Sans", sans-serif', fontSize: 17, color: 'var(--ink-muted)' }}>— Sarah</p>
+          </article>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+            {['Free to write', 'Private until you send it', 'No ads, never sold'].map(t => (
+              <span key={t} style={{ fontSize: 14, fontWeight: 500, background: 'var(--paper)', color: 'var(--ink)', borderRadius: 8, padding: '9px 12px' }}>{t}</span>
+            ))}
+          </div>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--ink)', opacity: 0.7 }}>Example letter</p>
+        </div>
+      </div>
+
       {termsOpen && <TermsModal onClose={() => setTermsOpen(false)} />}
     </div>
   )

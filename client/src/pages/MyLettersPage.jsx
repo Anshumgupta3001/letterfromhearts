@@ -27,7 +27,7 @@ export default function MyLettersPage() {
 
       <div className="px-9 py-7">
         <div className="flex items-center justify-between mb-[14px]">
-          <div className="font-lora text-[19px] font-medium text-ink tracking-[-0.4px]">My letters</div>
+          <div className="font-lora text-[19px] font-normal text-ink tracking-[-0.03em]">My letters</div>
           <button
             onClick={() => navigate('write')}
             className="px-[18px] py-2 rounded-pill bg-ink text-cream text-[12px] font-medium cursor-pointer border-none font-sans transition-all duration-200 hover:bg-tc hover:-translate-y-px"

@@ -44,7 +44,7 @@ export default function MyRepliesPage() {
 
       <div className="px-9 py-7">
         <div className="flex items-center justify-between mb-[14px]">
-          <div className="font-lora text-[19px] font-medium text-ink tracking-[-0.4px]">My replies</div>
+          <div className="font-lora text-[19px] font-normal text-ink tracking-[-0.03em]">My replies</div>
         </div>
         <p className="text-[13px] text-ink-muted font-light mb-5 leading-[1.5]">
           Letters you've responded to as a listener. Some have written back.

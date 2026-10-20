@@ -4,15 +4,15 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const C = {
-  ink:    '#1C1A17',
+  ink:    '#28030F',
   paper:  '#F8F4EE',
   white:  '#FFFFFF',
-  muted:  '#8C8478',
-  border: 'rgba(28,26,23,0.09)',
-  tc:     '#C4633A',
+  muted:  '#755760',
+  border: 'rgba(40,3,15,0.09)',
+  tc:     '#28030F',
   sage:   '#6B9E8A',
-  purple: '#8B7EC8',
-  gold:   '#C9A84C',
+  purple: '#33557F',
+  gold:   '#755760',
   red:    '#B85450',
   google: '#EA4335',
 }
@@ -36,7 +36,7 @@ function initials(name = '') {
 
 // ── Sparkline (SVG, no deps) ──────────────────────────────────────────────────
 function Sparkline({ data, color = C.tc, height = 40, width = 160 }) {
-  if (!data || data.length < 2) return <span style={{ fontSize: 11, color: C.muted }}>No trend data</span>
+  if (!data || data.length < 2) return <span style={{ fontSize: 12, color: C.muted }}>No trend data</span>
   const vals = data.map(d => d.count ?? d.letters ?? 0)
   const max  = Math.max(...vals, 1)
   const step = width / (vals.length - 1)
@@ -59,7 +59,7 @@ function BarRow({ label, value, max, color, icon }) {
       {icon && <span style={{ fontSize: 15, width: 20, flexShrink: 0 }}>{icon}</span>}
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 12.5, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, textTransform: 'capitalize' }}>{label}</span>
+          <span style={{ fontSize: 13, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 500, textTransform: 'capitalize' }}>{label}</span>
           <span style={{ fontSize: 12, color, fontFamily: '"DM Sans",sans-serif', fontWeight: 700 }}>{fmt(value)}</span>
         </div>
         <div style={{ width: '100%', background: `${color}18`, borderRadius: 99, height: 6, overflow: 'hidden' }}>
@@ -85,14 +85,14 @@ function Funnel({ steps }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 15 }}>{step.icon}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{step.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.ink, fontFamily: '"DM Sans",sans-serif' }}>{step.label}</span>
                 {dropPct !== null && (
-                  <span style={{ fontSize: 10.5, color: C.muted, background: `${C.muted}12`, borderRadius: 99, padding: '1px 7px', fontFamily: '"DM Sans",sans-serif' }}>
+                  <span style={{ fontSize: 12, color: C.muted, background: `${C.muted}12`, borderRadius: 6, padding: '1px 7px', fontFamily: '"DM Sans",sans-serif' }}>
                     −{dropPct}% drop-off
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: step.color, fontFamily: '"Lora",serif' }}>{fmt(step.value)}</span>
+              <span style={{ fontSize: 14, fontWeight: 400, color: step.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em' }}>{fmt(step.value)}</span>
             </div>
             <div style={{ height: 10, background: `${step.color}18`, borderRadius: 99, overflow: 'hidden' }}>
               <div style={{ width: `${width}%`, height: '100%', background: step.color, borderRadius: 99, transition: 'width 0.7s ease' }} />
@@ -108,7 +108,7 @@ function Funnel({ steps }) {
 function SectionHeading({ children, sub }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
         {children}
       </div>
       {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 3, fontFamily: '"DM Sans",sans-serif' }}>{sub}</div>}
@@ -124,24 +124,24 @@ function StatCard({ icon, label, value, desc, accent = C.tc, iconBg }) {
       style={{
         background: C.white, border: `1px solid ${C.border}`, borderRadius: 16,
         padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10,
-        boxShadow: '0 1px 4px rgba(28,26,23,0.04)',
+        boxShadow: '0 1px 4px rgba(40,3,15,0.04)',
         transition: 'box-shadow 0.18s, transform 0.18s', cursor: 'default',
       }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(28,26,23,0.09)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(28,26,23,0.04)'; e.currentTarget.style.transform = 'none' }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(40,3,15,0.09)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(40,3,15,0.04)'; e.currentTarget.style.transform = 'none' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, fontFamily: '"DM Sans",sans-serif' }}>
           {label}
         </div>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
           {icon}
         </div>
       </div>
-      <div style={{ fontSize: 32, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-1.5px' }}>
+      <div style={{ fontSize: 32, fontWeight: 400, color: C.ink, fontFamily: '"Lora",serif', lineHeight: 1, letterSpacing: '-0.03em' }}>
         {fmt(value)}
       </div>
-      <div style={{ fontSize: 11.5, color: C.muted, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.5 }}>
+      <div style={{ fontSize: 12, color: C.muted, fontFamily: '"DM Sans",sans-serif', lineHeight: 1.5 }}>
         {desc}
       </div>
     </div>
@@ -156,9 +156,9 @@ function ProgressMetric({ label, desc, value, max, color }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
         <div>
           <span style={{ fontSize: 13, color: C.ink, fontFamily: '"DM Sans",sans-serif', fontWeight: 600 }}>{label}</span>
-          {desc && <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{desc}</div>}
+          {desc && <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>{desc}</div>}
         </div>
-        <span style={{ fontSize: 15, fontWeight: 700, color, fontFamily: '"Lora",serif' }}>{pctVal}%</span>
+        <span style={{ fontSize: 22, fontWeight: 400, color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em' }}>{pctVal}%</span>
       </div>
       <div style={{ width: '100%', background: `${color}18`, borderRadius: 99, height: 8, overflow: 'hidden' }}>
         <div style={{ width: `${Math.min(pctVal, 100)}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.7s cubic-bezier(.4,0,.2,1)' }} />
@@ -171,8 +171,7 @@ function ProgressMetric({ label, desc, value, max, color }) {
 function Badge({ label, color }) {
   return (
     <span style={{
-      fontSize: 10, padding: '3px 8px', borderRadius: 99, fontWeight: 600,
-      letterSpacing: '0.4px', textTransform: 'uppercase',
+      fontSize: 13, padding: '3px 8px', borderRadius: 6, fontWeight: 600,
       background: `${color}15`, color, border: `1px solid ${color}28`,
       fontFamily: '"DM Sans",sans-serif', whiteSpace: 'nowrap',
     }}>
@@ -185,10 +184,10 @@ function Badge({ label, color }) {
 function Chip({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
-      padding: '5px 12px', borderRadius: 99, fontSize: 11.5, cursor: 'pointer',
+      padding: '5px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
       fontFamily: '"DM Sans",sans-serif', fontWeight: active ? 600 : 400,
       background: active ? C.ink : C.white,
-      color: active ? '#F7F2EA' : '#4A4640',
+      color: active ? '#F9F4F1' : '#4A2B35',
       border: active ? `1px solid ${C.ink}` : `1px solid ${C.border}`,
       transition: 'all 0.12s',
     }}>{label}</button>
@@ -202,11 +201,11 @@ function DayFilter({ active, onChange }) {
     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
       {DAY_OPTIONS.map(d => (
         <button key={d} onClick={() => onChange(d)} style={{
-          padding: '5px 13px', borderRadius: 99, fontSize: 12, cursor: 'pointer',
+          padding: '5px 13px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
           fontFamily: '"DM Sans",sans-serif', fontWeight: active === d ? 600 : 400,
-          background: active === d ? 'rgba(247,242,234,0.95)' : 'rgba(247,242,234,0.12)',
-          color: active === d ? C.ink : 'rgba(247,242,234,0.65)',
-          border: active === d ? '1px solid rgba(247,242,234,0.7)' : '1px solid rgba(247,242,234,0.15)',
+          background: active === d ? 'rgba(252,250,248,0.95)' : 'rgba(252,250,248,0.12)',
+          color: active === d ? C.ink : 'rgba(252,250,248,0.65)',
+          border: active === d ? '1px solid rgba(252,250,248,0.7)' : '1px solid rgba(252,250,248,0.15)',
           transition: 'all 0.15s',
         }}>
           {d}d
@@ -217,17 +216,17 @@ function DayFilter({ active, onChange }) {
 }
 
 // ── Colors ────────────────────────────────────────────────────────────────────
-const STATUS_COLOR   = { sent: C.sage, scheduled: C.purple, opened: C.tc, clicked: C.gold, failed: C.red, personal: '#4A4640', stranger: '#7A6E5C' }
+const STATUS_COLOR   = { sent: C.sage, scheduled: C.purple, opened: C.tc, clicked: C.gold, failed: C.red, personal: '#4A2B35', stranger: '#755760' }
 const ROLE_COLOR     = { seeker: C.tc, listener: C.sage, both: C.purple }
-const PROVIDER_COLOR = { email: '#4A4640', google: C.google }
-const AVATAR_COLORS  = [C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C']
+const PROVIDER_COLOR = { email: '#4A2B35', google: C.google }
+const AVATAR_COLORS  = [C.tc, C.sage, C.purple, C.gold, '#33557F', '#755760']
 
 function Avatar({ name, idx = 0 }) {
   const color = AVATAR_COLORS[idx % AVATAR_COLORS.length]
   return (
     <div style={{
       width: 28, height: 28, borderRadius: '50%', background: `${color}20`,
-      border: `1.5px solid ${color}40`, color, fontSize: 10.5, fontWeight: 700,
+      border: `1.5px solid ${color}40`, color, fontSize: 12, fontWeight: 700,
       display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
       fontFamily: '"DM Sans",sans-serif',
     }}>
@@ -240,8 +239,7 @@ function TH({ children, center }) {
   return (
     <th style={{
       textAlign: center ? 'center' : 'left',
-      padding: '11px 12px', fontSize: 10, letterSpacing: '1.2px',
-      textTransform: 'uppercase', color: C.muted, fontWeight: 700,
+      padding: '11px 12px', fontSize: 13, color: C.muted, fontWeight: 700,
       whiteSpace: 'nowrap', background: '#F5F1EB',
       fontFamily: '"DM Sans",sans-serif',
     }}>{children}</th>
@@ -425,10 +423,10 @@ export default function AdminDashboardPage() {
   if (!unlocked) {
     return (
       <div style={{ minHeight: '100vh', background: C.paper, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"DM Sans",sans-serif', padding: 16 }}>
-        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, padding: '44px 40px', width: '100%', maxWidth: 400, boxShadow: '0 12px 40px rgba(28,26,23,0.10)' }}>
+        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, padding: '44px 40px', width: '100%', maxWidth: 400, boxShadow: '0 12px 40px rgba(40,3,15,0.10)' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ width: 56, height: 56, borderRadius: 16, background: `${C.ink}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, margin: '0 auto 16px' }}>🔐</div>
-            <div style={{ fontFamily: '"Lora",serif', fontSize: 22, fontWeight: 700, color: C.ink, marginBottom: 6 }}>Admin Dashboard</div>
+            <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink, marginBottom: 6 }}>Admin Dashboard</div>
             <div style={{ fontSize: 13, color: C.muted }}>Letter from Heart — internal analytics</div>
           </div>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -446,13 +444,13 @@ export default function AdminDashboardPage() {
               onBlur={e  => !error && (e.target.style.border = `1px solid ${C.border}`)}
             />
             {error && (
-              <div style={{ fontSize: 12.5, color: C.tc, background: `${C.tc}0D`, border: `1px solid ${C.tc}25`, borderRadius: 10, padding: '9px 14px' }}>
+              <div style={{ fontSize: 13, color: C.tc, background: `${C.tc}0D`, border: `1px solid ${C.tc}25`, borderRadius: 10, padding: '9px 14px' }}>
                 {error}
               </div>
             )}
             <button type="submit" disabled={loading} style={{
               padding: '12px', borderRadius: 99, background: loading ? '#aaa' : C.ink,
-              color: '#F7F2EA', border: 'none', fontSize: 14, fontWeight: 600,
+              color: '#F9F4F1', border: 'none', fontSize: 14, fontWeight: 600,
               fontFamily: '"DM Sans",sans-serif', cursor: loading ? 'default' : 'pointer',
               transition: 'background 0.15s',
             }}>
@@ -484,22 +482,22 @@ export default function AdminDashboardPage() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 20 }}>💌</span>
-          <span style={{ fontFamily: '"Lora",serif', fontStyle: 'italic', fontSize: 18, color: '#F7F2EA', fontWeight: 600 }}>Letter from Heart</span>
-          <span style={{ width: 1, height: 14, background: 'rgba(247,242,234,0.2)', display: 'inline-block' }} />
-          <span style={{ fontSize: 10.5, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(247,242,234,0.4)' }}>Admin Analytics</span>
+          <span style={{ fontFamily: '"General Sans", sans-serif', fontSize: 18, color: '#F9F4F1', fontWeight: 600 }}>Letter from Heart</span>
+          <span style={{ width: 1, height: 14, background: 'rgba(252,250,248,0.2)', display: 'inline-block' }} />
+          <span style={{ fontSize: 13.5, color: 'rgba(252,250,248,0.4)' }}>Admin Analytics</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          {loading && <span style={{ fontSize: 12, color: 'rgba(247,242,234,0.4)', fontStyle: 'italic' }}>Refreshing…</span>}
+          {loading && <span style={{ fontSize: 12, color: 'rgba(252,250,248,0.4)', fontStyle: 'italic' }}>Refreshing…</span>}
           <DayFilter active={days} onChange={handleDayChange} />
           <button
             onClick={() => fetchData(key, days)}
-            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(247,242,234,0.1)', color: '#F7F2EA', border: '1px solid rgba(247,242,234,0.18)', transition: 'background 0.15s', fontFamily: '"DM Sans",sans-serif' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(247,242,234,0.2)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(247,242,234,0.1)'}
+            style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(252,250,248,0.1)', color: '#F9F4F1', border: '1px solid rgba(252,250,248,0.18)', transition: 'background 0.15s', fontFamily: '"DM Sans",sans-serif' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(252,250,248,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(252,250,248,0.1)'}
           >↻ Refresh</button>
           <button
             onClick={() => { setUnlocked(false); setData(null); setKey('') }}
-            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, cursor: 'pointer', background: 'rgba(196,99,58,0.15)', color: '#f0a080', border: '1px solid rgba(196,99,58,0.25)', fontFamily: '"DM Sans",sans-serif' }}
+            style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(40,3,15,0.15)', color: '#f0a080', border: '1px solid rgba(40,3,15,0.25)', fontFamily: '"DM Sans",sans-serif' }}
           >🔒 Lock</button>
         </div>
       </div>
@@ -507,7 +505,7 @@ export default function AdminDashboardPage() {
       {/* ── KPI sub-header ── */}
       <div style={{ background: C.white, padding: '14px clamp(16px,4vw,52px)', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontFamily: '"Lora",serif', fontSize: 20, fontWeight: 700, color: C.ink }}>Analytics</div>
+          <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink }}>Analytics</div>
           <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
             Last <strong style={{ color: C.ink }}>{d.days}d</strong> ·{' '}
             <strong style={{ color: C.ink }}>{fmt(d.totalUsers)}</strong> total users ·{' '}
@@ -523,8 +521,8 @@ export default function AdminDashboardPage() {
           ].map((kpi, i, arr) => (
             <div key={kpi.label} style={{ display: 'flex', gap: 20 }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: kpi.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{kpi.value}</div>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: C.muted, marginTop: 3 }}>{kpi.label}</div>
+                <div style={{ fontSize: 22, fontWeight: 400, color: kpi.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{kpi.value}</div>
+                <div style={{ fontSize: 13, color: C.muted, marginTop: 3 }}>{kpi.label}</div>
               </div>
               {i < arr.length - 1 && <div style={{ width: 1, background: C.border, alignSelf: 'stretch' }} />}
             </div>
@@ -560,9 +558,9 @@ export default function AdminDashboardPage() {
             <section>
               <SectionHeading sub="All-time platform totals across both user types">Platform Totals</SectionHeading>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px,1fr))', gap: 12 }}>
-                <StatCard icon="👥" label="Total Users"       accent={C.ink}    iconBg="rgba(28,26,23,0.08)"
+                <StatCard icon="👥" label="Total Users"       accent={C.ink}    iconBg="rgba(40,3,15,0.08)"
                   value={d.totalUsers} desc="All registered accounts — email + Google" />
-                <StatCard icon="📧" label="Email / Password"  accent="#4A4640"  iconBg="rgba(74,70,64,0.09)"
+                <StatCard icon="📧" label="Email / Password"  accent="#4A2B35"  iconBg="rgba(74,70,64,0.09)"
                   value={d.totalEmailUsers} desc="Signed up with email & password" />
                 <StatCard icon="🔑" label="Google Sign-In"    accent={C.google} iconBg="rgba(234,67,53,0.09)"
                   value={d.totalGoogleUsers} desc="Authenticated via Google OAuth" />
@@ -594,7 +592,7 @@ export default function AdminDashboardPage() {
                   value={d.endedConversations} desc={`Closed conversations · ${endRate}% end rate`} />
                 <StatCard icon="📨" label="Total Messages"    accent={C.tc}
                   value={d.totalRepliesSent} desc="All messages sent across all conversations" />
-                <StatCard icon="🫂" label="Stranger Letters"  accent="#7A6E5C"  iconBg="rgba(122,110,92,0.1)"
+                <StatCard icon="🫂" label="Stranger Letters"  accent="#755760"  iconBg="rgba(122,110,92,0.1)"
                   value={d.strangerLetters} desc={`Sent to anonymous readers · ${claimRate}% claimed`} />
               </div>
             </section>
@@ -624,36 +622,36 @@ export default function AdminDashboardPage() {
             {((d.openSources?.email ?? 0) > 0 || (d.openSources?.platform ?? 0) > 0) && (
               <section>
                 <SectionHeading sub="How recipients opened letters — email pixel vs in-app view">Open Source Breakdown</SectionHeading>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 24 }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 28px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 24 }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openSources?.email ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openSources?.email ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📧 Opened via Email</div>
-                    <div style={{ fontSize: 11, color: C.muted }}>Tracked by pixel when email client loaded the image</div>
+                    <div style={{ fontSize: 12, color: C.muted }}>Tracked by pixel when email client loaded the image</div>
                     <div style={{ marginTop: 10, height: 5, background: `${C.gold}20`, borderRadius: 99, overflow: 'hidden' }}>
                       <div style={{ width: `${pct(d.openSources?.email ?? 0, d.openedLetters || 1)}%`, height: '100%', background: C.gold, borderRadius: 99 }} />
                     </div>
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openSources?.platform ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openSources?.platform ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>📱 Opened via App</div>
-                    <div style={{ fontSize: 11, color: C.muted }}>Tracked when recipient opened letter in the platform</div>
+                    <div style={{ fontSize: 12, color: C.muted }}>Tracked when recipient opened letter in the platform</div>
                     <div style={{ marginTop: 10, height: 5, background: `${C.purple}20`, borderRadius: 99, overflow: 'hidden' }}>
                       <div style={{ width: `${pct(d.openSources?.platform ?? 0, d.openedLetters || 1)}%`, height: '100%', background: C.purple, borderRadius: 99 }} />
                     </div>
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Lora",serif', color: C.ink }}>{d.openedLetters ?? 0}</span>
+                      <span style={{ fontSize: 28, fontWeight: 400, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', color: C.ink }}>{d.openedLetters ?? 0}</span>
                       <span style={{ fontSize: 12, color: C.muted }}>letters</span>
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 3 }}>👁 Unique Opens (Total)</div>
-                    <div style={{ fontSize: 11, color: C.muted }}>One entry per person regardless of how they opened</div>
+                    <div style={{ fontSize: 12, color: C.muted }}>One entry per person regardless of how they opened</div>
                     <div style={{ marginTop: 10, height: 5, background: `${C.sage}20`, borderRadius: 99, overflow: 'hidden' }}>
                       <div style={{ width: `${pct(d.openedLetters ?? 0, d.sentLetters || 1)}%`, height: '100%', background: C.sage, borderRadius: 99 }} />
                     </div>
@@ -664,7 +662,7 @@ export default function AdminDashboardPage() {
 
             <section>
               <SectionHeading sub="How well are letters being sent, read, and claimed?">Engagement Rates</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 28 }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 28 }}>
                 <ProgressMetric
                   label="Email Open Rate"
                   desc="Of all sent emails, how many were opened"
@@ -686,7 +684,7 @@ export default function AdminDashboardPage() {
 
             <section>
               <SectionHeading sub="All-time letter lifecycle from creation to claimed — no date filter">Letter Lifecycle Funnel</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
                 <Funnel steps={[
                   { label: 'Created',        value: funnel.total   || 0, icon: '✍️', color: C.ink    },
                   { label: 'Sent via Email', value: funnel.sent    || 0, icon: '📨', color: C.gold   },
@@ -701,10 +699,10 @@ export default function AdminDashboardPage() {
               <SectionHeading sub="Most prolific writers and most active listeners">Top Contributors</SectionHeading>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
                 {/* Top senders */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Top Senders (by letters written)</div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Top Senders (by letters written)</div>
                   {(d.topSenders || []).length === 0
-                    ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
+                    ? <div style={{ fontSize: 13, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
                     : (d.topSenders || []).map((u, i) => (
                         <BarRow key={i} label={u.name !== '—' ? u.name : u.email} value={u.count}
                           max={(d.topSenders || [])[0]?.count || 1}
@@ -713,10 +711,10 @@ export default function AdminDashboardPage() {
                   }
                 </div>
                 {/* Top listeners */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Top Listeners (by conversations)</div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Top Listeners (by conversations)</div>
                   {(d.topListeners || []).length === 0
-                    ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
+                    ? <div style={{ fontSize: 13, color: C.muted, fontStyle: 'italic' }}>No data yet.</div>
                     : (d.topListeners || []).map((u, i) => (
                         <BarRow key={i} label={u.name !== '—' ? u.name : u.email} value={u.count}
                           max={(d.topListeners || [])[0]?.count || 1}
@@ -737,8 +735,8 @@ export default function AdminDashboardPage() {
             <section>
               <SectionHeading sub="User role distribution and signup acquisition channels">Demographics</SectionHeading>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Users by Role</div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Users by Role</div>
                   {[
                     { key: 'seeker',   label: 'Seeker',   icon: '✍️', color: C.tc },
                     { key: 'listener', label: 'Listener', icon: '🫂', color: C.sage },
@@ -747,13 +745,13 @@ export default function AdminDashboardPage() {
                     <BarRow key={r.key} label={r.label} value={(d.roles || {})[r.key] || 0} max={d.totalUsers} color={r.color} icon={r.icon} />
                   ))}
                 </div>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Where Did They Hear About Us</div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Where Did They Hear About Us</div>
                   {(d.sources || []).length === 0
-                    ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No source data yet.</div>
+                    ? <div style={{ fontSize: 13, color: C.muted, fontStyle: 'italic' }}>No source data yet.</div>
                     : (d.sources || []).map((s, i) => (
                         <BarRow key={s._id} label={s._id} value={s.count} max={(d.sources || [])[0]?.count || 1}
-                          color={[C.tc, C.sage, C.purple, C.gold, '#4A90C4', '#7A6E5C'][i % 6]} />
+                          color={[C.tc, C.sage, C.purple, C.gold, '#33557F', '#755760'][i % 6]} />
                       ))
                   }
                 </div>
@@ -762,16 +760,16 @@ export default function AdminDashboardPage() {
 
             <section>
               <SectionHeading sub="All users with full activity breakdown — sortable & searchable">User Directory</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
                 {/* Controls */}
-                <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFAF7', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: '#FCFAF8', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                   <input
                     type="text"
                     placeholder="🔍  Search by name or email…"
                     value={search}
                     onChange={e => handleSearch(e.target.value)}
                     style={{
-                      padding: '8px 14px', borderRadius: 99, fontSize: 13,
+                      padding: '8px 14px', borderRadius: 6, fontSize: 13,
                       border: `1px solid ${C.border}`, outline: 'none',
                       fontFamily: '"DM Sans",sans-serif', color: C.ink,
                       background: C.white, width: '100%', maxWidth: 280,
@@ -781,7 +779,7 @@ export default function AdminDashboardPage() {
                     onBlur={e  => e.target.style.border  = `1px solid ${C.border}`}
                   />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 11, color: C.muted }}>Sort by:</span>
+                    <span style={{ fontSize: 12, color: C.muted }}>Sort by:</span>
                     {[
                       { id: 'written', label: 'Letters' },
                       { id: 'sent',    label: 'Sent' },
@@ -791,7 +789,7 @@ export default function AdminDashboardPage() {
                       <Chip key={s.id} label={s.label} active={userSort === s.id} onClick={() => setUserSort(s.id)} />
                     ))}
                   </div>
-                  <span style={{ marginLeft: 'auto', fontSize: 11.5, color: C.muted, whiteSpace: 'nowrap' }}>
+                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.muted, whiteSpace: 'nowrap' }}>
                     {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -823,9 +821,9 @@ export default function AdminDashboardPage() {
                         </tr>
                       ) : paginatedUsers.map((u, i) => (
                         <tr key={i}
-                          style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
-                          onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                          style={{ borderTop: `1px solid rgba(40,3,15,0.05)`, background: i % 2 === 0 ? C.white : '#FCFAF8', transition: 'background 0.12s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#F9F4F1'}
+                          onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FCFAF8'}
                         >
                           <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -834,14 +832,14 @@ export default function AdminDashboardPage() {
                             </div>
                           </td>
                           <TD small muted maxW={200} nowrap>{u.email}</TD>
-                          <td style={{ padding: '10px 12px' }}><Badge label={u.provider} color={PROVIDER_COLOR[u.provider] || '#4A4640'} /></td>
+                          <td style={{ padding: '10px 12px' }}><Badge label={u.provider} color={PROVIDER_COLOR[u.provider] || '#4A2B35'} /></td>
                           <td style={{ padding: '10px 12px' }}><Badge label={u.role || 'both'} color={ROLE_COLOR[u.role] || C.purple} /></td>
                           <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: C.tc, fontFamily: '"DM Sans",sans-serif' }}>{u.written}</td>
                           <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.gold, fontFamily: '"DM Sans",sans-serif' }}>{u.sent}</td>
                           <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: C.sage, fontFamily: '"DM Sans",sans-serif' }}>{u.opened}</td>
                           <td style={{ padding: '10px 12px', textAlign: 'center', color: C.purple, fontFamily: '"DM Sans",sans-serif' }}>{u.scheduled}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#4A4640', fontFamily: '"DM Sans",sans-serif' }}>{u.personal}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#7A6E5C', fontFamily: '"DM Sans",sans-serif' }}>{u.stranger}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#4A2B35', fontFamily: '"DM Sans",sans-serif' }}>{u.personal}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center', color: '#755760', fontFamily: '"DM Sans",sans-serif' }}>{u.stranger}</td>
                           <TD small muted nowrap>{fmtDate(u.joinedAt)}</TD>
                           <TD small muted nowrap>{fmtDate(u.lastActive)}</TD>
                         </tr>
@@ -856,7 +854,7 @@ export default function AdminDashboardPage() {
                       style={{ padding: '7px 18px', borderRadius: 8, fontSize: 13, cursor: page === 1 ? 'default' : 'pointer', fontFamily: '"DM Sans",sans-serif', background: C.white, border: `1px solid ${C.border}`, color: C.ink, opacity: page === 1 ? 0.35 : 1 }}>
                       ← Previous
                     </button>
-                    <span style={{ fontSize: 12.5, color: C.muted }}>
+                    <span style={{ fontSize: 13, color: C.muted }}>
                       Page <strong style={{ color: C.ink }}>{page}</strong> of <strong style={{ color: C.ink }}>{totalPages}</strong>
                     </span>
                     <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
@@ -878,14 +876,14 @@ export default function AdminDashboardPage() {
             {/* ── Mood Distribution ── */}
             <section>
               <SectionHeading sub="Mood distribution across all letters ever written">Mood Distribution</SectionHeading>
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
                 {(d.moods || []).length === 0
-                  ? <div style={{ fontSize: 12.5, color: C.muted, fontStyle: 'italic' }}>No mood data yet.</div>
+                  ? <div style={{ fontSize: 13, color: C.muted, fontStyle: 'italic' }}>No mood data yet.</div>
                   : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '4px 28px' }}>
                       {(d.moods || []).map((m, i) => {
                         const MOOD_ICON  = { joy: '😊', sad: '😔', caring: '🫂', hope: '🌱', lonely: '🌧️', gratitude: '🙏' }
-                        const MOOD_COLOR = { joy: C.gold, sad: '#4A90C4', caring: C.sage, hope: '#6BAA62', lonely: C.purple, gratitude: C.tc }
+                        const MOOD_COLOR = { joy: C.gold, sad: '#33557F', caring: C.sage, hope: '#6BAA62', lonely: C.purple, gratitude: C.tc }
                         const color = MOOD_COLOR[m._id?.toLowerCase()] || [C.tc, C.sage, C.purple, C.gold][i % 4]
                         const icon  = MOOD_ICON[m._id?.toLowerCase()] || '💬'
                         return <BarRow key={m._id} label={m._id} value={m.count} max={(d.moods || [])[0]?.count || 1} color={color} icon={icon} />
@@ -925,7 +923,7 @@ export default function AdminDashboardPage() {
                 >Search</button>
               </div>
 
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
                 {lettersLoading ? (
                   <div style={{ padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontSize: 13 }}>Loading…</div>
                 ) : (
@@ -945,36 +943,36 @@ export default function AdminDashboardPage() {
                       <tbody>
                         {allLetters.length === 0 ? (
                           <tr>
-                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif', fontSize: 14 }}>
+                            <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"General Sans", sans-serif', fontSize: 14 }}>
                               No letters found.
                             </td>
                           </tr>
                         ) : allLetters.map((l, i) => (
                           <tr key={l._id || i}
-                            style={{ borderTop: `1px solid rgba(28,26,23,0.05)`, background: i % 2 === 0 ? C.white : '#FAFAF7', transition: 'background 0.12s' }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#F5F1EA'}
-                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FAFAF7'}
+                            style={{ borderTop: `1px solid rgba(40,3,15,0.05)`, background: i % 2 === 0 ? C.white : '#FCFAF8', transition: 'background 0.12s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#F9F4F1'}
+                            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : '#FCFAF8'}
                           >
                             <td style={{ padding: '10px 12px', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              <div style={{ fontWeight: 500, color: C.ink, fontSize: 12.5 }}>{l.senderName}</div>
-                              <div style={{ fontSize: 11, color: C.muted }}>{l.senderEmail}</div>
+                              <div style={{ fontWeight: 500, color: C.ink, fontSize: 13 }}>{l.senderName}</div>
+                              <div style={{ fontSize: 12, color: C.muted }}>{l.senderEmail}</div>
                             </td>
                             <td style={{ padding: '10px 12px', maxWidth: 260 }}>
-                              <div style={{ fontWeight: 500, color: C.ink, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ fontWeight: 500, color: C.ink, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {l.subject || <span style={{ color: C.muted, fontWeight: 400 }}>No subject</span>}
                               </div>
-                              <div style={{ fontSize: 11, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 240 }}>
+                              <div style={{ fontSize: 12, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 240 }}>
                                 {(l.message || '').replace(/<[^>]+>/g, '').slice(0, 80)}…
                               </div>
                             </td>
-                            <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#4A4640'} /></td>
-                            <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#4A4640'} /></td>
+                            <td style={{ padding: '10px 12px' }}><Badge label={l.type} color={STATUS_COLOR[l.type] || '#4A2B35'} /></td>
+                            <td style={{ padding: '10px 12px' }}><Badge label={l.status} color={STATUS_COLOR[l.status] || '#4A2B35'} /></td>
                             <TD small muted maxW={160} nowrap>{l.toEmail || '—'}</TD>
                             <TD small muted nowrap>{fmtDateTime(l.createdAt)}</TD>
                             <td style={{ padding: '10px 12px' }}>
                               <button
                                 onClick={() => setViewingLetter(l)}
-                                style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(196,99,58,0.08)', color: C.tc, border: `1px solid rgba(196,99,58,0.2)`, fontFamily: '"DM Sans",sans-serif', fontWeight: 500 }}
+                                style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer', background: 'rgba(40,3,15,0.08)', color: C.tc, border: `1px solid rgba(40,3,15,0.2)`, fontFamily: '"DM Sans",sans-serif', fontWeight: 500 }}
                               >View</button>
                             </td>
                           </tr>
@@ -987,7 +985,7 @@ export default function AdminDashboardPage() {
 
               {/* Pagination */}
               {lettersTotal > 50 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 12.5, color: C.muted }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 13, color: C.muted }}>
                   <span>Showing {((lettersPage - 1) * 50) + 1}–{Math.min(lettersPage * 50, lettersTotal)} of {fmt(lettersTotal)}</span>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button disabled={lettersPage === 1} onClick={() => { const p = lettersPage - 1; setLettersPage(p); fetchLetters(key, lettersSearch, lettersType, p) }}
@@ -1003,27 +1001,27 @@ export default function AdminDashboardPage() {
             {viewingLetter && (
               <div
                 onClick={() => setViewingLetter(null)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(28,26,23,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(40,3,15,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
               >
                 <div
                   onClick={e => e.stopPropagation()}
-                  style={{ background: C.paper, borderRadius: 18, width: '100%', maxWidth: 620, maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 72px rgba(28,26,23,0.22)', overflow: 'hidden' }}
+                  style={{ background: C.paper, borderRadius: 18, width: '100%', maxWidth: 620, maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 72px rgba(40,3,15,0.22)', overflow: 'hidden' }}
                 >
                   {/* Modal header */}
                   <div style={{ padding: '18px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexShrink: 0 }}>
                     <div>
-                      <div style={{ fontFamily: '"Lora",serif', fontSize: 16, fontWeight: 600, color: C.ink }}>
+                      <div style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: C.ink }}>
                         {viewingLetter.subject || 'No subject'}
                       </div>
-                      <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>
+                      <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>
                         From <strong style={{ color: C.ink }}>{viewingLetter.senderName}</strong> ({viewingLetter.senderEmail})
                         {viewingLetter.toEmail ? <> → {viewingLetter.toEmail}</> : null}
                         {' · '}{fmtDateTime(viewingLetter.createdAt)}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                      <Badge label={viewingLetter.type} color={STATUS_COLOR[viewingLetter.type] || '#4A4640'} />
-                      <Badge label={viewingLetter.status} color={STATUS_COLOR[viewingLetter.status] || '#4A4640'} />
+                      <Badge label={viewingLetter.type} color={STATUS_COLOR[viewingLetter.type] || '#4A2B35'} />
+                      <Badge label={viewingLetter.status} color={STATUS_COLOR[viewingLetter.status] || '#4A2B35'} />
                       <button onClick={() => setViewingLetter(null)}
                         style={{ width: 28, height: 28, borderRadius: '50%', border: `1px solid ${C.border}`, background: C.white, cursor: 'pointer', fontSize: 14, color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
                     </div>
@@ -1031,7 +1029,7 @@ export default function AdminDashboardPage() {
                   {/* Letter body */}
                   <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
                     <div
-                      style={{ fontFamily: '"Lora",serif', fontSize: 14.5, lineHeight: 1.85, color: C.ink, whiteSpace: 'pre-wrap' }}
+                      style={{ fontFamily: '"Lora",serif', letterSpacing: '-0.03em', fontSize: 14.5, lineHeight: 1.85, color: C.ink, whiteSpace: 'pre-wrap' }}
                       dangerouslySetInnerHTML={{ __html: viewingLetter.message || '<em>No content.</em>' }}
                     />
                   </div>
@@ -1049,8 +1047,8 @@ export default function AdminDashboardPage() {
             <SectionHeading sub="Caring Stranger conversations and platform notification stats">Conversations &amp; Notifications</SectionHeading>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 16 }}>
               {/* Conversation stats */}
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Conversations</div>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Conversations</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
                   {[
                     { label: 'Total',        value: d.totalConversations,  color: C.ink },
@@ -1059,12 +1057,12 @@ export default function AdminDashboardPage() {
                     { label: 'Messages Sent', value: d.totalRepliesSent,    color: C.sage },
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
-                      <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
+                      <div style={{ fontSize: 22, fontWeight: 400, color: s.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{ fontSize: 11, color: C.muted, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+                <div style={{ fontSize: 12, color: C.muted, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span>Ended by seeker</span>
                     <strong style={{ color: C.tc }}>{fmt(d.endedBySeeker)}</strong>
@@ -1081,24 +1079,24 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Notification stats */}
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted, marginBottom: 16 }}>Notifications</div>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 16 }}>Notifications</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
                   {[
                     { label: 'Total',  value: d.totalNotifs,  color: C.ink },
                     { label: 'Unread', value: d.unreadNotifs, color: C.tc },
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: 'center', padding: '10px 8px', background: C.paper, borderRadius: 10 }}>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: '"Lora",serif', lineHeight: 1 }}>{fmt(s.value)}</div>
-                      <div style={{ fontSize: 10.5, color: C.muted, marginTop: 4 }}>{s.label}</div>
+                      <div style={{ fontSize: 22, fontWeight: 400, color: s.color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(s.value)}</div>
+                      <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{ fontSize: 11, color: C.muted }}>
+                <div style={{ fontSize: 12, color: C.muted }}>
                   {(d.notifByType || []).map((n, i) => {
                     const NOTIF_ICON  = { reply: '💬', claim: '💌', delivery: '📬', system: '⚙️', general: '🔔' }
-                    const NOTIF_COLOR = { reply: C.tc, claim: C.sage, delivery: C.gold, system: C.purple, general: '#4A4640' }
-                    const color = NOTIF_COLOR[n._id] || '#4A4640'
+                    const NOTIF_COLOR = { reply: C.tc, claim: C.sage, delivery: C.gold, system: C.purple, general: '#4A2B35' }
+                    const color = NOTIF_COLOR[n._id] || '#4A2B35'
                     const icon  = NOTIF_ICON[n._id]  || '🔔'
                     return (
                       <div key={n._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < (d.notifByType || []).length - 1 ? `1px solid ${C.border}` : 'none' }}>
@@ -1127,14 +1125,14 @@ export default function AdminDashboardPage() {
             <section>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: C.ink, fontFamily: '"Lora",serif' }}>🚨 Reports Management</div>
+                  <div style={{ fontSize: 22, fontWeight: 400, color: C.ink, fontFamily: '"Lora",serif', letterSpacing: '-0.03em' }}>🚨 Reports Management</div>
                   <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{reportsTotal} total reports</div>
                 </div>
                 {/* CSV download */}
                 <a
                   href={`${API}/api/reports/export?key=${encodeURIComponent(key)}&status=${reportsFilter}`}
                   download
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: C.sage, color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 600, textDecoration: 'none', fontFamily: '"DM Sans",sans-serif' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: C.sage, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: '"DM Sans",sans-serif' }}
                 >
                   ⬇ Download CSV
                 </a>
@@ -1144,7 +1142,7 @@ export default function AdminDashboardPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
                 {['all', 'pending', 'resolved'].map(f => (
                   <button key={f} onClick={() => { setReportsFilter(f); setReportsPage(1); fetchReports(key, f, reportsSearch, 1) }}
-                    style={{ padding: '5px 14px', borderRadius: 20, border: `1px solid ${reportsFilter === f ? C.tc : C.border}`, background: reportsFilter === f ? C.tc : C.white, color: reportsFilter === f ? '#fff' : C.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>
+                    style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${reportsFilter === f ? C.tc : C.border}`, background: reportsFilter === f ? C.tc : C.white, color: reportsFilter === f ? '#fff' : C.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>
                     {f} {f === 'pending' ? `(${pendingCount})` : f === 'resolved' ? `(${resolvedCount})` : `(${reportsTotal})`}
                   </button>
                 ))}
@@ -1164,13 +1162,13 @@ export default function AdminDashboardPage() {
               {reportsLoading ? (
                 <div style={{ textAlign: 'center', padding: 48, color: C.muted, fontStyle: 'italic' }}>Loading reports…</div>
               ) : reports.length === 0 ? (
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: 48, textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: 48, textAlign: 'center', color: C.muted, fontFamily: '"General Sans", sans-serif' }}>
                   No reports found.
                 </div>
               ) : (
                 <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
                   {/* Table header */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 0.8fr 1.5fr 0.8fr 0.8fr 1fr', gap: 8, padding: '10px 16px', background: C.paper, borderBottom: `1px solid ${C.border}`, fontSize: 10.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: C.muted }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 0.8fr 1.5fr 0.8fr 0.8fr 1fr', gap: 8, padding: '10px 16px', background: C.paper, borderBottom: `1px solid ${C.border}`, fontSize: 13.5, fontWeight: 700, color: C.muted }}>
                     <span>Reporter</span><span>Email</span><span>Type</span><span>Subject</span><span>Status</span><span>Date</span><span>Action</span>
                   </div>
 
@@ -1179,22 +1177,22 @@ export default function AdminDashboardPage() {
                     const isPending = r.status === 'pending'
                     const busy      = resolvingId === r._id
                     return (
-                      <div key={r._id} style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 0.8fr 1.5fr 0.8fr 0.8fr 1fr', gap: 8, padding: '12px 16px', borderBottom: isLast ? 'none' : `1px solid ${C.border}`, alignItems: 'center', fontSize: 12.5 }}>
+                      <div key={r._id} style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 0.8fr 1.5fr 0.8fr 0.8fr 1fr', gap: 8, padding: '12px 16px', borderBottom: isLast ? 'none' : `1px solid ${C.border}`, alignItems: 'center', fontSize: 13 }}>
                         <span style={{ fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.userName || '—'}</span>
-                        <span style={{ color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5 }}>{r.userEmail}</span>
-                        <span style={{ textTransform: 'capitalize', color: C.ink, fontSize: 11.5 }}>{r.type}</span>
+                        <span style={{ color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>{r.userEmail}</span>
+                        <span style={{ textTransform: 'capitalize', color: C.ink, fontSize: 12 }}>{r.type}</span>
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontWeight: 500, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.subject}</div>
-                          {r.description && <div style={{ fontSize: 11, color: C.muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.description}</div>}
+                          {r.description && <div style={{ fontSize: 12, color: C.muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.description}</div>}
                         </div>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, fontSize: 10.5, fontWeight: 600, background: isPending ? 'rgba(196,99,58,0.1)' : 'rgba(107,158,138,0.12)', color: isPending ? C.tc : C.sage }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: isPending ? 'rgba(40,3,15,0.1)' : 'rgba(107,158,138,0.12)', color: isPending ? C.tc : C.sage }}>
                           {isPending ? '⏳ Pending' : '✅ Resolved'}
                         </span>
-                        <span style={{ fontSize: 11, color: C.muted }}>{fmtDate(r.createdAt)}</span>
+                        <span style={{ fontSize: 12, color: C.muted }}>{fmtDate(r.createdAt)}</span>
                         <button
                           disabled={busy}
                           onClick={() => resolveReport(r._id, isPending ? 'resolved' : 'pending')}
-                          style={{ padding: '5px 10px', borderRadius: 7, border: `1px solid ${isPending ? C.sage : C.border}`, background: isPending ? 'rgba(107,158,138,0.08)' : C.paper, color: isPending ? C.sage : C.muted, fontSize: 11, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.5 : 1, whiteSpace: 'nowrap' }}
+                          style={{ padding: '5px 10px', borderRadius: 7, border: `1px solid ${isPending ? C.sage : C.border}`, background: isPending ? 'rgba(107,158,138,0.08)' : C.paper, color: isPending ? C.sage : C.muted, fontSize: 12, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.5 : 1, whiteSpace: 'nowrap' }}
                         >
                           {busy ? '…' : isPending ? '✅ Resolve' : '↩ Reopen'}
                         </button>
@@ -1222,7 +1220,7 @@ export default function AdminDashboardPage() {
           <section>
             <SectionHeading sub={`Daily activity over the last ${d.days} day${d.days !== 1 ? 's' : ''}`}>Daily Trends</SectionHeading>
             {((d.letterTrend || []).length < 2 && (d.userTrend || []).length < 2) ? (
-              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontStyle: 'italic', fontFamily: '"Lora",serif' }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '48px', textAlign: 'center', color: C.muted, fontFamily: '"General Sans", sans-serif' }}>
                 Not enough data for trend charts — try a wider date range.
               </div>
             ) : (
@@ -1235,12 +1233,12 @@ export default function AdminDashboardPage() {
                   const mapped = tdata.map(r => ({ count: r[key] ?? 0 }))
                   const total  = mapped.reduce((s, r) => s + r.count, 0)
                   return (
-                    <div key={title} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(28,26,23,0.04)' }}>
+                    <div key={title} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(40,3,15,0.04)' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
                         <div>
-                          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.muted }}>{title}</div>
-                          <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"Lora",serif', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
-                          <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2 }}>total this period</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: C.muted }}>{title}</div>
+                          <div style={{ fontSize: 22, fontWeight: 400, color, fontFamily: '"Lora",serif', letterSpacing: '-0.03em', marginTop: 4, lineHeight: 1 }}>{fmt(total)}</div>
+                          <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>total this period</div>
                         </div>
                       </div>
                       <Sparkline data={mapped} color={color} height={44} width={220} />

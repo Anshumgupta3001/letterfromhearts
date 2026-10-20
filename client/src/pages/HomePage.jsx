@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 
-const BD = '#E0D4BC'
-const FT = '#F2EBE0'
+const BD = '#F0DFD1'
+const FT = '#F0DFD1'
 
 // ── Letter card (personal) ────────────────────────────────────────────────────
 function LetterCard({ letter, onClick }) {
@@ -22,21 +22,21 @@ function LetterCard({ letter, onClick }) {
         transition: 'transform 0.2s, box-shadow 0.2s',
       }}
     >
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px' }} />
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px', display: 'none' }} />
       <div style={{ padding: '20px 20px 16px 26px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          <h3 style={{ fontFamily: '"Gambetta", serif', fontSize: 22, fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
             {letter.subject}
           </h3>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: '#fdf0ee', color: 'var(--tc)', flexShrink: 0, border: '1px solid #f5d4ce' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, padding: '3px 8px', borderRadius: 6, fontWeight: 600, background: '#fdf0ee', color: 'var(--tc)', flexShrink: 0, border: '1px solid #f5d4ce' }}>
             ✦ Personal
           </span>
         </div>
-        <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {letter.message}
         </p>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 20px 8px 26px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)', fontSize: 11, color: 'var(--ink-muted)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 20px 8px 26px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)', fontSize: 12, color: 'var(--ink-muted)' }}>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         {date}
       </div>
@@ -62,22 +62,22 @@ function WorldLetter({ letter, onClick, isNew }) {
         transition: 'transform 0.2s, box-shadow 0.2s',
       }}
     >
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--sage), var(--gold))', borderRadius: '4px 0 0 4px' }} />
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--sage), var(--gold))', borderRadius: '4px 0 0 4px', display: 'none' }} />
       <div style={{ padding: '20px 20px 16px 26px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-          <h3 style={{ fontFamily: '"Lora", serif', fontSize: 16, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2 }}>
+          <h3 style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2 }}>
             {letter.subject}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', background: 'rgba(122,158,142,0.1)', color: 'var(--sage)', border: '1px solid rgba(122,158,142,0.25)' }}>🔒 Anon</span>
-            {isNew && <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 600, background: 'rgba(122,158,142,0.08)', color: 'var(--sage)' }}>● New</span>}
+            <span style={{ fontSize: 13, padding: '3px 8px', borderRadius: 6, fontWeight: 600, background: 'rgba(88,143,96,0.1)', color: 'var(--sage)', border: '1px solid rgba(88,143,96,0.25)' }}>🔒 Anon</span>
+            {isNew && <span style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, fontWeight: 600, background: 'rgba(88,143,96,0.08)', color: 'var(--sage)' }}>● New</span>}
           </div>
         </div>
-        <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 12.5, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {letter.message}
         </p>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 20px 8px 26px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)', fontSize: 11, color: 'var(--ink-muted)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 20px 8px 26px', borderTop: `1px solid ${FT}`, background: 'rgba(245,240,232,0.4)', fontSize: 12, color: 'var(--ink-muted)' }}>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         {date}
       </div>
@@ -94,35 +94,37 @@ function QuickNavCard({ card }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? card.accentBg : '#fff',
-        border: `1px solid ${hov ? card.accentBorder : BD}`,
-        borderRadius: 14, padding: '16px 18px',
+        background: '#fff',
+        border: `1px solid ${hov ? 'var(--rose)' : '#EFE7E2'}`,
+        borderRadius: 16, padding: '18px',
         cursor: 'pointer', position: 'relative', overflow: 'hidden',
         transform: hov ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hov ? '0 8px 24px rgba(28,18,8,0.08)' : '0 1px 4px rgba(28,18,8,0.03)',
+        boxShadow: hov ? '0 8px 24px rgba(40,3,15,0.08)' : '0 1px 4px rgba(40,3,15,0.03)',
         transition: 'all 0.2s',
       }}
     >
       {/* Left accent bar */}
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: card.accent, borderRadius: '4px 0 0 4px', opacity: hov ? 1 : 0.4, transition: 'opacity 0.2s' }} />
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: card.accent, borderRadius: '4px 0 0 4px', opacity: hov ? 1 : 0.4, transition: 'opacity 0.2s', display: 'none' }} />
       <div style={{ paddingLeft: 6 }}>
         {/* Icon + count row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
-          <span style={{ fontSize: 18 }}>{card.icon}</span>
+          <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 10, background: card.iconBg || 'var(--lemon)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={card.iconColor || 'var(--ink)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.iconPath || 'M4 6h16v12H4zM4 7l8 6 8-6'} /></svg>
+          </span>
           <span style={{
-            fontFamily: '"Lora", serif', fontSize: 22, fontWeight: 600,
-            color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1,
+            fontFamily: '"Gambetta", serif', fontSize: 32, fontWeight: 400,
+            color: 'var(--ink)', letterSpacing: '-0.03em', lineHeight: 1,
             flexShrink: 0,
           }}>
             {card.count}
           </span>
         </div>
         {/* Label */}
-        <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12.5, fontWeight: 500, color: 'var(--ink-soft)', lineHeight: 1.3, letterSpacing: '-0.1px', marginBottom: 5 }}>
+        <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.3, marginTop: 10, marginBottom: 5 }}>
           {card.label}
         </div>
         {/* Description */}
-        <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 11.5, color: 'var(--ink-muted)', lineHeight: 1.55, margin: 0 }}>
+        <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 14, color: 'var(--ink-muted)', lineHeight: 1.45, margin: 0 }}>
           {card.desc}
         </p>
       </div>
@@ -135,11 +137,11 @@ function SectionHeader({ title, subtitle, seeAll, onSeeAll }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
       <div>
-        <h2 style={{ fontFamily: '"Lora", serif', fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginBottom: 3, lineHeight: 1.2 }}>{title}</h2>
-        {subtitle && <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>{subtitle}</p>}
+        <h2 style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.04em', fontSize: 30, fontWeight: 400, color: 'inherit', marginBottom: 3, lineHeight: 1.1 }}>{title}</h2>
+        {subtitle && <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'inherit', opacity: 0.75, lineHeight: 1.6 }}>{subtitle}</p>}
       </div>
       {seeAll && (
-        <button onClick={onSeeAll} style={{ fontSize: 12, color: 'var(--tc)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, letterSpacing: '0.3px', whiteSpace: 'nowrap', marginTop: 4, flexShrink: 0, padding: '4px 0', borderBottom: '1px solid rgba(196,99,58,0.25)', transition: 'opacity 0.15s' }}>
+        <button onClick={onSeeAll} style={{ fontSize: 15, color: 'inherit', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"General Sans", sans-serif', fontWeight: 500, letterSpacing: '0.3px', whiteSpace: 'nowrap', marginTop: 4, flexShrink: 0, padding: '4px 0', borderBottom: '1px solid currentColor', transition: 'opacity 0.15s' }}>
           See all →
         </button>
       )}
@@ -150,11 +152,11 @@ function SectionHeader({ title, subtitle, seeAll, onSeeAll }) {
 // ── Empty section ─────────────────────────────────────────────────────────────
 function EmptySection({ icon, text, cta, onCta }) {
   return (
-    <div style={{ background: 'rgba(255,255,255,0.45)', borderRadius: 14, padding: '44px 32px', textAlign: 'center', border: `1.5px dashed ${BD}` }}>
+    <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '40px 32px', textAlign: 'center', border: '1px solid #EFE7E2' }}>
       <div style={{ fontSize: 34, marginBottom: 14, opacity: 0.35 }}>{icon}</div>
-      <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, marginBottom: cta ? 20 : 0, maxWidth: 320, margin: cta ? '0 auto 20px' : '0 auto' }}>{text}</p>
+      <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 14.5, color: 'var(--ink-muted)', lineHeight: 1.75, marginBottom: cta ? 20 : 0, maxWidth: 320, margin: cta ? '0 auto 20px' : '0 auto' }}>{text}</p>
       {cta && (
-        <button onClick={onCta} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: '#fff', background: 'var(--tc)', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', fontWeight: 500, boxShadow: '0 4px 14px rgba(196,99,58,0.2)', transition: 'all 0.2s' }}>{cta}</button>
+        <button onClick={onCta} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: '"General Sans", sans-serif', fontSize: 13, color: '#fff', background: 'var(--tc)', border: 'none', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', fontWeight: 500, boxShadow: '0 4px 14px rgba(40,3,15,0.2)', transition: 'all 0.2s' }}>{cta}</button>
       )}
     </div>
   )
@@ -184,44 +186,48 @@ export default function HomePage() {
     {
       icon: '💌',
       label: 'Sent to Stranger',
+      iconBg: 'var(--lemon)', iconColor: 'var(--ink)', iconPath: 'M4 6h16v12H4zM4 7l8 6 8-6',
       desc: 'Anonymous letters you shared with the world',
       count: ownStrangerLetters?.length ?? 0,
       accent: 'var(--sage)',
-      accentBg: 'rgba(122,158,142,0.06)',
-      accentBorder: 'rgba(122,158,142,0.2)',
+      accentBg: 'rgba(88,143,96,0.06)',
+      accentBorder: 'rgba(88,143,96,0.2)',
       onClick: () => navigate('myspace', 'stranger'),
       show: canWriteStranger,
     },
     {
       icon: '🫂',
       label: 'Sent to Someone You Know',
+      iconBg: 'var(--sand)', iconColor: 'var(--ink)', iconPath: 'M22 2L11 13M22 2l-7 20-4-9-9-4z',
       desc: 'Letters delivered straight to someone\'s inbox',
       count: sentLetters?.length ?? 0,
       accent: 'var(--gold)',
-      accentBg: 'rgba(196,160,58,0.06)',
-      accentBorder: 'rgba(196,160,58,0.2)',
+      accentBg: 'rgba(117,87,96,0.06)',
+      accentBorder: 'rgba(117,87,96,0.2)',
       onClick: () => navigate('myspace', 'sent'),
       show: true,
     },
     {
       icon: '🌍',
       label: 'Letters from the World',
+      iconBg: '#E4EAF1', iconColor: 'var(--slate)', iconPath: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18',
       desc: 'Strangers writing openly, waiting to be heard',
       count: strangerLetters?.length ?? 0,
       accent: 'var(--purple)',
-      accentBg: 'rgba(139,126,200,0.06)',
-      accentBorder: 'rgba(139,126,200,0.2)',
+      accentBg: 'rgba(51,85,127,0.06)',
+      accentBorder: 'rgba(51,85,127,0.2)',
       onClick: () => navigate('listenerread'),
       show: canReadFeed,
     },
     {
       icon: '📥',
       label: 'Letters Received',
+      iconBg: '#E3EEE4', iconColor: 'var(--fern)', iconPath: 'M22 12h-6l-2 3h-4l-2-3H2M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z',
       desc: 'Messages sent to you by people you know',
       count: receivedLetters?.length ?? 0,
       accent: 'var(--tc)',
-      accentBg: 'rgba(196,99,58,0.06)',
-      accentBorder: 'rgba(196,99,58,0.2)',
+      accentBg: 'rgba(40,3,15,0.06)',
+      accentBorder: 'rgba(40,3,15,0.2)',
       onClick: () => navigate('myspace', 'received'),
       show: true,
     },
@@ -235,14 +241,14 @@ export default function HomePage() {
       <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(24px, 4vw, 40px) clamp(20px, 4vw, 48px)' }}>
 
         {/* ── Greeting ──────────────────────────────────────────────── */}
-        <div className="animate-fade-up" style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, fontFamily: '"DM Sans", sans-serif' }}>
+        <div className="animate-fade-up" style={{ fontSize: 13, color: 'var(--ink-muted)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, fontFamily: '"General Sans", sans-serif' }}>
           {greetingWord}
           <span style={{ flex: 1, height: 1, background: BD, maxWidth: 60 }} />
         </div>
 
         <h1
           className="animate-fade-up"
-          style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 500, lineHeight: 1.45, color: 'var(--ink)', marginBottom: 20, letterSpacing: '-0.1px', animationDelay: '0.08s' }}
+          style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 400, lineHeight: 1.45, color: 'var(--ink)', marginBottom: 20, letterSpacing: '-0.03em', animationDelay: '0.08s' }}
         >
           <em style={{ color: 'var(--tc)', fontStyle: 'italic' }}>{firstName},</em> what would<br />
           you like to <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>express</em> today?
@@ -264,27 +270,26 @@ export default function HomePage() {
             onClick={() => navigate('write')}
             style={{
               marginBottom: 32, animationDelay: '0.28s',
-              background: '#fff',
-              border: `1px solid ${BD}`,
-              borderRadius: 14, padding: '20px 24px',
+              background: 'var(--lemon)',
+              border: 'none',
+              borderRadius: 24, padding: 'clamp(22px, 3vw, 32px) clamp(22px, 3vw, 36px)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
               flexWrap: 'wrap',
               cursor: 'pointer', overflow: 'hidden', position: 'relative',
-              boxShadow: ctaHov ? '0 10px 32px rgba(28,18,8,0.08)' : '0 2px 8px rgba(28,18,8,0.04)',
+              boxShadow: ctaHov ? '0 10px 32px rgba(40,3,15,0.08)' : '0 2px 8px rgba(40,3,15,0.04)',
               transform: ctaHov ? 'translateY(-2px)' : 'translateY(0)',
               transition: 'box-shadow 0.2s, transform 0.2s',
             }}
           >
             {/* Left accent bar */}
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px' }} />
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg, var(--tc), var(--gold))', borderRadius: '4px 0 0 4px', display: 'none' }} />
             {/* Decorative symbol */}
-            <span style={{ position: 'absolute', right: 24, top: 16, fontSize: 22, color: 'rgba(196,99,58,0.07)', pointerEvents: 'none', userSelect: 'none' }}>✦</span>
+
             <div style={{ paddingLeft: 8 }}>
-              <div style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--tc)', marginBottom: 8, fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>Begin Writing</div>
-              <div style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(16px, 2vw, 21px)', color: 'var(--ink)', fontWeight: 500, lineHeight: 1.45, letterSpacing: '-0.1px' }}>
-                Pour your heart<br />into a <em style={{ fontStyle: 'italic', color: 'var(--tc)' }}>new letter</em>
+              <div style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(28px, 3vw, 40px)', color: 'var(--ink)', fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.045em' }}>
+                Pour your heart into a <em style={{ fontStyle: 'italic' }}>new letter.</em>
               </div>
-              <div style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-muted)', marginTop: 7, lineHeight: 1.65 }}>
+              <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 16, color: 'var(--ink)', marginTop: 8, lineHeight: 1.5 }}>
                 Unsent letters heal too. Start whenever you feel it.
               </div>
             </div>
@@ -293,13 +298,12 @@ export default function HomePage() {
               onMouseEnter={() => setCtaBtnHov(true)}
               onMouseLeave={() => setCtaBtnHov(false)}
               style={{
-                background: ctaBtnHov ? '#D97040' : 'var(--tc)',
-                color: '#fff', border: 'none', borderRadius: 8,
-                padding: '10px 20px', fontSize: 12.5, cursor: 'pointer',
-                fontFamily: '"DM Sans", sans-serif', fontWeight: 500,
+                background: 'var(--ink)', opacity: ctaBtnHov ? 0.9 : 1,
+                color: 'var(--paper)', border: 'none', borderRadius: 8,
+                height: 50, padding: '0 22px', fontSize: 16, cursor: 'pointer',
+                fontFamily: '"General Sans", sans-serif', fontWeight: 500,
                 whiteSpace: 'nowrap', flexShrink: 0,
-                transform: ctaBtnHov ? 'translateY(-2px)' : 'translateY(0)',
-                boxShadow: ctaBtnHov ? '0 6px 18px rgba(196,99,58,0.3)' : '0 3px 10px rgba(196,99,58,0.2)',
+
                 transition: 'all 0.2s',
               }}
             >
@@ -336,7 +340,7 @@ export default function HomePage() {
 
         {/* ── Listener: From the world ───────────────────────────────── */}
         {canReadFeed && (
-          <section className="animate-fade-up" style={{ marginBottom: 56, animationDelay: '0.40s' }}>
+          <section className="animate-fade-up" style={{ marginBottom: 56, animationDelay: '0.40s', background: 'var(--ink)', color: 'var(--paper)', borderRadius: 24, padding: 'clamp(22px, 3vw, 32px) clamp(22px, 3vw, 36px)' }}>
             <SectionHeader
               title="From the world"
               subtitle="A stranger wrote this. Maybe it's for you."
@@ -371,12 +375,12 @@ export default function HomePage() {
             <div
               onClick={() => navigate('connections')}
               style={{ background: 'rgba(255,255,255,0.5)', borderRadius: 14, padding: '28px 32px', border: `1px solid ${BD}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, transition: 'box-shadow 0.2s, transform 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(28,26,23,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(40,3,15,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
               <div>
-                <div style={{ fontFamily: '"Lora", serif', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Connect an email to send letters</div>
-                <p style={{ fontFamily: '"Lora", serif', fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-muted)', lineHeight: 1.6 }}>Your letters can arrive straight in someone's inbox — personal and beautiful.</p>
+                <div style={{ fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', fontSize: 22, fontWeight: 400, color: 'var(--ink)', marginBottom: 6 }}>Connect an email to send letters</div>
+                <p style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.6 }}>Your letters can arrive straight in someone's inbox — personal and beautiful.</p>
               </div>
               <span style={{ fontSize: 26, flexShrink: 0 }}>🔗</span>
             </div>

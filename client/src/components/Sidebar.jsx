@@ -9,7 +9,7 @@ function SidebarItem({ active, onClick, dot, dotColor, label, badge, hot }) {
           ? 'bg-paper'
           : 'hover:bg-warm'
       }`}
-      style={active ? { border: '0.5px solid rgba(28,26,23,0.07)' } : { border: '0.5px solid transparent' }}
+      style={active ? { border: '0.5px solid rgba(40,3,15,0.07)' } : { border: '0.5px solid transparent' }}
     >
       <div className="flex items-center gap-2 text-[13px] text-ink-soft">
         {dot && (
@@ -24,7 +24,7 @@ function SidebarItem({ active, onClick, dot, dotColor, label, badge, hot }) {
         <span
           className={`text-[11px] px-2 py-0.5 rounded-pill ${hot ? 'font-medium' : ''}`}
           style={{
-            background: hot ? 'rgba(196,99,58,0.08)' : 'rgba(28,26,23,0.05)',
+            background: hot ? 'rgba(40,3,15,0.08)' : 'rgba(40,3,15,0.05)',
             color: hot ? 'var(--tc)' : 'var(--ink-muted)',
           }}
         >
@@ -50,11 +50,11 @@ export function HomeSidebar() {
   return (
     <div
       className="border-r flex flex-col gap-6 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto"
-      style={{ borderColor: 'rgba(28,26,23,0.07)', background: 'rgba(247,242,234,0.4)' }}
+      style={{ borderColor: 'rgba(40,3,15,0.07)', background: 'rgba(252,250,248,0.4)' }}
     >
       {/* Stats */}
       <div>
-        <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted mb-3">Overview</div>
+        <div className="text-[13px] font-medium text-ink-muted mb-3">Overview</div>
         <div className="flex flex-col gap-1.5">
           {stats.map(s => (
             <div
@@ -81,9 +81,9 @@ export function HomeSidebar() {
       {/* Connected Accounts */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted">Email</div>
+          <div className="text-[13px] font-medium text-ink-muted">Email</div>
           <span
-            className="text-[10px] text-ink-muted cursor-pointer hover:text-ink transition-colors"
+            className="text-[12px] text-ink-muted cursor-pointer hover:text-ink transition-colors"
             style={{ textDecoration: 'underline', textUnderlineOffset: '2px' }}
             onClick={() => navigate('connections')}
           >
@@ -93,11 +93,11 @@ export function HomeSidebar() {
         {emailAccounts.length === 0 ? (
           <div
             className="rounded-[10px] px-[13px] py-[12px] cursor-pointer transition-all duration-200 hover:bg-warm"
-            style={{ background: 'var(--paper)', border: '0.5px dashed rgba(28,26,23,0.15)' }}
+            style={{ background: 'var(--paper)', border: '0.5px dashed rgba(40,3,15,0.15)' }}
             onClick={() => navigate('connections')}
           >
-            <div className="text-[11px] text-ink-muted font-light leading-[1.55]">No email connected yet.</div>
-            <div className="text-[11px] font-medium mt-1.5" style={{ color: 'var(--tc)' }}>+ Connect one →</div>
+            <div className="text-[12px] text-ink-muted font-light leading-[1.55]">No email connected yet.</div>
+            <div className="text-[12px] font-medium mt-1.5" style={{ color: 'var(--tc)' }}>+ Connect one →</div>
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
@@ -105,12 +105,12 @@ export function HomeSidebar() {
               <div
                 key={acc._id || acc.id}
                 className="rounded-[10px] px-[11px] py-[9px] flex items-center gap-2"
-                style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.07)' }}
+                style={{ background: 'var(--paper)', border: '0.5px solid rgba(40,3,15,0.07)' }}
               >
                 <span className="text-[14px] flex-shrink-0">{PROVIDER_ICON[acc.provider] || '📬'}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-medium text-ink truncate">{acc.emailAddress}</div>
-                  <div className="text-[10px] text-ink-muted capitalize">{acc.provider}</div>
+                  <div className="text-[12px] font-medium text-ink truncate">{acc.emailAddress}</div>
+                  <div className="text-[12px] text-ink-muted capitalize">{acc.provider}</div>
                 </div>
                 <span
                   className="w-[6px] h-[6px] rounded-full flex-shrink-0"
@@ -130,15 +130,15 @@ export function MyLettersSidebar({ filter, setFilter }) {
   const items = [
     { id: 'all',       label: 'All letters',    dotColor: 'var(--ink-muted)',     badge: 7 },
     { id: 'new-reply', label: 'Reply received', dotColor: 'var(--tc)',            badge: 2, hot: true },
-    { id: 'waiting',   label: 'Waiting',        dotColor: 'rgba(28,26,23,0.18)', badge: 2 },
+    { id: 'waiting',   label: 'Waiting',        dotColor: 'rgba(40,3,15,0.18)', badge: 2 },
     { id: 'capsule',   label: 'Time capsule',   dotColor: 'var(--gold)',          badge: 1 },
     { id: 'direct',    label: 'Sent directly',  dotColor: 'var(--tc)',            badge: 1 },
     { id: 'burn',      label: 'Released',       dotColor: 'var(--purple)',        badge: 1 },
   ]
   return (
-    <div className="border-r flex flex-col gap-6 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto" style={{ borderColor: 'rgba(28,26,23,0.07)', background: 'rgba(247,242,234,0.4)' }}>
+    <div className="border-r flex flex-col gap-6 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto" style={{ borderColor: 'rgba(40,3,15,0.07)', background: 'rgba(252,250,248,0.4)' }}>
       <div>
-        <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted mb-2.5">Filter</div>
+        <div className="text-[13px] font-medium text-ink-muted mb-2.5">Filter</div>
         {items.map(item => (
           <SidebarItem
             key={item.id}
@@ -154,9 +154,9 @@ export function MyLettersSidebar({ filter, setFilter }) {
       </div>
       <div className="grid grid-cols-2 gap-2">
         {[['7','Written'],['3','Replied to'],['1','Capsule'],['1','Released']].map(([n, l]) => (
-          <div key={l} className="rounded-[10px] p-3.5" style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.07)' }}>
-            <div className="font-lora text-[22px] font-medium text-ink leading-none">{n}</div>
-            <div className="text-[11px] text-ink-muted font-light mt-1">{l}</div>
+          <div key={l} className="rounded-[10px] p-3.5" style={{ background: 'var(--paper)', border: '0.5px solid rgba(40,3,15,0.07)' }}>
+            <div className="font-lora text-[22px] font-normal text-ink leading-none tracking-[-0.03em]">{n}</div>
+            <div className="text-[12px] text-ink-muted font-light mt-1">{l}</div>
           </div>
         ))}
       </div>
@@ -171,30 +171,30 @@ export function ListenSidebar({ filter, setFilter }) {
     { id: 'joy',       label: 'Pure joy',      dotColor: 'var(--gold)',      badge: 2  },
     { id: 'love',      label: 'Love & warmth', dotColor: 'var(--tc)',        badge: 2  },
     { id: 'grief',     label: 'Grief & loss',  dotColor: 'var(--sage)',      badge: 3  },
-    { id: 'gratitude', label: 'Gratitude',     dotColor: '#7A6E5C',          badge: 1  },
+    { id: 'gratitude', label: 'Gratitude',     dotColor: '#755760',          badge: 1  },
     { id: 'longing',   label: 'Longing',       dotColor: 'var(--purple)',    badge: 1  },
   ]
   const needItems = ['Any response', 'Just be heard', 'Advice welcome', 'Celebrate with me']
   return (
-    <div className="border-r flex flex-col gap-6 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto" style={{ borderColor: 'rgba(28,26,23,0.07)', background: 'rgba(247,242,234,0.4)' }}>
+    <div className="border-r flex flex-col gap-6 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto" style={{ borderColor: 'rgba(40,3,15,0.07)', background: 'rgba(252,250,248,0.4)' }}>
       <div>
-        <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted mb-2.5">Filter by mood</div>
+        <div className="text-[13px] font-medium text-ink-muted mb-2.5">Filter by mood</div>
         {moodItems.map(item => (
           <SidebarItem key={item.id} active={filter === item.id} onClick={() => setFilter(item.id)} dot dotColor={item.dotColor} label={item.label} badge={item.badge} />
         ))}
       </div>
       <div>
-        <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted mb-2.5">They need</div>
+        <div className="text-[13px] font-medium text-ink-muted mb-2.5">They need</div>
         {needItems.map((item, i) => (
           <SidebarItem key={item} active={i === 0} onClick={() => {}} label={item} />
         ))}
       </div>
-      <div className="rounded-[12px] p-[14px] px-[16px]" style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)' }}>
+      <div className="rounded-[12px] p-[14px] px-[16px]" style={{ background: 'var(--paper)', border: '0.5px solid rgba(40,3,15,0.08)' }}>
         <div className="text-[12px] font-medium text-ink mb-2">🤝 This week</div>
-        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(28,26,23,0.07)' }}>
+        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(40,3,15,0.07)' }}>
           <div className="h-full rounded-full bg-sage" style={{ width: '40%' }} />
         </div>
-        <div className="text-[11px] text-ink-muted font-light leading-[1.6]">2 of 5 replies this week. You're doing beautifully.</div>
+        <div className="text-[12px] text-ink-muted font-light leading-[1.6]">2 of 5 replies this week. You're doing beautifully.</div>
       </div>
     </div>
   )
@@ -204,31 +204,31 @@ export function RepliesSidebar({ filter, setFilter }) {
   const items = [
     { id: 'all',       label: 'All replies',     dotColor: 'var(--ink-muted)',     badge: 5 },
     { id: 'new-reply', label: 'They wrote back', dotColor: 'var(--tc)',            badge: 2, hot: true },
-    { id: 'waiting',   label: 'Waiting',         dotColor: 'rgba(28,26,23,0.18)', badge: 2 },
-    { id: 'closed',    label: 'Closed',          dotColor: 'rgba(28,26,23,0.15)', badge: 1 },
+    { id: 'waiting',   label: 'Waiting',         dotColor: 'rgba(40,3,15,0.18)', badge: 2 },
+    { id: 'closed',    label: 'Closed',          dotColor: 'rgba(40,3,15,0.15)', badge: 1 },
   ]
   return (
-    <div className="border-r flex flex-col gap-6 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto" style={{ borderColor: 'rgba(28,26,23,0.07)', background: 'rgba(247,242,234,0.4)' }}>
+    <div className="border-r flex flex-col gap-6 px-[18px] py-7 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto" style={{ borderColor: 'rgba(40,3,15,0.07)', background: 'rgba(252,250,248,0.4)' }}>
       <div>
-        <div className="text-[9.5px] tracking-[2px] uppercase font-medium text-ink-muted mb-2.5">Filter</div>
+        <div className="text-[13px] font-medium text-ink-muted mb-2.5">Filter</div>
         {items.map(item => (
           <SidebarItem key={item.id} active={filter === item.id} onClick={() => setFilter(item.id)} dot dotColor={item.dotColor} label={item.label} badge={item.badge} hot={item.hot} />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2">
         {[['5','Replied to'],['3','Wrote back']].map(([n, l]) => (
-          <div key={l} className="rounded-[10px] p-3.5" style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.07)' }}>
-            <div className="font-lora text-[22px] font-medium text-ink leading-none">{n}</div>
-            <div className="text-[11px] text-ink-muted font-light mt-1">{l}</div>
+          <div key={l} className="rounded-[10px] p-3.5" style={{ background: 'var(--paper)', border: '0.5px solid rgba(40,3,15,0.07)' }}>
+            <div className="font-lora text-[22px] font-normal text-ink leading-none tracking-[-0.03em]">{n}</div>
+            <div className="text-[12px] text-ink-muted font-light mt-1">{l}</div>
           </div>
         ))}
       </div>
-      <div className="rounded-[12px] p-[14px] px-[16px]" style={{ background: 'var(--paper)', border: '0.5px solid rgba(28,26,23,0.08)' }}>
+      <div className="rounded-[12px] p-[14px] px-[16px]" style={{ background: 'var(--paper)', border: '0.5px solid rgba(40,3,15,0.08)' }}>
         <div className="text-[12px] font-medium text-ink mb-2">🤝 Wellbeing</div>
-        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(28,26,23,0.07)' }}>
+        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(40,3,15,0.07)' }}>
           <div className="h-full rounded-full bg-sage" style={{ width: '40%' }} />
         </div>
-        <div className="text-[11px] text-ink-muted font-light leading-[1.6]">2 of 5 replies this week. You're showing up with care.</div>
+        <div className="text-[12px] text-ink-muted font-light leading-[1.6]">2 of 5 replies this week. You're showing up with care.</div>
       </div>
     </div>
   )

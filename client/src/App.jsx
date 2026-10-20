@@ -17,10 +17,18 @@ import ListenerReadPage from './pages/ListenerReadPage'
 import ReportIssuePage from './pages/ReportIssuePage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AuthPage from './pages/AuthPage'
+import LandingPage from './pages/LandingPage'
+import { useState } from 'react'
 import { useApp } from './context/AppContext'
 
 function PageRouter() {
-  const { currentPage, authUser, authLoading, pendingRoleSetup } = useApp()
+  const { currentPage, authUser, authLoading, pendingRoleSetup, googleAuthError } = useApp()
+  const [authMode, setAuthMode] = useState(() => {
+    const path = window.location.pathname
+    if (path.startsWith('/signup') || new URLSearchParams(window.location.search).get('email')) return 'signup'
+    if (path.startsWith('/login')) return 'login'
+    return null
+  })
 
   if (window.location.pathname === '/admin-secret-dashboard') {
     return <AdminDashboardPage />
@@ -34,7 +42,12 @@ function PageRouter() {
     )
   }
 
-  if (!authUser) return <AuthPage />
+  if (!authUser) {
+    if (authMode || googleAuthError) {
+      return <AuthPage key={authMode || 'login'} initialMode={authMode || 'login'} onBack={() => setAuthMode(null)} />
+    }
+    return <LandingPage onStart={setAuthMode} />
+  }
 
   return (
     <>
