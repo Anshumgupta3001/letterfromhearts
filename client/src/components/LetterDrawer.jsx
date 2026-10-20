@@ -5,19 +5,19 @@ import { apiFetch } from '../utils/api'
 const MAX_MESSAGES = 10
 
 const MOOD_META = {
-  vent:      { emoji: '🌧️', label: 'I need to vent',  bg: 'rgba(40,3,15,0.12)',      color: 'var(--ink-soft)'  },
-  joy:       { emoji: '🌟', label: 'Pure joy',         bg: 'rgba(117,87,96,0.15)',    color: 'var(--gold)'      },
-  love:      { emoji: '💌', label: 'Love & warmth',    bg: 'rgba(40,3,15,0.12)',     color: 'var(--tc)'        },
-  grief:     { emoji: '🕯️', label: 'Grief & loss',    bg: 'rgba(88,143,96,0.14)',   color: 'var(--sage)'      },
-  gratitude: { emoji: '🌿', label: 'Gratitude',        bg: 'rgba(122,112,92,0.12)',    color: '#755760'          },
-  longing:   { emoji: '🌙', label: 'Longing',          bg: 'rgba(51,85,127,0.14)',   color: 'var(--purple)'   },
+  vent:      { label: 'I need to vent', bg: '#F9F4F1', color: '#28030F', dot: '#755760' },
+  joy:       { label: 'Pure joy',       bg: '#FDFBD9', color: '#28030F', dot: '#C9BF2E' },
+  love:      { label: 'Love & warmth',  bg: '#F6ECEF', color: '#28030F', dot: '#B5677F' },
+  grief:     { label: 'Grief & loss',   bg: '#EEF1EE', color: '#28030F', dot: '#588F60' },
+  gratitude: { label: 'Gratitude',      bg: '#E3EEE4', color: '#194B22', dot: '#194B22' },
+  longing:   { label: 'Longing',        bg: '#E4EAF1', color: '#33557F', dot: '#33557F' },
 }
 
 const TYPE_META = {
-  personal: { label: 'Personal',        color: 'var(--tc)',     bg: 'rgba(40,3,15,0.08)',   border: 'rgba(40,3,15,0.2)'   },
-  stranger: { label: 'Caring Stranger', color: 'var(--sage)',   bg: 'rgba(88,143,96,0.08)', border: 'rgba(88,143,96,0.2)' },
-  sent:     { label: 'Sent Letter',     color: 'var(--gold)',   bg: 'rgba(117,87,96,0.08)',  border: 'rgba(117,87,96,0.2)'  },
-  received: { label: 'Received Letter', color: 'var(--purple)', bg: 'rgba(51,85,127,0.08)', border: 'rgba(51,85,127,0.2)' },
+  personal: { label: 'Personal',        color: '#28030F', bg: '#FBF582', border: '#FBF582' },
+  stranger: { label: 'Caring stranger', color: '#194B22', bg: '#E3EEE4', border: '#E3EEE4' },
+  sent:     { label: 'Sent letter',     color: '#33557F', bg: '#E4EAF1', border: '#E4EAF1' },
+  received: { label: 'Received letter', color: '#28030F', bg: '#F0DFD1', border: '#F0DFD1' },
 }
 
 function formatTime(d) {
@@ -36,7 +36,7 @@ function MessageDots({ count, max }) {
           width: i < count ? 7 : 5,
           height: i < count ? 7 : 5,
           borderRadius: '50%',
-          background: i < count ? 'var(--tc)' : 'rgba(40,3,15,0.12)',
+          background: i < count ? '#28030F' : 'rgba(40,3,15,0.18)',
           transition: 'all 0.3s ease',
           flexShrink: 0,
         }} />
@@ -57,18 +57,18 @@ function Bubble({ msg, isMine }) {
       <div style={{
         maxWidth: '78%',
         padding: '11px 16px',
-        borderRadius: isMine ? '18px 18px 5px 18px' : '18px 18px 18px 5px',
+        borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
         background: isMine
-          ? 'linear-gradient(145deg, var(--tc) 0%, #D0652E 100%)'
+          ? '#28030F'
           : '#fff',
-        color: isMine ? '#fff' : 'var(--ink)',
-        fontSize: 14, fontFamily: '"Gambetta", serif',
-        lineHeight: 1.8, wordBreak: 'break-word', whiteSpace: 'pre-line',
+        color: isMine ? '#FCFAF8' : 'var(--ink)',
+        fontSize: 15, fontFamily: '"General Sans", sans-serif',
+        lineHeight: 1.6, wordBreak: 'break-word', whiteSpace: 'pre-line',
         boxShadow: isMine
-          ? '0 4px 16px rgba(40,3,15,0.22)'
-          : '0 2px 10px rgba(40,3,15,0.08)',
-        border: isMine ? 'none' : '1px solid rgba(40,3,15,0.07)',
-        letterSpacing: '-0.03em',
+          ? 'none'
+          : 'none',
+        border: isMine ? 'none' : '1px solid #EFE7E2',
+        letterSpacing: 'normal',
       }}>
         {msg.content}
       </div>
@@ -337,7 +337,7 @@ export default function LetterDrawer() {
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 401,
           width: 'min(600px, 100vw)',
-          background: '#FCFAF8',
+          background: '#F9F4F1',
           boxShadow: open ? '-24px 0 80px rgba(40,3,15,0.12)' : 'none',
           display: 'flex', flexDirection: 'column',
           overflowX: 'hidden',
@@ -348,7 +348,7 @@ export default function LetterDrawer() {
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div style={{
           padding: '16px 24px',
-          borderBottom: '1px solid rgba(40,3,15,0.07)',
+          borderBottom: '1px solid #EFE7E2',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
           flexShrink: 0, background: '#FCFAF8',
         }}>
@@ -358,19 +358,19 @@ export default function LetterDrawer() {
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: 5,
                   fontSize: 13, padding: '4px 10px', borderRadius: 6,
-                  fontWeight: 600, background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`,
+                  fontWeight: 500, background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`,
                   fontFamily: '"General Sans", sans-serif', flexShrink: 0,
                 }}>
-                  ✦ {meta.label}
+                  {meta.label}
                 </span>
                 {moodMeta && (
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
-                    fontSize: 12, padding: '4px 10px', borderRadius: 6,
-                    fontWeight: 500, background: moodMeta.bg, color: moodMeta.color,
+                    fontSize: 13, padding: '4px 10px', borderRadius: 6,
+                    fontWeight: 500, background: moodMeta.bg, color: moodMeta.color, border: '1px solid #EFE7E2',
                     fontFamily: '"General Sans", sans-serif', flexShrink: 0,
                   }}>
-                    {moodMeta.emoji} {moodMeta.label}
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: moodMeta.dot }} />{moodMeta.label}
                   </span>
                 )}
               </>
@@ -379,14 +379,14 @@ export default function LetterDrawer() {
           <button
             onClick={closeLetterPanel}
             style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'rgba(40,3,15,0.06)', border: 'none',
+              width: 40, height: 40, borderRadius: 8,
+              background: '#FFFFFF', border: '1px solid #EFE7E2',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 16, color: 'var(--ink-muted)', flexShrink: 0,
               transition: 'background 0.2s, color 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(40,3,15,0.12)'; e.currentTarget.style.color = 'var(--ink)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(40,3,15,0.06)'; e.currentTarget.style.color = 'var(--ink-muted)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#F9F4F1'; e.currentTarget.style.color = 'var(--ink)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = 'var(--ink-muted)' }}
           >✕</button>
         </div>
 
@@ -396,14 +396,13 @@ export default function LetterDrawer() {
           padding: '0 20px', pointerEvents: 'none',
         }}>
           <div style={{
-            background: 'rgba(40,3,15,0.94)', color: '#fff', borderRadius: 10,
+            background: '#28030F', color: '#FCFAF8', borderRadius: 10,
             padding: '11px 18px', display: 'flex', alignItems: 'flex-start', gap: 10,
             boxShadow: '0 4px 20px rgba(40,3,15,0.28)',
             opacity: showToast ? 1 : 0,
             transform: showToast ? 'translateY(0)' : 'translateY(-8px)',
             transition: 'opacity 0.3s ease, transform 0.3s ease',
           }}>
-            <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>💌</span>
             <div>
               <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, lineHeight: 1.4 }}>Sent</div>
               <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, opacity: 0.88, marginTop: 2 }}>
@@ -420,11 +419,11 @@ export default function LetterDrawer() {
 
               {/* ── Original letter paper card ── */}
               <div style={{
-                background: '#FCFAF8',
-                borderRadius: '0 0 20px 20px',
-                boxShadow: '0 8px 32px rgba(40,3,15,0.08), 0 2px 8px rgba(40,3,15,0.04)',
-                border: '1px solid rgba(40,3,15,0.08)', borderTop: 'none',
-                padding: 'clamp(28px, 5vw, 48px) clamp(24px, 5vw, 44px)',
+                background: '#FFFFFF',
+                borderRadius: 20, marginTop: 20,
+                boxShadow: '0 12px 32px rgba(40,3,15,0.05)',
+                border: '1px solid #EFE7E2',
+                padding: 'clamp(26px, 5vw, 44px) clamp(22px, 5vw, 40px)',
                 position: 'relative', overflow: 'hidden',
               }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: `linear-gradient(180deg, ${meta.color}, var(--gold))`, borderRadius: '0 0 0 16px', display: 'none' }} />
@@ -433,10 +432,9 @@ export default function LetterDrawer() {
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20,
                     padding: '10px 14px', borderRadius: 10,
-                    background: 'rgba(51,85,127,0.06)', border: '1px solid rgba(51,85,127,0.18)',
+                    background: '#E4EAF1', border: '1px solid #E4EAF1',
                   }}>
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>✉</span>
-                    <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 14, color: '#33557F', lineHeight: 1.45 }}>
                       From <strong style={{ color: 'var(--ink)' }}>
                         {letter.senderInfo.name && letter.senderInfo.name !== '—'
                           ? `${letter.senderInfo.name} (${letter.senderInfo.email})`
@@ -445,19 +443,19 @@ export default function LetterDrawer() {
                     </div>
                   </div>
                 )}
-                <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', textAlign: 'right', marginBottom: 28 }}>{date}</div>
-                <h2 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.03em', marginBottom: 6 }}>
+                <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 14, color: 'var(--ink-muted)', marginBottom: 14 }}>{date}</div>
+                <h2 style={{ fontFamily: '"Gambetta", serif', fontSize: 'clamp(30px, 4vw, 40px)', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.08, letterSpacing: '-0.04em', marginBottom: 0 }}>
                   {letter.subject}
                 </h2>
-                <div style={{ height: 1, background: 'linear-gradient(90deg, rgba(40,3,15,0.12), transparent)', margin: '20px 0 28px' }} />
-                <div style={{ fontFamily: 'Gambetta, serif', letterSpacing: '-0.03em', fontSize: 'clamp(14px, 1.8vw, 15.5px)', lineHeight: 2.05, color: 'var(--ink-soft)', whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                <div style={{ height: 1, background: '#EFE7E2', margin: '22px 0 24px' }} />
+                <div style={{ fontFamily: '"General Sans", sans-serif', letterSpacing: 'normal', fontSize: 17, lineHeight: 1.75, color: '#4A2B35', whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                   {letter.message}
                 </div>
-                <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(40,3,15,0.07)', textAlign: 'center' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '9px 20px', borderRadius: 40, background: 'rgba(40,3,15,0.03)', border: '1px solid rgba(40,3,15,0.08)' }}>
-                    <span style={{ fontSize: 14, opacity: 0.5 }}>✉</span>
-                    <span style={{ fontSize: 13, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>Letter from Heart</span>
-                  </div>
+                <div style={{ marginTop: 36, paddingTop: 20, borderTop: '1px solid #EFE7E2', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 28, height: 28, borderRadius: '50%', background: '#28030F', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#FBF582" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.6.1.2.3.2.4 0 .7-1.4 2.2-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>
+                  </span>
+                  <span style={{ fontSize: 18, color: 'var(--ink)', fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em' }}>Letter from Heart</span>
                 </div>
               </div>
 
@@ -473,32 +471,27 @@ export default function LetterDrawer() {
                     </div>
                   ) : (
                     <div style={{
-                      borderRadius: 18,
-                      background: '#F9F4F1',
-                      border: isEnded
-                        ? '1px solid rgba(40,3,15,0.1)'
-                        : '1px solid rgba(40,3,15,0.14)',
-                      boxShadow: '0 4px 24px rgba(40,3,15,0.06)',
+                      borderRadius: 20,
+                      background: '#FFFFFF',
+                      border: '1px solid #EFE7E2',
+                      boxShadow: 'none',
                       overflow: 'hidden',
                     }}>
 
                       {/* ── Emotional header ── */}
                       <div style={{
-                        padding: '16px 18px 14px',
-                        background: isEnded
-                          ? 'rgba(40,3,15,0.03)'
-                          : 'linear-gradient(135deg, rgba(40,3,15,0.06) 0%, rgba(117,87,96,0.04) 100%)',
-                        borderBottom: '1px solid rgba(40,3,15,0.07)',
+                        padding: '20px 22px 18px',
+                        background: isEnded ? '#F9F4F1' : '#FBF582',
+                        borderBottom: isEnded ? '1px solid #EFE7E2' : 'none',
                       }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-                              <span style={{ fontSize: 15 }}>{isEnded ? '🔒' : (isKnownRecipient ? '💬' : '💌')}</span>
-                              <span style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, color: isEnded ? 'var(--ink-muted)' : (isKnownRecipient ? 'var(--purple)' : 'var(--tc)'), letterSpacing: '-0.1px' }}>
+                              <span style={{ fontFamily: '"Gambetta", serif', fontSize: 24, fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
                                 {isEnded ? 'Conversation closed' : (isKnownRecipient ? 'Reply to this letter' : 'A quiet conversation')}
                               </span>
                             </div>
-                            <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', paddingLeft: 22, lineHeight: 1.5 }}>
+                            <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: '#4A2B35', paddingLeft: 0, lineHeight: 1.5 }}>
                               {isEnded
                                 ? 'This space has been sealed with care.'
                                 : (isKnownRecipient ? "Write back — they'll see your reply in the app." : 'Take your time. Read slowly.')}
@@ -518,15 +511,15 @@ export default function LetterDrawer() {
 
                       {/* ── Message bubbles area ── */}
                       <div style={{
-                        padding: '18px 16px 12px',
+                        padding: '20px 18px 14px',
                         display: 'flex', flexDirection: 'column', gap: 12,
-                        background: 'rgba(248,244,238,0.6)',
+                        background: '#FFFFFF',
                         minHeight: messages.length === 0 ? 80 : 0,
                       }}>
                         {messages.length === 0 && !isEnded && (
-                          <div style={{ textAlign: 'center', padding: '20px 0', fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.7 }}>
+                          <div style={{ textAlign: 'center', padding: '16px 0', fontFamily: '"General Sans", sans-serif', fontSize: 16, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.6 }}>
                             You've read their letter.<br />
-                            <span style={{ opacity: 0.7, fontSize: 12 }}>When you're ready, say something kind.</span>
+                            <span style={{ fontWeight: 400, color: 'var(--ink-muted)', fontSize: 14 }}>When you're ready, say something kind.</span>
                           </div>
                         )}
                         {messages.map((msg, i) => {
@@ -535,7 +528,7 @@ export default function LetterDrawer() {
                           return (
                             <div key={msg._id || i}>
                               {showDate && (
-                                <div style={{ textAlign: 'center', margin: '4px 0 12px', fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                                <div style={{ textAlign: 'center', margin: '4px 0 12px', fontSize: 13, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>
                                   {formatDate(msg.createdAt)}
                                 </div>
                               )}
@@ -554,9 +547,6 @@ export default function LetterDrawer() {
                           borderTop: '1px solid rgba(40,3,15,0.07)',
                           textAlign: 'center',
                         }}>
-                          <div style={{ fontSize: 18, marginBottom: 6 }}>
-                            {isEnded ? '🕯️' : '💌'}
-                          </div>
                           <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.65 }}>
                             {isEnded
                               ? <>
@@ -671,9 +661,9 @@ export default function LetterDrawer() {
                             maxLength={1000}
                             style={{
                               width: '100%', padding: '11px 14px', borderRadius: 12,
-                              border: '1px solid rgba(40,3,15,0.2)',
-                              background: 'var(--cream)',
-                              fontSize: 14, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', color: 'var(--ink)',
+                              border: '1px solid #D4C4C9',
+                              background: '#FFFFFF',
+                              fontSize: 16, fontFamily: '"General Sans", sans-serif', letterSpacing: 'normal', color: 'var(--ink)',
                               outline: 'none', resize: 'none', boxSizing: 'border-box',
                               lineHeight: 1.75, transition: 'border-color 0.2s, box-shadow 0.2s',
                             }}
@@ -683,7 +673,7 @@ export default function LetterDrawer() {
 
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span style={{ fontSize: 12, fontFamily: '"General Sans", sans-serif', color: 'var(--sage)', opacity: 0.85 }}>
-                              Speak gently 💛
+                              Speak gently
                             </span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <span style={{ fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>
@@ -693,17 +683,17 @@ export default function LetterDrawer() {
                                 onClick={handleSend}
                                 disabled={sending || !text.trim()}
                                 style={{
-                                  padding: '9px 20px', borderRadius: 69,
-                                  background: sending || !text.trim() ? 'rgba(40,3,15,0.3)' : 'var(--tc)',
+                                  height: 44, padding: '0 20px', borderRadius: 8,
+                                  background: sending || !text.trim() ? 'rgba(40,3,15,0.3)' : '#28030F',
                                   color: '#fff', border: 'none',
                                   cursor: sending || !text.trim() ? 'default' : 'pointer',
                                   fontSize: 13, fontFamily: '"General Sans", sans-serif', fontWeight: 500,
                                   display: 'flex', alignItems: 'center', gap: 7,
-                                  boxShadow: sending || !text.trim() ? 'none' : '0 4px 14px rgba(40,3,15,0.3)',
+                                  boxShadow: 'none',
                                   transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
                                 }}
-                                onMouseEnter={e => { if (!sending && text.trim()) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(40,3,15,0.38)' } }}
-                                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = sending || !text.trim() ? 'none' : '0 4px 14px rgba(40,3,15,0.3)' }}
+                                onMouseEnter={e => { if (!sending && text.trim()) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'none' } }}
+                                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = 'none' }}
                               >
                                 {sending ? <><SpinIcon /> Sending…</> : <><SendIcon /> Send</>}
                               </button>
@@ -724,15 +714,15 @@ export default function LetterDrawer() {
                 <div style={{ marginTop: 24 }}>
                   {/* Section label */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                    <div style={{ flex: 1, height: 1, background: 'rgba(40,3,15,0.08)' }} />
-                    <span style={{ fontSize: 13, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif', flexShrink: 0 }}>
+                    <div style={{ flex: 1, height: 1, background: '#EFE7E2' }} />
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif', flexShrink: 0 }}>
                       {isKnownSender
                         ? (seekerConvs.length > 0 ? 'Recipient replied' : 'Waiting for a reply')
                         : (seekerConvs.length > 0
                             ? `${seekerConvs.length} listener${seekerConvs.length > 1 ? 's' : ''} reached out`
                             : 'Replies from listeners')}
                     </span>
-                    <div style={{ flex: 1, height: 1, background: 'rgba(40,3,15,0.08)' }} />
+                    <div style={{ flex: 1, height: 1, background: '#EFE7E2' }} />
                   </div>
 
                   {seekerConvsLoading ? (
@@ -740,12 +730,14 @@ export default function LetterDrawer() {
                       Loading…
                     </div>
                   ) : seekerConvs.length === 0 ? (
-                    <div style={{ padding: '28px 20px', borderRadius: 14, textAlign: 'center', background: 'rgba(40,3,15,0.025)', border: '1px dashed rgba(40,3,15,0.1)' }}>
-                      <div style={{ fontSize: 24, marginBottom: 10, opacity: 0.4 }}>{isKnownSender ? '📬' : '🌿'}</div>
-                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.7 }}>
+                    <div style={{ padding: '28px 24px', borderRadius: 20, textAlign: 'center', background: '#FFFFFF', border: '1px solid #EFE7E2', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <span style={{ width: 48, height: 48, borderRadius: 12, background: isKnownSender ? '#E4EAF1' : '#E3EEE4', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={isKnownSender ? '#33557F' : '#194B22'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{isKnownSender ? <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></> : <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>}</svg>
+                      </span>
+                      <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 16, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.6 }}>
                         {isKnownSender
-                          ? <>Your letter was delivered.<br /><span style={{ fontSize: 12, opacity: 0.8 }}>The recipient hasn't replied yet.</span></>
-                          : <>No one has replied yet.<br /><span style={{ fontSize: 12, opacity: 0.8 }}>Someone out there may still be reading.</span></>}
+                          ? <>Your letter was delivered.<br /><span style={{ fontSize: 14, fontWeight: 400, color: 'var(--ink-muted)' }}>The recipient hasn't replied yet.</span></>
+                          : <>No one has replied yet.<br /><span style={{ fontSize: 14, fontWeight: 400, color: 'var(--ink-muted)' }}>Someone out there may still be reading.</span></>}
                       </div>
                     </div>
                   ) : (
@@ -759,32 +751,27 @@ export default function LetterDrawer() {
                           <div
                             key={c._id || ci}
                             style={{
-                              borderRadius: 18,
-                              background: '#F9F4F1',
-                              border: cEnded
-                                ? '1px solid rgba(40,3,15,0.1)'
-                                : '1px solid rgba(88,143,96,0.2)',
-                              boxShadow: '0 4px 20px rgba(40,3,15,0.05)',
+                              borderRadius: 20,
+                              background: '#FFFFFF',
+                              border: '1px solid #EFE7E2',
+                              boxShadow: 'none',
                               overflow: 'hidden',
                             }}
                           >
                             {/* Card header */}
                             <div style={{
-                              padding: '14px 18px 12px',
-                              background: cEnded
-                                ? 'rgba(40,3,15,0.03)'
-                                : 'linear-gradient(135deg, rgba(88,143,96,0.07) 0%, rgba(117,87,96,0.04) 100%)',
-                              borderBottom: '1px solid rgba(40,3,15,0.07)',
+                              padding: '18px 22px 16px',
+                              background: cEnded ? '#F9F4F1' : (isKnownSender ? '#E4EAF1' : '#E3EEE4'),
+                              borderBottom: '1px solid #EFE7E2',
                               display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8,
                             }}>
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-                                  <span style={{ fontSize: 14 }}>{cEnded ? '🔒' : (isKnownSender ? '💬' : '🌿')}</span>
-                                  <span style={{ fontFamily: '"General Sans", sans-serif', fontSize: 13, fontWeight: 600, color: cEnded ? 'var(--ink-muted)' : (isKnownSender ? 'var(--purple)' : 'var(--sage)') }}>
+                                  <span style={{ fontFamily: '"Gambetta", serif', fontSize: 22, fontWeight: 400, letterSpacing: '-0.03em', lineHeight: 1.1, color: cEnded ? 'var(--ink-muted)' : (isKnownSender ? '#33557F' : '#194B22') }}>
                                     {isKnownSender ? 'Their reply' : `Listener ${ci + 1}`}
                                   </span>
                                 </div>
-                                <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 12, color: 'var(--ink-muted)', paddingLeft: 21 }}>
+                                <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: '#4A2B35', paddingLeft: 0 }}>
                                   {cEnded
                                     ? <>
                                         Closed with care
@@ -806,14 +793,14 @@ export default function LetterDrawer() {
                             </div>
 
                             {/* Bubbles */}
-                            <div style={{ padding: '16px 14px 10px', display: 'flex', flexDirection: 'column', gap: 12, background: 'rgba(248,244,238,0.5)' }}>
+                            <div style={{ padding: '16px 14px 10px', display: 'flex', flexDirection: 'column', gap: 12, background: '#FFFFFF' }}>
                               {cMessages.map((msg, i) => {
                                 const isMine   = msg.sender?.toString() === viewerUserId
                                 const showDate = i === 0 || formatDate(msg.createdAt) !== formatDate(cMessages[i-1].createdAt)
                                 return (
                                   <div key={msg._id || i}>
                                     {showDate && (
-                                      <div style={{ textAlign: 'center', margin: '4px 0 10px', fontSize: 12, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                                      <div style={{ textAlign: 'center', margin: '4px 0 10px', fontSize: 13, color: 'var(--ink-muted)', fontFamily: '"General Sans", sans-serif' }}>
                                         {formatDate(msg.createdAt)}
                                       </div>
                                     )}
@@ -826,7 +813,6 @@ export default function LetterDrawer() {
                             {/* Closed / limit state */}
                             {(cEnded || cLimitReached) && (
                               <div style={{ padding: '14px 18px', background: 'rgba(40,3,15,0.025)', borderTop: '1px solid rgba(40,3,15,0.07)', textAlign: 'center' }}>
-                                <div style={{ fontSize: 16, marginBottom: 5 }}>{cEnded ? '🕯️' : '💌'}</div>
                                 <div style={{ fontFamily: '"General Sans", sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.6 }}>
                                   {cEnded
                                     ? <>
@@ -922,8 +908,8 @@ export default function LetterDrawer() {
                                   style={{
                                     width: '100%', padding: '10px 13px', borderRadius: 11,
                                     border: '1px solid rgba(88,143,96,0.22)',
-                                    background: 'var(--cream)',
-                                    fontSize: 13.5, fontFamily: '"Gambetta", serif', letterSpacing: '-0.03em', color: 'var(--ink)',
+                                    background: '#FFFFFF',
+                                    fontSize: 16, fontFamily: '"General Sans", sans-serif', letterSpacing: 'normal', color: 'var(--ink)',
                                     outline: 'none', resize: 'none', boxSizing: 'border-box',
                                     lineHeight: 1.75, transition: 'border-color 0.2s, box-shadow 0.2s',
                                   }}
@@ -932,14 +918,14 @@ export default function LetterDrawer() {
                                 />
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                   <span style={{ fontSize: 12, fontFamily: '"General Sans", sans-serif', color: 'var(--sage)', opacity: 0.85 }}>
-                                    Speak gently 💛
+                                    Speak gently
                                   </span>
                                   <button
                                     onClick={() => handleSeekerSend(c)}
                                     disabled={seekerSending || !seekerText.trim()}
                                     style={{
                                       padding: '8px 18px', borderRadius: 69,
-                                      background: seekerSending || !seekerText.trim() ? 'rgba(88,143,96,0.3)' : 'var(--sage)',
+                                      background: seekerSending || !seekerText.trim() ? 'rgba(40,3,15,0.3)' : '#28030F',
                                       color: '#fff', border: 'none',
                                       cursor: seekerSending || !seekerText.trim() ? 'default' : 'pointer',
                                       fontSize: 13, fontFamily: '"General Sans", sans-serif', fontWeight: 500,
